@@ -77,6 +77,8 @@ endif()
 
 # Include directories
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
+target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/rendering/")
+
 
 # Link the libraries (just add their name to the list)
 target_link_libraries(VelocityEngine PRIVATE glfw glad)
