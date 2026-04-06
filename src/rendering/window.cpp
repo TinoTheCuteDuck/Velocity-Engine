@@ -1,4 +1,4 @@
-#include <rendering/window.h>
+#include <rendering/window.hpp>
 
 Window::Window(const int width, const int height, const std::string& title) {
     if (!glfwInit()) {
@@ -22,6 +22,8 @@ Window::Window(const int width, const int height, const std::string& title) {
         glfwTerminate();
         throw std::runtime_error("Glad has failed to initialize!");
     }
+
+    glEnable(GL_DEPTH_TEST);
 }
 
 Window::~Window() {
