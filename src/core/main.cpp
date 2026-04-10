@@ -1,34 +1,52 @@
+#include "mat4.hpp"
 #include <iostream>
-#include <vector>
-#include <memory>
-#include <rendering/window.hpp>
-#include <rendering/shader.hpp>
-#include <ui/uiObject.hpp>
+
+#include <core/engineContext.hpp>
+#include <rendering/camera.hpp>
+#include <rendering/mesh.hpp>
+#include <ui/uiManager.hpp>
 
 //-----Settings-----
 static const int width = 1920;
 static const int height = 1080;
+static const float FOV = 70;
+static const float near = 0.1f;
+static const float far = 5000.0f;
 
 int main() {
     try {
-        Window window(width, height, "Hello World");
-        Shader sceneShader(ASSETS_PATH"shaders/scene/vertexShader.vert", ASSETS_PATH"shaders/scene/fragmentShader.frag");
-        Shader uiShader(ASSETS_PATH"shaders/ui/uiVertexShader.vert", ASSETS_PATH"shaders/ui/uiFragmentShader.frag");
+        gEngineContext.width = width;
+        gEngineContext.height = height;
 
-        std::vector<std::unique_ptr<UiObject>> uiElements;
-        uiElements.push_back(std::make_unique<UiObject>(0, 1, 0.2, 1, "Hello"));
+        Window window(width, height, "Velocity Engine");
+        Shader sceneShader(ASSETS_PATH "shaders/scene/vertexShader.vert", ASSETS_PATH "shaders/scene/fragmentShader.frag");
+        Shader uiShader(ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag");
+        Camera camera(Vector3(0.0f, 2.0f, 5.0f));
+        UiManager uiManager = UiManager();
+        Mesh mesh(ASSETS_PATH "meshes/Vase.obj");
+
+        gEngineContext.window = &window;
+        gEngineContext.sceneShader = &sceneShader;
+        gEngineContext.uiShader = &uiShader;
 
         while (!window.shouldClose()) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            uiShader.use();
-            for (auto& uiElement : uiElements) {
-                uiElement->draw();
-            }
+            uiManager.draw();
 
             sceneShader.use();
+            Mat4 projection = Mat4::projection(FOV, (float)gEngineContext.width / (float)gEngineContext.height, near, far);
+            sceneShader.setMat4("projection", projection);
+
+            Mat4 view = camera.getViewMatrix();
+            sceneShader.setMat4("view", view);
+
+            Mat4 model = Mat4::translate(Vector3());
+            sceneShader.setMat4("model", model);
+
+            mesh.draw();
             window.handleEvents();
         }
-    } catch(std::runtime_error& e) {
+    } catch (std::runtime_error& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
     return 0;

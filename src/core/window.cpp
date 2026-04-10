@@ -1,4 +1,6 @@
-#include <rendering/window.hpp>
+#include "shader.hpp"
+#include <core/engineContext.hpp>
+#include <core/window.hpp>
 
 Window::Window(const int width, const int height, const std::string& title) {
     if (!glfwInit()) {
@@ -24,6 +26,7 @@ Window::Window(const int width, const int height, const std::string& title) {
     }
 
     glEnable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
 }
 
 Window::~Window() {
@@ -44,5 +47,7 @@ GLFWwindow* Window::getWindow() {
 }
 
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    gEngineContext.width = width;
+    gEngineContext.height = height;
     glViewport(0, 0, width, height);
 }

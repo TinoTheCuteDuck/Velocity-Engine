@@ -17,7 +17,7 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) {
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        throw std::runtime_error(std::string("Vertex shader compilation failed!: ") +  infoLog);
+        throw std::runtime_error(std::string("Vertex shader compilation failed!: ") + infoLog);
     }
 
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -57,4 +57,8 @@ std::string Shader::readFile(const std::string& filePath) {
     std::stringstream buffer;
     buffer << file.rdbuf();
     return buffer.str();
+}
+
+void Shader::setMat4(const std::string& name, const Mat4& mat) const {
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, GL_FALSE, &mat.m[0]);
 }

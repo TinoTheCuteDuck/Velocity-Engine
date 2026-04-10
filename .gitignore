@@ -3,4 +3,6 @@ bin/
 build/
 .vscode/
 .idea/
+.cache
+.clang-format
 CMakeSettings.json
