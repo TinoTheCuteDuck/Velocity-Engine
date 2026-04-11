@@ -1,3 +1,4 @@
+#include "GLFW/glfw3.h"
 #include "shader.hpp"
 #include <core/engineContext.hpp>
 #include <core/window.hpp>
@@ -24,6 +25,8 @@ Window::Window(const int width, const int height, const std::string& title) {
         glfwTerminate();
         throw std::runtime_error("Glad has failed to initialize!");
     }
+
+    glfwSwapInterval(0);
 
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);

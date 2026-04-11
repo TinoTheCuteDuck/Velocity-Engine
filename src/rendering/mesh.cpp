@@ -1,7 +1,6 @@
 #include "math/vector2.hpp"
 #include "math/vector3.hpp"
-#include "shader.hpp"
-#include "window.hpp"
+#include "rendering/shader.hpp"
 #include <rendering/mesh.hpp>
 
 #include <fstream>

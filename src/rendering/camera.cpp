@@ -1,13 +1,50 @@
+#include "GLFW/glfw3.h"
+#include "engineContext.hpp"
+#include "input.hpp"
+#include "vector3.hpp"
 #include <math/vector4.hpp>
 #include <rendering/camera.hpp>
 
-Camera::Camera(const Vector3& initialPosition) : position(initialPosition) {
-    forward = Vector3::forward;
+Camera::Camera(const Vector3& initialPosition) : position(initialPosition), pitch(0), yaw(-90) {
+    computeVectors();
+}
+
+Camera::~Camera() {
+}
+
+void Camera::computeVectors() {
+    float yawRad = yaw * (std::numbers::pi / 180);
+    float pitchRad = pitch * (std::numbers::pi / 180);
+    forward = Vector3(std::cos(yawRad) * std::cos(pitchRad), std::sin(pitchRad), std::sin(yawRad) * std::cos(pitchRad));
     right = forward.cross(Vector3::up).normalize();
     up = right.cross(forward);
 }
 
-Camera::~Camera() {
+void Camera::update() {
+    float flightSpeed = gEngineContext.flySpeed * gEngineContext.dt;
+    if (Input::isKeyPressed(GLFW_KEY_W))
+        position += forward * flightSpeed;
+    if (Input::isKeyPressed(GLFW_KEY_S))
+        position -= forward * flightSpeed;
+    if (Input::isKeyPressed(GLFW_KEY_D))
+        position += right * flightSpeed;
+    if (Input::isKeyPressed(GLFW_KEY_A))
+        position -= right * flightSpeed;
+    if (Input::isKeyPressed(GLFW_KEY_SPACE))
+        position += Vector3::up * flightSpeed;
+    if (Input::isKeyPressed(GLFW_KEY_LEFT_SHIFT))
+        position -= Vector3::up * flightSpeed;
+    Vector2 mouseDelta = Input::getMouseDelta();
+    yaw += mouseDelta.x * gEngineContext.cursorSensitivity;
+    pitch -= mouseDelta.y * gEngineContext.cursorSensitivity;
+
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+
+    computeVectors();
+    Input::setMouseDelta(Vector2());
 }
 
 Mat4 Camera::getViewMatrix() {

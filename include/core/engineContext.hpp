@@ -5,6 +5,10 @@
 
 struct EngineContext {
         int width, height;
+        double dt;
+        float flySpeed;
+        float cursorSensitivity;
+        float FOV;
         Window* window;
         Shader* sceneShader;
         Shader* uiShader;
