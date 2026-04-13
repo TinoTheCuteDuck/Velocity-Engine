@@ -1,65 +1,59 @@
-#include "engineContext.hpp"
-#include "shader.hpp"
-#include <ui/uiManager.hpp>
+#include <engineContext.hpp>
+#include <glad/glad.h>
+#include <memory>
+#include <texture.hpp>
+#include <uiManager.hpp>
+#include <uiText.hpp>
+#include <vector>
 
-UiManager::UiManager() : VAO(0), VBO(0), texture(0), vertexCount(0) {
-    addUiElement(Vector2(), Vector2(100, 300), Vector3(200, 0, 0), Vector2());
-    generateUiMesh();
-}
+std::vector<std::unique_ptr<UiElement>> UiManager::uiElements;
+unsigned int UiManager::VAO, UiManager::VBO;
+std::unique_ptr<Texture> UiManager::uiTexture;
+int UiManager::vertexSize = 0;
 
-UiManager::~UiManager() {
-    clear();
-}
+void UiManager::init() {
+    addUiElement(std::make_unique<UiText>(Vector2(100, 100), Vector3(0.8, 0.8, 0.8), "Hello World", 32));
+    uiTexture = std::make_unique<Texture>(ASSETS_PATH "textures/DejaVu Sans Mono.png", GL_REPEAT, GL_NEAREST, false);
 
-void UiManager::addUiElement(const Vector2& position, const Vector2& size, const Vector3& color, const Vector2& UV) {
-    uiElements.push_back(UiElement{position, size, color, UV});
-}
+    gEngineContext.uiShader->use();
+    gEngineContext.uiShader->setInt("uiTexture", 0);
 
-void UiManager::generateUiMesh() {
-    std::vector<UiVertex> vertexData;
-    for (const UiElement& obj : uiElements) {
-        float leftX = ((obj.position.x / gEngineContext.width) * 2.0f) - 1.0f;
-        float rightX = (((obj.position.x + obj.size.x) / gEngineContext.width) * 2.0f) - 1.0f;
-        float topY = -(((obj.position.y / gEngineContext.height) * 2.0f) - 1.0f);
-        float bottomY = -((((obj.position.y + obj.size.y) / gEngineContext.height) * 2.0f) - 1.0f);
-
-        vertexData.push_back(UiVertex{Vector2(leftX, bottomY), obj.color, obj.UV});
-        vertexData.push_back(UiVertex{Vector2(rightX, bottomY), obj.color, obj.UV});
-        vertexData.push_back(UiVertex{Vector2(leftX, topY), obj.color, obj.UV});
-
-        vertexData.push_back(UiVertex{Vector2(rightX, bottomY), obj.color, obj.UV});
-        vertexData.push_back(UiVertex{Vector2(rightX, topY), obj.color, obj.UV});
-        vertexData.push_back(UiVertex{Vector2(leftX, topY), obj.color, obj.UV});
-    }
-    vertexCount = vertexData.size();
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
+    buildUiMesh();
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(UiVertex) * vertexData.size(), vertexData.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)0);
     glEnableVertexAttribArray(0);
-
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
-
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)(5 * sizeof(float)));
     glEnableVertexAttribArray(2);
+}
 
-    glBindVertexArray(0);
+void UiManager::buildUiMesh() {
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    std::vector<UiVertex> vertexData;
+
+    for (std::unique_ptr<UiElement>& obj : uiElements) {
+        obj->generateQuads(vertexData);
+    }
+    vertexSize = vertexData.size();
+
+    glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(UiVertex), vertexData.data(), GL_DYNAMIC_DRAW);
+}
+
+void UiManager::addUiElement(std::unique_ptr<UiElement> element) {
+    uiElements.push_back(std::move(element));
 }
 
 void UiManager::draw() {
+    uiTexture->bind(0);
     gEngineContext.uiShader->use();
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+    glDrawArrays(GL_TRIANGLES, 0, vertexSize);
     glBindVertexArray(0);
-}
-
-void UiManager::clear() {
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    uiElements.clear();
 }

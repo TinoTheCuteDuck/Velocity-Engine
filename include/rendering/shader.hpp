@@ -17,4 +17,5 @@ class Shader {
         ~Shader();
         void use();
         void setMat4(const std::string& name, const Mat4& mat) const;
+        void setInt(const std::string& name, const int num) const;
 };

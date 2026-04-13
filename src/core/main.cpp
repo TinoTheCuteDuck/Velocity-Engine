@@ -30,13 +30,14 @@ int main() {
         Shader sceneShader(ASSETS_PATH "shaders/scene/vertexShader.vert", ASSETS_PATH "shaders/scene/fragmentShader.frag");
         Shader uiShader(ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag");
         Camera camera(Vector3(0.0f, 2.0f, 5.0f));
-        UiManager uiManager = UiManager();
-        Mesh mesh(ASSETS_PATH "meshes/stanford-dragon.obj");
-        Input::init(window.getWindow());
+        Mesh mesh(ASSETS_PATH "meshes/stanford-bunny.obj");
 
         gEngineContext.window = &window;
         gEngineContext.sceneShader = &sceneShader;
         gEngineContext.uiShader = &uiShader;
+
+        Input::init(window.getWindow());
+        UiManager::init();
 
         double lastFPS = glfwGetTime();
         double lastFrame = glfwGetTime();
@@ -55,7 +56,6 @@ int main() {
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             camera.update();
-            uiManager.draw();
 
             sceneShader.use();
             Mat4 projection = Mat4::projection(FOV, (float)gEngineContext.width / (float)gEngineContext.height, near, far);
@@ -66,8 +66,12 @@ int main() {
 
             Mat4 model = Mat4::translate(Vector3()) * Mat4::scale(Vector3(20));
             sceneShader.setMat4("model", model);
-
             mesh.draw();
+
+            glDisable(GL_DEPTH_TEST);
+            UiManager::draw();
+            glEnable(GL_DEPTH_TEST);
+
             window.handleEvents();
         }
     } catch (std::runtime_error& e) {
