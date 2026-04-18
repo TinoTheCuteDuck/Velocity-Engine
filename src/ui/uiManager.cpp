@@ -1,27 +1,34 @@
 #include <engineContext.hpp>
 #include <glad/glad.h>
 #include <memory>
-#include <texture.hpp>
+#include <renderer.hpp>
+#include <uiElement.hpp>
 #include <uiManager.hpp>
-#include <uiText.hpp>
-#include <vector>
 
-std::vector<std::unique_ptr<UiElement>> UiManager::uiElements;
-unsigned int UiManager::VAO, UiManager::VBO;
-std::unique_ptr<Texture> UiManager::uiTexture;
-int UiManager::vertexSize = 0;
+bool UiManager::staticElementsDirty = true;
+bool UiManager::dynamicElementsDirty = true;
+bool UiManager::staticTextDirty = true;
+bool UiManager::dynamicTextDirty = true;
 
-void UiManager::init() {
-    addUiElement(std::make_unique<UiText>(Vector2(100, 100), Vector3(0.8, 0.8, 0.8), "Hello World", 32));
-    uiTexture = std::make_unique<Texture>(ASSETS_PATH "textures/DejaVu Sans Mono.png", GL_REPEAT, GL_NEAREST, false);
+unsigned int UiManager::staticElementsVAO, UiManager::staticElementsVBO;
+unsigned int UiManager::dynamicElementsVAO, UiManager::dynamicElementsVBO;
+unsigned int UiManager::staticTextVAO, UiManager::staticTextVBO;
+unsigned int UiManager::dynamicTextVAO, UiManager::dynamicTextVBO;
 
-    gEngineContext.uiShader->use();
-    gEngineContext.uiShader->setInt("uiTexture", 0);
+std::vector<UiVertex> UiManager::staticElementsVertexData;
+std::vector<UiVertex> UiManager::dynamicElementsVertexData;
+std::vector<UiVertex> UiManager::staticTextVertexData;
+std::vector<UiVertex> UiManager::dynamicTextVertexData;
 
+std::vector<std::unique_ptr<UiElement>> UiManager::staticElements;
+std::vector<std::unique_ptr<UiElement>> UiManager::dynamicElements;
+std::vector<std::unique_ptr<UiElement>> UiManager::staticText;
+std::vector<std::unique_ptr<UiElement>> UiManager::dynamicText;
+
+void UiManager::initBuffer(unsigned int& VAO, unsigned int& VBO) {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
-    buildUiMesh();
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
@@ -33,27 +40,111 @@ void UiManager::init() {
     glEnableVertexAttribArray(2);
 }
 
-void UiManager::buildUiMesh() {
+void UiManager::buildBuffer(unsigned int VAO, unsigned int VBO, std::vector<UiVertex>& vertexData) {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    std::vector<UiVertex> vertexData;
-
-    for (std::unique_ptr<UiElement>& obj : uiElements) {
-        obj->generateQuads(vertexData);
-    }
-    vertexSize = vertexData.size();
-
     glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(UiVertex), vertexData.data(), GL_DYNAMIC_DRAW);
 }
 
-void UiManager::addUiElement(std::unique_ptr<UiElement> element) {
-    uiElements.push_back(std::move(element));
+void UiManager::buildGeometry(std::vector<std::unique_ptr<UiElement>>& elements, std::vector<UiVertex>& vertexData) {
+    vertexData.clear();
+    for (std::unique_ptr<UiElement>& element : elements) {
+        element->generateQuads(vertexData);
+    }
 }
 
-void UiManager::draw() {
-    uiTexture->bind(0);
-    gEngineContext.uiShader->use();
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, vertexSize);
-    glBindVertexArray(0);
+void UiManager::init() {
+    initBuffer(staticElementsVAO, staticElementsVBO);
+    initBuffer(dynamicElementsVAO, dynamicElementsVBO);
+    initBuffer(staticTextVAO, staticTextVBO);
+    initBuffer(dynamicTextVAO, dynamicTextVBO);
+
+    staticElementsVertexData.reserve(1024);
+    dynamicElementsVertexData.reserve(1024);
+    staticTextVertexData.reserve(4096);
+    dynamicTextVertexData.reserve(4096);
+}
+
+void UiManager::submit() {
+    if (staticElementsDirty) {
+        buildGeometry(staticElements, staticElementsVertexData);
+        buildBuffer(staticElementsVAO, staticElementsVBO, staticElementsVertexData);
+        staticElementsDirty = false;
+    }
+    if (dynamicElementsDirty) {
+        buildGeometry(dynamicElements, dynamicElementsVertexData);
+        buildBuffer(dynamicElementsVAO, dynamicElementsVBO, dynamicElementsVertexData);
+        dynamicElementsDirty = false;
+    }
+    if (staticTextDirty) {
+        buildGeometry(staticText, staticTextVertexData);
+        buildBuffer(staticTextVAO, staticTextVBO, staticTextVertexData);
+        staticTextDirty = false;
+    }
+    if (dynamicTextDirty) {
+        buildGeometry(dynamicText, dynamicTextVertexData);
+        buildBuffer(dynamicTextVAO, dynamicTextVBO, dynamicTextVertexData);
+        dynamicTextDirty = false;
+    }
+
+    gEngineContext.renderer->renderQueue(RenderCall{
+        gEngineContext.uiShader,
+        staticElementsVAO,
+        GL_TRIANGLES,
+        0,
+        staticElementsVertexData.size(),
+        false});
+    gEngineContext.renderer->renderQueue(RenderCall{
+        gEngineContext.uiShader,
+        dynamicElementsVAO,
+        GL_TRIANGLES,
+        0,
+        dynamicElementsVertexData.size(),
+        false});
+    gEngineContext.renderer->renderQueue(RenderCall{
+        gEngineContext.uiShader,
+        staticTextVAO,
+        GL_TRIANGLES,
+        0,
+        staticTextVertexData.size(),
+        false});
+    gEngineContext.renderer->renderQueue(RenderCall{
+        gEngineContext.uiShader,
+        dynamicTextVAO,
+        GL_TRIANGLES,
+        0,
+        dynamicTextVertexData.size(),
+        false});
+}
+
+void UiManager::shutdown() {
+    glDeleteVertexArrays(1, &staticElementsVAO);
+    glDeleteVertexArrays(1, &dynamicElementsVAO);
+    glDeleteVertexArrays(1, &staticTextVAO);
+    glDeleteVertexArrays(1, &dynamicTextVAO);
+
+    glDeleteBuffers(1, &staticElementsVBO);
+    glDeleteBuffers(1, &dynamicElementsVBO);
+    glDeleteBuffers(1, &staticTextVBO);
+    glDeleteBuffers(1, &dynamicTextVBO);
+}
+
+UiElement* UiManager::addStaticElement(std::unique_ptr<UiElement> element) {
+    staticElements.push_back(std::move(element));
+    return staticElements.back().get();
+}
+
+UiElement* UiManager::addDynamicElement(std::unique_ptr<UiElement> element) {
+    dynamicElements.push_back(std::move(element));
+    return dynamicElements.back().get();
+}
+
+UiElement* UiManager::addStaticText(std::unique_ptr<UiElement> element) {
+    staticText.push_back(std::move(element));
+    return staticText.back().get();
+}
+
+UiElement* UiManager::addDynamicText(std::unique_ptr<UiElement> element) {
+    dynamicText.push_back(std::move(element));
+    return dynamicText.back().get();
 }

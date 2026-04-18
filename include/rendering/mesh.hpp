@@ -1,8 +1,10 @@
 #pragma once
 
-#include "math/vector2.hpp"
-#include "math/vector3.hpp"
+#include <cstddef>
+#include <mat4.hpp>
 #include <string>
+#include <vector2.hpp>
+#include <vector3.hpp>
 
 struct Vertex {
         Vector3 position;
@@ -12,12 +14,16 @@ struct Vertex {
 
 class Mesh {
     public:
+        unsigned int VAO, VBO, EBO;
+        size_t indicesCount;
+        Vector3 position;
+        Vector3 scale;
+
         Mesh(const std::string& filePath);
         ~Mesh();
         void draw();
+        Mat4 modelMatrice();
 
     private:
-        unsigned int VAO, VBO, EBO;
-        int indicesCount;
         void parseOBJ(const std::string& filePath);
 };

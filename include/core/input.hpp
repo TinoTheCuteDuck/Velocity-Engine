@@ -14,6 +14,7 @@ class Input {
         static void init(GLFWwindow* window);
         static void update();
         static bool isKeyPressed(int key);
+        static bool isMouseButtonPressed(int key);
         static Vector2 getMouseDelta();
         static void setMouseDelta(const Vector2& other);
 };

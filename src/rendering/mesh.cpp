@@ -1,7 +1,8 @@
-#include "math/vector2.hpp"
-#include "math/vector3.hpp"
-#include "rendering/shader.hpp"
-#include <rendering/mesh.hpp>
+#include <mat4.hpp>
+#include <mesh.hpp>
+#include <shader.hpp>
+#include <vector2.hpp>
+#include <vector3.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -10,7 +11,7 @@
 #include <string>
 #include <vector>
 
-Mesh::Mesh(const std::string& filePath) {
+Mesh::Mesh(const std::string& filePath) : position(Vector3()), scale(Vector3(20)) {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -88,6 +89,10 @@ void Mesh::parseOBJ(const std::string& filePath) {
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_DRAW);
+}
+
+Mat4 Mesh::modelMatrice() {
+    return Mat4::translate(position) * Mat4::scale(scale);
 }
 
 void Mesh::draw() {

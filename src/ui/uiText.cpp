@@ -1,10 +1,15 @@
-#include "engineContext.hpp"
+#include <engineContext.hpp>
 #include <uiText.hpp>
 
 UiText::UiText(const Vector2& position, const Vector3& color, const std::string& text, const float textSize) : UiElement(position, Vector2(), color, ""), text(text), textSize(textSize) {
 }
+UiText::UiText(const Vector2& position, const Vector3& color, std::function<std::string()> textProvider, const float textSize) : UiElement(position, Vector2(), color, ""), textProvider(textProvider), textSize(textSize) {
+}
 
 void UiText::generateQuads(std::vector<UiVertex>& vertexData) {
+    if (textProvider) {
+        text = textProvider();
+    }
     for (int i = 0; i < text.size(); i++) {
         float leftX = ((position.x + i * textSize) / gEngineContext.width) * 2 - 1;
         float rightX = ((position.x + i * textSize + textSize) / gEngineContext.width) * 2 - 1;

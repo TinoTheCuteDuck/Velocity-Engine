@@ -8,5 +8,5 @@ uniform sampler2D uiTexture;
 
 void main() {
     float alpha = texture(uiTexture, UV).r;
-    FragColor = vec4(Color, alpha);
+    FragColor = vec4(Color, 1.0);
 }

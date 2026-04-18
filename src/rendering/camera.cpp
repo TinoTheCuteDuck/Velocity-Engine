@@ -34,9 +34,10 @@ void Camera::update() {
         position += Vector3::up * flightSpeed;
     if (Input::isKeyPressed(GLFW_KEY_LEFT_SHIFT))
         position -= Vector3::up * flightSpeed;
+
     Vector2 mouseDelta = Input::getMouseDelta();
-    yaw += mouseDelta.x * gEngineContext.cursorSensitivity;
-    pitch -= mouseDelta.y * gEngineContext.cursorSensitivity;
+    yaw += mouseDelta.x * gEngineContext.cursorSensitivity * gEngineContext.dt;
+    pitch -= mouseDelta.y * gEngineContext.cursorSensitivity * gEngineContext.dt;
 
     if (pitch > 89.0f)
         pitch = 89.0f;

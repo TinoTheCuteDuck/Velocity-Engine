@@ -9,7 +9,7 @@ Vector2 Input::mouseDelta = Vector2();
 
 void Input::init(GLFWwindow* glWindow) {
     window = glWindow;
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     glfwSetCursorPosCallback(window, Input::mouse_callback);
 }
 
@@ -24,6 +24,12 @@ void Input::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 
 bool Input::isKeyPressed(int key) {
     if (glfwGetKey(window, key) == GLFW_PRESS)
+        return true;
+    return false;
+}
+
+bool Input::isMouseButtonPressed(int key) {
+    if (glfwGetMouseButton(window, key) == GLFW_PRESS)
         return true;
     return false;
 }
