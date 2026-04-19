@@ -1,8 +1,9 @@
-#include "engineContext.hpp"
 #include <GLFW/glfw3.h>
 #include <cstring>
 #include <input.hpp>
 #include <vector2.hpp>
+
+GLFWwindow* Input::glfwWindow;
 
 bool Input::currentKeys[GLFW_KEY_LAST + 1];
 bool Input::previousKeys[GLFW_KEY_LAST + 1];
@@ -14,6 +15,7 @@ Vector2 Input::previousMousePosition = Vector2();
 Vector2 Input::scrollOffset = Vector2();
 
 void Input::init(GLFWwindow* window) {
+    glfwWindow = window;
     std::memset(currentKeys, false, sizeof(currentKeys));
     std::memset(previousKeys, false, sizeof(previousKeys));
     std::memset(currentMouseButtons, false, sizeof(currentMouseButtons));
@@ -91,7 +93,7 @@ Vector2 Input::getScrollOffset() {
 }
 
 void Input::setInputMode(int mode, int value) {
-    glfwSetInputMode(gEngineContext.window->getWindow(), mode, value);
+    glfwSetInputMode(glfwWindow, mode, value);
     previousMousePosition = mousePosition;
 }
 

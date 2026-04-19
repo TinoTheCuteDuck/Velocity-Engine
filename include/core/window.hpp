@@ -1,17 +1,20 @@
 #pragma once
 
-#include <iostream>
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <functional>
+#include <glad/glad.h>
+#include <string>
 
 class Window {
     private:
         GLFWwindow* window;
-        static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
     public:
-        Window(const int width, const int height, const std::string& title);
+        Window(const int width, const int height, const std::string& title, bool vsync = false);
         ~Window();
-        void handleEvents();
+
         bool shouldClose();
+        void handleEvents();
         GLFWwindow* getWindow();
+        std::function<void(int, int)> onResize;
 };

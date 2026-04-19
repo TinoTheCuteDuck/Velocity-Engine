@@ -10,8 +10,6 @@
 class Engine {
     public:
         Engine();
-        ~Engine();
-
         void run();
 
     private:
@@ -19,6 +17,7 @@ class Engine {
         void update();
         void render();
         void shutdown();
+        void updateTime();
 
     private:
         Window window;
@@ -27,9 +26,4 @@ class Engine {
         Camera camera;
         Scene scene;
         Renderer renderer;
-
-        double lastFPS = 0;
-        double lastFrame = 0;
-        int frames = 0;
-        bool wasRightHeld = false;
 };

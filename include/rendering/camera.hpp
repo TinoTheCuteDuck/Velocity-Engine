@@ -1,7 +1,7 @@
 #pragma once
 
-#include <math/mat4.hpp>
-#include <math/vector3.hpp>
+#include <mat4.hpp>
+#include <vector3.hpp>
 
 class Camera {
     private:
@@ -14,7 +14,6 @@ class Camera {
     public:
         Vector3 position;
         Camera(const Vector3& initialPosition);
-        ~Camera();
         void update();
         void computeVectors();
         Mat4 getViewMatrix();

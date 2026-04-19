@@ -1,15 +1,12 @@
 #include <GLFW/glfw3.h>
 #include <camera.hpp>
-#include <engineContext.hpp>
+#include <engineState.hpp>
 #include <input.hpp>
 #include <vector3.hpp>
 #include <vector4.hpp>
 
 Camera::Camera(const Vector3& initialPosition) : position(initialPosition), pitch(0), yaw(-90) {
     computeVectors();
-}
-
-Camera::~Camera() {
 }
 
 void Camera::computeVectors() {
@@ -21,7 +18,9 @@ void Camera::computeVectors() {
 }
 
 void Camera::update() {
-    float flightSpeed = gEngineContext.flySpeed * gEngineContext.dt;
+    float dt = EngineState::frame.dt;
+    float flightSpeed = EngineState::settings.flySpeed * dt;
+
     if (Input::isKeyHeld(GLFW_KEY_W))
         position += forward * flightSpeed;
     if (Input::isKeyHeld(GLFW_KEY_S))
@@ -45,8 +44,10 @@ void Camera::update() {
 
     if (Input::isButtonHeld(GLFW_MOUSE_BUTTON_RIGHT)) {
         Vector2 mouseDelta = Input::getMouseDelta();
-        yaw += mouseDelta.x * gEngineContext.cursorSensitivity * gEngineContext.dt;
-        pitch -= mouseDelta.y * gEngineContext.cursorSensitivity * gEngineContext.dt;
+        float cursorSensitivity = EngineState::settings.cursorSensitivity;
+
+        yaw += mouseDelta.x * cursorSensitivity * dt;
+        pitch -= mouseDelta.y * cursorSensitivity * dt;
 
         if (pitch > 89.0f)
             pitch = 89.0f;

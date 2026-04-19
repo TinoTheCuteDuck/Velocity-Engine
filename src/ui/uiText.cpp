@@ -1,4 +1,4 @@
-#include <engineContext.hpp>
+#include <engineState.hpp>
 #include <uiText.hpp>
 
 UiText::UiText(const Vector2& position, const Vector3& color, const std::string& text, const float textSize) : UiElement(position, Vector2(), color, ""), text(text), textSize(textSize) {
@@ -7,14 +7,17 @@ UiText::UiText(const Vector2& position, const Vector3& color, std::function<std:
 }
 
 void UiText::generateQuads(std::vector<UiVertex>& vertexData) {
+    int width = EngineState::viewport.width;
+    int height = EngineState::viewport.height;
+
     if (textProvider) {
         text = textProvider();
     }
     for (int i = 0; i < text.size(); i++) {
-        float leftX = ((position.x + i * textSize) / gEngineContext.width) * 2 - 1;
-        float rightX = ((position.x + i * textSize + textSize) / gEngineContext.width) * 2 - 1;
-        float topY = -((position.y / gEngineContext.height) * 2 - 1);
-        float bottomY = -(((position.y + textSize) / gEngineContext.height) * 2 - 1);
+        float leftX = ((position.x + i * textSize) / width) * 2 - 1;
+        float rightX = ((position.x + i * textSize + textSize) / width) * 2 - 1;
+        float topY = -((position.y / height) * 2 - 1);
+        float bottomY = -(((position.y + textSize) / height) * 2 - 1);
 
         int index = (unsigned int)text[i] - 32;
         int col = index % 10;

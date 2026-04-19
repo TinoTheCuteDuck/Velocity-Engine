@@ -7,7 +7,6 @@ class Texture {
     private:
         unsigned int texture;
         int width, height, nrChannels;
-        unsigned char* data;
 
     public:
         Texture(const std::string& filepath, GLenum wrapMode, GLenum filterMode, bool generateMipmaps);

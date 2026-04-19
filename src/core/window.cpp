@@ -1,9 +1,8 @@
-#include "GLFW/glfw3.h"
-#include "shader.hpp"
-#include <core/engineContext.hpp>
-#include <core/window.hpp>
+#include <GLFW/glfw3.h>
+#include <stdexcept>
+#include <window.hpp>
 
-Window::Window(const int width, const int height, const std::string& title) {
+Window::Window(const int width, const int height, const std::string& title, bool vsync) {
     if (!glfwInit()) {
         throw std::runtime_error("GLFW failed to initialize!");
     }
@@ -19,19 +18,22 @@ Window::Window(const int width, const int height, const std::string& title) {
     }
 
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+        glViewport(0, 0, width, height);
+        Window* win = (Window*)glfwGetWindowUserPointer(window);
+        if (win->onResize)
+            win->onResize(width, height);
+    });
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         glfwTerminate();
         throw std::runtime_error("Glad has failed to initialize!");
     }
 
-    glfwSwapInterval(0);
-
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    if (!vsync) {
+        glfwSwapInterval(0);
+    }
 }
 
 Window::~Window() {
@@ -49,10 +51,4 @@ bool Window::shouldClose() {
 
 GLFWwindow* Window::getWindow() {
     return window;
-}
-
-void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    gEngineContext.width = width;
-    gEngineContext.height = height;
-    glViewport(0, 0, width, height);
 }

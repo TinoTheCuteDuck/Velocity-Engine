@@ -1,7 +1,7 @@
-#include <engineContext.hpp>
 #include <glad/glad.h>
 #include <memory>
 #include <renderer.hpp>
+#include <shader.hpp>
 #include <uiElement.hpp>
 #include <uiManager.hpp>
 
@@ -65,7 +65,7 @@ void UiManager::init() {
     dynamicTextVertexData.reserve(4096);
 }
 
-void UiManager::submit() {
+void UiManager::submit(Renderer& renderer, Shader& uiShader) {
     if (staticElementsDirty) {
         buildGeometry(staticElements, staticElementsVertexData);
         buildBuffer(staticElementsVAO, staticElementsVBO, staticElementsVertexData);
@@ -87,29 +87,29 @@ void UiManager::submit() {
         dynamicTextDirty = false;
     }
 
-    gEngineContext.renderer->renderQueue(RenderCall{
-        gEngineContext.uiShader,
+    renderer.renderQueue(RenderCall{
+        &uiShader,
         staticElementsVAO,
         GL_TRIANGLES,
         0,
         staticElementsVertexData.size(),
         false});
-    gEngineContext.renderer->renderQueue(RenderCall{
-        gEngineContext.uiShader,
+    renderer.renderQueue(RenderCall{
+        &uiShader,
         dynamicElementsVAO,
         GL_TRIANGLES,
         0,
         dynamicElementsVertexData.size(),
         false});
-    gEngineContext.renderer->renderQueue(RenderCall{
-        gEngineContext.uiShader,
+    renderer.renderQueue(RenderCall{
+        &uiShader,
         staticTextVAO,
         GL_TRIANGLES,
         0,
         staticTextVertexData.size(),
         false});
-    gEngineContext.renderer->renderQueue(RenderCall{
-        gEngineContext.uiShader,
+    renderer.renderQueue(RenderCall{
+        &uiShader,
         dynamicTextVAO,
         GL_TRIANGLES,
         0,

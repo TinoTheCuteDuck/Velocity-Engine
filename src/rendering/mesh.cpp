@@ -22,10 +22,10 @@ Mesh::Mesh(const std::string& filePath) : position(Vector3()), scale(Vector3(20)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, UV));
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(5 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
     glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
@@ -93,10 +93,4 @@ void Mesh::parseOBJ(const std::string& filePath) {
 
 Mat4 Mesh::modelMatrice() {
     return Mat4::translate(position) * Mat4::scale(scale);
-}
-
-void Mesh::draw() {
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
 }

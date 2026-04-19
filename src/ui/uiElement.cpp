@@ -1,14 +1,17 @@
-#include <engineContext.hpp>
+#include <engineState.hpp>
 #include <uiElement.hpp>
 
 UiElement::UiElement(const Vector2& position, const Vector2& size, const Vector3& color, const std::string& uvName) : position(position), size(size), color(color), UV(Vector2()), uvWidth(0), uvHeight(0) {
 }
 
 void UiElement::generateQuads(std::vector<UiVertex>& vertexData) {
-    float leftX = (position.x / gEngineContext.width) * 2 - 1;
-    float rightX = ((position.x + size.x) / gEngineContext.width) * 2 - 1;
-    float topY = -((position.y / gEngineContext.height) * 2 - 1);
-    float bottomY = -(((position.y + size.y) / gEngineContext.height) * 2 - 1);
+    int width = EngineState::viewport.width;
+    int height = EngineState::viewport.height;
+
+    float leftX = (position.x / width) * 2 - 1;
+    float rightX = ((position.x + size.x) / width) * 2 - 1;
+    float topY = -((position.y / height) * 2 - 1);
+    float bottomY = -(((position.y + size.y) / height) * 2 - 1);
 
     float uvLeft = UV.x;
     float uvRight = UV.x + uvWidth;

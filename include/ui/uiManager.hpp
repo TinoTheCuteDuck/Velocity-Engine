@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <renderer.hpp>
+#include <shader.hpp>
 #include <uiElement.hpp>
 #include <vector>
 
@@ -8,7 +10,7 @@ class UiManager {
     public:
         static void init();
         static void update();
-        static void submit();
+        static void submit(Renderer& renderer, Shader& uiShader);
         static void shutdown();
 
         static UiElement* addStaticElement(std::unique_ptr<UiElement> element);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <camera.hpp>
 #include <cstddef>
 #include <glad/glad.h>
 #include <mat4.hpp>
@@ -20,7 +21,7 @@ class Renderer {
     public:
         Renderer();
         void renderQueue(const RenderCall cmd);
-        void startFrame();
+        void startFrame(Shader& sceneShader, Camera& camera);
         void endFrame();
 
     private:

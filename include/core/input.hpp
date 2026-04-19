@@ -5,6 +5,8 @@
 
 class Input {
     private:
+        static GLFWwindow* glfwWindow;
+
         static bool currentKeys[];
         static bool previousKeys[];
         static bool currentMouseButtons[];

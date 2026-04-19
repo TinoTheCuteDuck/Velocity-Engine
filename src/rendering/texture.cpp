@@ -1,7 +1,7 @@
-#include "window.hpp"
-#include <stdexcept>
 #define STB_IMAGE_IMPLEMENTATION
+
 #include <stb_image.h>
+#include <stdexcept>
 #include <texture.hpp>
 
 Texture::Texture(const std::string& filePath, GLenum wrapMode = GL_REPEAT, GLenum filterMode = GL_LINEAR, bool generateMipmaps = false) {
@@ -21,7 +21,7 @@ Texture::Texture(const std::string& filePath, GLenum wrapMode = GL_REPEAT, GLenu
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
     }
 
-    data = stbi_load(filePath.c_str(), &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &nrChannels, 0);
     if (!data) {
         throw std::runtime_error("STB failed to load texture with the filepath: " + filePath);
     }

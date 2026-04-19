@@ -21,7 +21,6 @@ class Mesh {
 
         Mesh(const std::string& filePath);
         ~Mesh();
-        void draw();
         Mat4 modelMatrice();
 
     private:

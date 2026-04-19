@@ -1,4 +1,5 @@
-#include <rendering/shader.hpp>
+#include "renderer.hpp"
+#include <shader.hpp>
 
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) {
     std::string vertexCode = readFile(vertexPath);
@@ -35,6 +36,12 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) {
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        throw std::runtime_error(std::string("Shader linking failed!: ") + infoLog);
+    }
+
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 }
@@ -51,7 +58,6 @@ std::string Shader::readFile(const std::string& filePath) {
     std::ifstream file(filePath);
     if (!file.is_open()) {
         throw std::runtime_error("Couldn't read shader filepath!");
-        return "";
     }
 
     std::stringstream buffer;
