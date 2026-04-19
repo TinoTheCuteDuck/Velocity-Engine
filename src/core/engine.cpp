@@ -30,8 +30,8 @@ void Engine::init() {
     gEngineContext.renderer = &renderer;
 
     Input::init(window.getWindow());
-    setupUi();
     UiManager::init();
+    setupUi();
 
     lastFPS = glfwGetTime();
     lastFrame = glfwGetTime();
@@ -58,18 +58,8 @@ void Engine::update() {
         frames = 0;
     }
 
-    bool rightHeld = Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT);
-
-    if (rightHeld && !wasRightHeld) {
-        glfwSetInputMode(window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    }
-    if (!rightHeld && wasRightHeld) {
-        glfwSetInputMode(window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
-
-    if (rightHeld)
-        camera.update();
-    wasRightHeld = rightHeld;
+    camera.update();
+    Input::update();
 }
 
 void Engine::render() {

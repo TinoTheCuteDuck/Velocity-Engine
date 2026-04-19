@@ -1,9 +1,9 @@
-#include "GLFW/glfw3.h"
-#include "engineContext.hpp"
-#include "input.hpp"
-#include "vector3.hpp"
-#include <math/vector4.hpp>
-#include <rendering/camera.hpp>
+#include <GLFW/glfw3.h>
+#include <camera.hpp>
+#include <engineContext.hpp>
+#include <input.hpp>
+#include <vector3.hpp>
+#include <vector4.hpp>
 
 Camera::Camera(const Vector3& initialPosition) : position(initialPosition), pitch(0), yaw(-90) {
     computeVectors();
@@ -22,30 +22,39 @@ void Camera::computeVectors() {
 
 void Camera::update() {
     float flightSpeed = gEngineContext.flySpeed * gEngineContext.dt;
-    if (Input::isKeyPressed(GLFW_KEY_W))
+    if (Input::isKeyHeld(GLFW_KEY_W))
         position += forward * flightSpeed;
-    if (Input::isKeyPressed(GLFW_KEY_S))
+    if (Input::isKeyHeld(GLFW_KEY_S))
         position -= forward * flightSpeed;
-    if (Input::isKeyPressed(GLFW_KEY_D))
+    if (Input::isKeyHeld(GLFW_KEY_D))
         position += right * flightSpeed;
-    if (Input::isKeyPressed(GLFW_KEY_A))
+    if (Input::isKeyHeld(GLFW_KEY_A))
         position -= right * flightSpeed;
-    if (Input::isKeyPressed(GLFW_KEY_SPACE))
+    if (Input::isKeyHeld(GLFW_KEY_SPACE))
         position += Vector3::up * flightSpeed;
-    if (Input::isKeyPressed(GLFW_KEY_LEFT_SHIFT))
+    if (Input::isKeyHeld(GLFW_KEY_LEFT_SHIFT))
         position -= Vector3::up * flightSpeed;
 
-    Vector2 mouseDelta = Input::getMouseDelta();
-    yaw += mouseDelta.x * gEngineContext.cursorSensitivity * gEngineContext.dt;
-    pitch -= mouseDelta.y * gEngineContext.cursorSensitivity * gEngineContext.dt;
+    if (Input::isButtonPressed(GLFW_MOUSE_BUTTON_RIGHT)) {
+        Input::setInputMode(GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
 
-    if (pitch > 89.0f)
-        pitch = 89.0f;
-    if (pitch < -89.0f)
-        pitch = -89.0f;
+    if (Input::isButtonReleased(GLFW_MOUSE_BUTTON_RIGHT)) {
+        Input::setInputMode(GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
 
-    computeVectors();
-    Input::setMouseDelta(Vector2());
+    if (Input::isButtonHeld(GLFW_MOUSE_BUTTON_RIGHT)) {
+        Vector2 mouseDelta = Input::getMouseDelta();
+        yaw += mouseDelta.x * gEngineContext.cursorSensitivity * gEngineContext.dt;
+        pitch -= mouseDelta.y * gEngineContext.cursorSensitivity * gEngineContext.dt;
+
+        if (pitch > 89.0f)
+            pitch = 89.0f;
+        if (pitch < -89.0f)
+            pitch = -89.0f;
+
+        computeVectors();
+    }
 }
 
 Mat4 Camera::getViewMatrix() {
