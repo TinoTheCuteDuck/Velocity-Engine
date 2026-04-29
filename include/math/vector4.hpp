@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <cmath>
 #include <iostream>
-#include <math/vector3.hpp>
+#include <vector3.hpp>
 
 class Vector4 {
     public:

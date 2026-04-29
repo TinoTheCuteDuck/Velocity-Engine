@@ -5,16 +5,16 @@
 
 class Input {
     private:
-        static GLFWwindow* glfwWindow;
+        inline static GLFWwindow* glfwWindow;
 
-        static bool currentKeys[];
-        static bool previousKeys[];
-        static bool currentMouseButtons[];
-        static bool previousMouseButtons[];
-        static Vector2 mousePosition;
-        static Vector2 previousMousePosition;
-        static Vector2 mouseDelta;
-        static Vector2 scrollOffset;
+        inline static bool currentKeys[GLFW_KEY_LAST + 1];
+        inline static bool previousKeys[GLFW_KEY_LAST + 1];
+        inline static bool currentMouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
+        inline static bool previousMouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
+        inline static Vector2 mousePosition;
+        inline static Vector2 previousMousePosition;
+        inline static Vector2 mouseDelta;
+        inline static Vector2 scrollOffset;
 
     public:
         static void init(GLFWwindow* window);

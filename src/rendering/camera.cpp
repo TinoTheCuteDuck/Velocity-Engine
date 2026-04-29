@@ -5,7 +5,7 @@
 #include <vector3.hpp>
 #include <vector4.hpp>
 
-Camera::Camera(const Vector3& initialPosition) : position(initialPosition), pitch(0), yaw(-90) {
+Camera::Camera(const Vector3& initialPosition) : pitch(0), yaw(-90), position(initialPosition) {
     computeVectors();
 }
 

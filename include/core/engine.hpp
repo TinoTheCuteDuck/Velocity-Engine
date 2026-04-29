@@ -1,10 +1,8 @@
 #pragma once
 
 #include <camera.hpp>
-#include <mesh.hpp>
 #include <renderer.hpp>
 #include <scene.hpp>
-#include <shader.hpp>
 #include <window.hpp>
 
 class Engine {
@@ -21,8 +19,6 @@ class Engine {
 
     private:
         Window window;
-        Shader sceneShader;
-        Shader uiShader;
         Camera camera;
         Scene scene;
         Renderer renderer;

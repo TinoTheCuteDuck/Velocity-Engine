@@ -2,28 +2,27 @@
 #include <mesh.hpp>
 #include <renderer.hpp>
 #include <scene.hpp>
-#include <shader.hpp>
 
 Scene::Scene() {
-    add(std::make_unique<Mesh>(ASSETS_PATH "meshes/stanford-bunny.obj"));
 }
 
 Scene::~Scene() {
+}
+
+void Scene::load() {
+    add(std::make_unique<Mesh>(ASSETS_PATH "meshes/stanford-bunny.obj"));
 }
 
 void Scene::add(std::unique_ptr<Mesh> mesh) {
     worldMeshes.push_back(std::move(mesh));
 }
 
-void Scene::submit(Renderer& renderer, Shader& sceneShader) {
+void Scene::submit() {
+    Renderer& renderer = Renderer::get();
     for (std::unique_ptr<Mesh>& mesh : worldMeshes) {
         renderer.renderQueue(RenderCall{
-            &sceneShader,
-            mesh->VAO,
-            GL_TRIANGLES,
-            GL_UNSIGNED_INT,
-            mesh->indicesCount,
-            true,
+            mesh->meshID,
+            mesh->material,
             mesh->modelMatrice()});
     }
 }

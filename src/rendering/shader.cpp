@@ -1,5 +1,7 @@
-#include "renderer.hpp"
+#include <fstream>
 #include <shader.hpp>
+#include <sstream>
+#include <stdexcept>
 
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) {
     std::string vertexCode = readFile(vertexPath);
@@ -65,10 +67,29 @@ std::string Shader::readFile(const std::string& filePath) {
     return buffer.str();
 }
 
+void Shader::setBool(const std::string& name, const bool value) const {
+    int loc = glGetUniformLocation(shaderProgram, name.c_str());
+    if (loc == -1) {
+        std::cout << "Uniform not found: " + name << std::endl;
+        // throw std::runtime_error("Uniform not found: " + name);
+    }
+    glUniform1i(loc, value);
+}
+
 void Shader::setInt(const std::string& name, const int value) const {
-    glUniform1i(glGetUniformLocation(shaderProgram, name.c_str()), value);
+    int loc = glGetUniformLocation(shaderProgram, name.c_str());
+    if (loc == -1) {
+        std::cout << "Uniform not found: " + name << std::endl;
+        throw std::runtime_error("Uniform not found: " + name);
+    }
+    glUniform1i(loc, value);
 }
 
 void Shader::setMat4(const std::string& name, const Mat4& mat) const {
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, GL_FALSE, &mat.m[0]);
+    int loc = glGetUniformLocation(shaderProgram, name.c_str());
+    if (loc == -1) {
+        std::cout << "Uniform not found: " + name << std::endl;
+        throw std::runtime_error("Uniform not found: " + name);
+    }
+    glUniformMatrix4fv(loc, 1, GL_FALSE, &mat.m[0]);
 }

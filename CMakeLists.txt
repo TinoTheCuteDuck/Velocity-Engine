@@ -1,8 +1,8 @@
 # Version declarations
 cmake_minimum_required(VERSION 3.16)
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_C_COMPILER clang)
-set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Set to ON to ship the engine
 set(PRODUCTION_BUILD OFF CACHE BOOL "Make this a production build" FORCE)
@@ -18,12 +18,24 @@ else()
 endif()
 
 # Idk what this does, something with SIMD
-if(MSVC)
-    add_compile_definitions((/arch:AVX2))
+if (MSVC)
+    add_compile_options(/arch:AVX2)
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+else()
+    add_compile_options(-Wall -Wextra)
 endif()
 
 # Project naming
 project(VelocityEngine)
+
+#compiler optimizations
+set(RELEASE_FLAGS
+    -O3
+    -DNDEBUG
+    -march=native
+    -flto
+)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 
 # Disable some things we don't need
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -78,13 +90,31 @@ if (WIN32)
 endif()
 
 # Include directories
-target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
-target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/core")
-target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/rendering/")
-target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/ui")
-target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/math")
+target_include_directories(${PROJECT_NAME} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/rendering
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/math
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/stb_image
+)
 
-target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/stb_image")
+target_compile_options(${PROJECT_NAME} PRIVATE
+    $<$<CONFIG:Release>:-O3 -DNDEBUG -march=native -flto>
+)
+target_compile_options(${PROJECT_NAME} PRIVATE
+    $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra>
+)
 
 # Link the libraries (just add their name to the list)
 target_link_libraries(VelocityEngine PRIVATE glfw glad)
+
+if (WIN32)
+    target_compile_options(${PROJECT_NAME} PRIVATE /UNICODE /U_UNICODE)
+endif()
+
+if (MSVC)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
+    )
+endif()

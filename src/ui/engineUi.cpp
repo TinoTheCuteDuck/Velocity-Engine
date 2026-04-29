@@ -1,58 +1,48 @@
 #include <engineState.hpp>
 #include <engineUi.hpp>
 #include <memory>
+#include <uiElement.hpp>
 #include <uiManager.hpp>
+#include <uiText.hpp>
 #include <vector2.hpp>
 
 void setupUi() {
     int width = EngineState::viewport.width;
     int height = EngineState::viewport.height;
 
-    UiElement* leftBar = UiManager::addStaticElement(std::make_unique<UiElement>(
-        Vector2(0),
-        Vector2(200, height),
-        Vector3(0.102, 0.106, 0.149),
-        ""));
+    UiElement* topBar = UiManager::addUiElement(std::make_unique<UiElement>());
+    topBar->setPosition(Vector2());
+    topBar->setSize(Vector2(width, 150));
+    topBar->setColor(Vector3(0.102f, 0.106f, 0.149f));
 
-    UiElement* topBar = UiManager::addStaticElement(std::make_unique<UiElement>(
-        Vector2(0),
-        Vector2(width, 150),
-        Vector3(0.102, 0.106, 0.149),
-        ""));
+    UiElement* bottomBar = UiManager::addUiElement(std::make_unique<UiElement>());
+    bottomBar->setPosition(Vector2(0, height - 150));
+    bottomBar->setSize(Vector2(width, 150));
+    bottomBar->setColor(Vector3(0.102f, 0.106f, 0.149f));
 
-    UiElement* rightBar = UiManager::addStaticElement(std::make_unique<UiElement>(
-        Vector2(width - 200, 0),
-        Vector2(200, height),
-        Vector3(0.102, 0.106, 0.149),
-        ""));
+    UiElement* leftBar = UiManager::addUiElement(std::make_unique<UiElement>());
+    leftBar->setPosition(Vector2(0, 150));
+    leftBar->setSize(Vector2(200, height - 300));
+    leftBar->setColor(Vector3(0.102f, 0.106f, 0.149f));
 
-    UiElement* bottomBar = UiManager::addStaticElement(std::make_unique<UiElement>(
-        Vector2(0, height - 150),
-        Vector2(width, 150),
-        Vector3(0.102, 0.106, 0.149),
-        ""));
+    UiElement* rightBar = UiManager::addUiElement(std::make_unique<UiElement>());
+    rightBar->setPosition(Vector2(width - 200, 150));
+    rightBar->setSize(Vector2(200, height - 300));
+    rightBar->setColor(Vector3(0.102f, 0.106f, 0.149f));
 
-    UiElement* topDeco = UiManager::addStaticElement(std::make_unique<UiElement>(
-        Vector2(200, 150),
-        Vector2(width, 4),
-        Vector3(0.478, 0.635, 0.969),
-        ""));
+    UiText* fpsDisplay = static_cast<UiText*>(UiManager::addUiElement(std::make_unique<UiText>()));
+    fpsDisplay->setPosition(Vector2(300, 400));
+    fpsDisplay->setText("FPS: 0", 32);
+    fpsDisplay->setColor(1.0f);
+    fpsDisplay->setUpdate([fpsDisplay]() {
+        fpsDisplay->setText("FPS: " + std::to_string(EngineState::frame.FPS), 32);
+    });
 
-    UiElement* rightDeco = UiManager::addStaticElement(std::make_unique<UiElement>(
-        Vector2(width - 204, 150),
-        Vector2(4, height),
-        Vector3(0.478, 0.635, 0.969),
-        ""));
-
-    UiElement* leftDeco = UiManager::addStaticElement(std::make_unique<UiElement>(
-        Vector2(200, 150),
-        Vector2(4, height),
-        Vector3(0.478, 0.635, 0.969),
-        ""));
-
-    UiElement* bottomDeco = UiManager::addStaticElement(std::make_unique<UiElement>(
-        Vector2(200, height - 154),
-        Vector2(width, 4),
-        Vector3(0.478, 0.635, 0.969),
-        ""));
+    UiText* dtDisplay = static_cast<UiText*>(UiManager::addUiElement(std::make_unique<UiText>()));
+    dtDisplay->setPosition(Vector2(300, 432));
+    dtDisplay->setText("DT: 0ms", 32);
+    dtDisplay->setColor(1.0f);
+    dtDisplay->setUpdate([dtDisplay]() {
+        dtDisplay->setText("DT: " + std::to_string(EngineState::frame.dt) + "ms", 32);
+    });
 }

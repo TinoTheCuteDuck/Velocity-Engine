@@ -1,18 +1,13 @@
-#include <GLFW/glfw3.h>
 #include <engine.hpp>
 #include <engineState.hpp>
 #include <engineUi.hpp>
-#include <glad/glad.h>
 #include <input.hpp>
-#include <mat4.hpp>
-#include <shader.hpp>
+#include <ressources.hpp>
 #include <time.hpp>
 #include <uiManager.hpp>
 
 Engine::Engine()
     : window(EngineState::viewport.width, EngineState::viewport.height, EngineState::windowSettings.title),
-      sceneShader(ASSETS_PATH "shaders/scene/vertexShader.vert", ASSETS_PATH "shaders/scene/fragmentShader.frag"),
-      uiShader(ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag"),
       camera(Vector3(0, 2, 3)),
       scene(Scene()),
       renderer(Renderer()) {
@@ -25,9 +20,17 @@ void Engine::init() {
         EngineState::viewport.width = width;
         EngineState::viewport.height = height;
     };
+    setupUi();
+
+    Ressources::pbrShader = renderer.addShader(ASSETS_PATH "shaders/scene/vertexShader.vert", ASSETS_PATH "shaders/scene/fragmentShader.frag");
+    Ressources::uiShader = renderer.addShader(ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag");
+    Ressources::uiTexture = renderer.addTexture(ASSETS_PATH "textures/DejaVu Sans Mono.png", GL_REPEAT, GL_NEAREST, false);
+
+    Renderer::setInstance(renderer);
     Input::init(window.getWindow());
     UiManager::init();
-    setupUi();
+
+    scene.load();
 }
 
 void Engine::run() {
@@ -41,21 +44,21 @@ void Engine::run() {
 
 void Engine::update() {
     updateTime();
+    UiManager::update();
     camera.update();
     Input::update();
 }
 
 void Engine::render() {
-    renderer.startFrame(sceneShader, camera);
+    renderer.startFrame(camera);
 
-    scene.submit(renderer, sceneShader);
-    UiManager::submit(renderer, uiShader);
+    scene.submit();
+    UiManager::submit();
 
     renderer.endFrame();
 }
 
 void Engine::shutdown() {
-    UiManager::shutdown();
 }
 
 void Engine::updateTime() {

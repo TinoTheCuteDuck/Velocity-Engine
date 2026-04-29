@@ -3,17 +3,6 @@
 #include <input.hpp>
 #include <vector2.hpp>
 
-GLFWwindow* Input::glfwWindow;
-
-bool Input::currentKeys[GLFW_KEY_LAST + 1];
-bool Input::previousKeys[GLFW_KEY_LAST + 1];
-bool Input::currentMouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
-bool Input::previousMouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
-
-Vector2 Input::mousePosition = Vector2();
-Vector2 Input::previousMousePosition = Vector2();
-Vector2 Input::scrollOffset = Vector2();
-
 void Input::init(GLFWwindow* window) {
     glfwWindow = window;
     std::memset(currentKeys, false, sizeof(currentKeys));
@@ -21,25 +10,25 @@ void Input::init(GLFWwindow* window) {
     std::memset(currentMouseButtons, false, sizeof(currentMouseButtons));
     std::memset(previousMouseButtons, false, sizeof(previousMouseButtons));
 
-    glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+    glfwSetKeyCallback(window, []([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) {
         if (action == GLFW_PRESS)
             currentKeys[key] = true;
         if (action == GLFW_RELEASE)
             currentKeys[key] = false;
     });
 
-    glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
+    glfwSetMouseButtonCallback(window, []([[maybe_unused]] GLFWwindow* window, int button, int action, [[maybe_unused]] int mods) {
         if (action == GLFW_PRESS)
             currentMouseButtons[button] = true;
         if (action == GLFW_RELEASE)
             currentMouseButtons[button] = false;
     });
 
-    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
+    glfwSetCursorPosCallback(window, []([[maybe_unused]] GLFWwindow* window, double xpos, double ypos) {
         mousePosition = Vector2(xpos, ypos);
     });
 
-    glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset) {
+    glfwSetScrollCallback(window, []([[maybe_unused]] GLFWwindow* window, double xoffset, double yoffset) {
         scrollOffset = Vector2(xoffset, yoffset);
     });
 }

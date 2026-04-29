@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include <functional>
 #include <vector2.hpp>
 #include <vector3.hpp>
 #include <vector>
@@ -12,16 +12,23 @@ struct UiVertex {
 };
 
 class UiElement {
-    public:
+    protected:
         Vector2 position;
         Vector2 size;
         Vector3 color;
         Vector2 UV;
-        float uvWidth;
-        float uvHeight;
 
-        UiElement(const Vector2& position, const Vector2& size, const Vector3& color, const std::string& uvName);
+        std::function<void()> updateCallback = []() {};
+
+    public:
+        inline UiElement() : position(0.0f), size(100.0f), color(0.8f), UV(0, 0) {};
         virtual ~UiElement() = default;
         virtual void generateQuads(std::vector<UiVertex>& vertexData);
-        // virtual void update();
+
+        void update();
+        void setPosition(const Vector2 position);
+        void setSize(const Vector2 size);
+        void setColor(const Vector3 color);
+        void setUV(const Vector2 UV);
+        void setUpdate(const std::function<void()>& callback);
 };

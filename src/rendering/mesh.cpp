@@ -1,6 +1,8 @@
 #include <mat4.hpp>
+#include <material.hpp>
 #include <mesh.hpp>
-#include <shader.hpp>
+#include <renderer.hpp>
+#include <ressources.hpp>
 #include <vector2.hpp>
 #include <vector3.hpp>
 
@@ -12,29 +14,13 @@
 #include <vector>
 
 Mesh::Mesh(const std::string& filePath) : position(Vector3()), scale(Vector3(20)) {
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
     parseOBJ(filePath);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, UV));
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-    glEnableVertexAttribArray(2);
-
-    glBindVertexArray(0);
+    meshID = Renderer::get().addGPUMesh(vertexData, indices);
+    material = Material{Ressources::pbrShader};
 }
 
 Mesh::~Mesh() {
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+    Renderer::get().deleteGPUMesh(meshID);
 }
 
 void Mesh::parseOBJ(const std::string& filePath) {
@@ -46,8 +32,7 @@ void Mesh::parseOBJ(const std::string& filePath) {
     std::vector<Vector3> vertices;
     std::vector<Vector3> normals;
     std::vector<Vector2> UVs;
-    std::vector<Vertex> vertexData;
-    std::vector<unsigned int> indices;
+
     int vertexCount = 0;
 
     while (std::getline(file, data)) {
@@ -82,13 +67,6 @@ void Mesh::parseOBJ(const std::string& filePath) {
             }
         }
     }
-    indicesCount = indices.size();
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexData.size(), vertexData.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_DRAW);
 }
 
 Mat4 Mesh::modelMatrice() {

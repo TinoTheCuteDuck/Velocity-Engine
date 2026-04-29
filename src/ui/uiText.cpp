@@ -1,21 +1,14 @@
 #include <engineState.hpp>
 #include <uiText.hpp>
 
-UiText::UiText(const Vector2& position, const Vector3& color, const std::string& text, const float textSize) : UiElement(position, Vector2(), color, ""), text(text), textSize(textSize) {
-}
-UiText::UiText(const Vector2& position, const Vector3& color, std::function<std::string()> textProvider, const float textSize) : UiElement(position, Vector2(), color, ""), textProvider(textProvider), textSize(textSize) {
-}
-
 void UiText::generateQuads(std::vector<UiVertex>& vertexData) {
     int width = EngineState::viewport.width;
     int height = EngineState::viewport.height;
+    float charSpacing = textSize * 0.5f;
 
-    if (textProvider) {
-        text = textProvider();
-    }
-    for (int i = 0; i < text.size(); i++) {
-        float leftX = ((position.x + i * textSize) / width) * 2 - 1;
-        float rightX = ((position.x + i * textSize + textSize) / width) * 2 - 1;
+    for (int i = 0; i < (int)text.size(); i++) {
+        float leftX = ((position.x + i * charSpacing) / width) * 2 - 1;
+        float rightX = ((position.x + i * charSpacing + textSize) / width) * 2 - 1;
         float topY = -((position.y / height) * 2 - 1);
         float bottomY = -(((position.y + textSize) / height) * 2 - 1);
 
@@ -36,4 +29,9 @@ void UiText::generateQuads(std::vector<UiVertex>& vertexData) {
         vertexData.push_back(UiVertex{Vector2(rightX, topY), color, Vector2(uvRight, uvTop)});
         vertexData.push_back(UiVertex{Vector2(leftX, topY), color, Vector2(uvLeft, uvTop)});
     }
+}
+
+void UiText::setText(const std::string& text, float textSize) {
+    this->text = text;
+    this->textSize = textSize;
 }
