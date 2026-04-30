@@ -93,9 +93,10 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/math
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/physics
     ${CMAKE_CURRENT_SOURCE_DIR}/include/rendering
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/math
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/stb_image
 )
 

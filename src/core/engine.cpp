@@ -1,16 +1,21 @@
 #include <engine.hpp>
+
 #include <engineState.hpp>
 #include <engineUi.hpp>
-#include <input.hpp>
 #include <ressources.hpp>
-#include <time.hpp>
 #include <uiManager.hpp>
+#include <vector3.hpp>
+
+#include <input.hpp>
+#include <renderer.hpp>
+#include <time.hpp>
 
 Engine::Engine()
-    : window(EngineState::viewport.width, EngineState::viewport.height, EngineState::windowSettings.title),
-      camera(Vector3(0, 2, 3)),
-      scene(Scene()),
-      renderer(Renderer()) {
+    : window(EngineState::viewport.width, EngineState::viewport.height, EngineState::windowSettings.title, false),
+      renderer(),
+      uiManager(),
+      scene(),
+      camera(Vector3(20, 15, 30)) {
 
     init();
 }
@@ -20,16 +25,17 @@ void Engine::init() {
         EngineState::viewport.width = width;
         EngineState::viewport.height = height;
     };
-    setupUi();
+
+    Renderer::setInstance(renderer);
+    UiManager::setInstance(uiManager);
+    Input::init(window.getWindow());
 
     Ressources::pbrShader = renderer.addShader(ASSETS_PATH "shaders/scene/vertexShader.vert", ASSETS_PATH "shaders/scene/fragmentShader.frag");
     Ressources::uiShader = renderer.addShader(ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag");
     Ressources::uiTexture = renderer.addTexture(ASSETS_PATH "textures/DejaVu Sans Mono.png", GL_REPEAT, GL_NEAREST, false);
 
-    Renderer::setInstance(renderer);
-    Input::init(window.getWindow());
-    UiManager::init();
-
+    setupUi();
+    uiManager.load();
     scene.load();
 }
 
@@ -37,23 +43,25 @@ void Engine::run() {
     while (!window.shouldClose()) {
         update();
         render();
-        window.handleEvents();
+        window.pollEvents();
     }
     shutdown();
 }
 
 void Engine::update() {
     updateTime();
-    UiManager::update();
     camera.update();
+
     Input::update();
+    uiManager.update();
+    scene.update();
 }
 
 void Engine::render() {
     renderer.startFrame(camera);
 
     scene.submit();
-    UiManager::submit();
+    uiManager.submit();
 
     renderer.endFrame();
 }

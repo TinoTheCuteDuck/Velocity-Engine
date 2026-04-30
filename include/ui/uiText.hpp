@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
 #include <uiElement.hpp>
+
+#include <string>
 #include <vector>
 
 class UiText : public UiElement {

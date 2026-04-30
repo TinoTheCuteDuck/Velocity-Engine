@@ -24,9 +24,14 @@ struct EngineConfig {
         float farPlane = 5000.0f;
 };
 
+struct EnginePhysics {
+        float gravity = -9.81f;
+};
+
 namespace EngineState {
 inline Viewport viewport;
 inline FrameState frame;
 inline EngineConfig settings;
 inline WindowConfig windowSettings;
+inline EnginePhysics enginePhysics;
 } // namespace EngineState

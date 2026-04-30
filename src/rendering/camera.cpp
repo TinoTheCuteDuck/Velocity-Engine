@@ -1,7 +1,10 @@
-#include <GLFW/glfw3.h>
 #include <camera.hpp>
+
+#include <GLFW/glfw3.h>
 #include <engineState.hpp>
 #include <input.hpp>
+
+#include <mat4.hpp>
 #include <vector3.hpp>
 #include <vector4.hpp>
 

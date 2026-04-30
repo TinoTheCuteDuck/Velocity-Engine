@@ -1,7 +1,7 @@
 #include <GLFW/glfw3.h>
-#include <cstring>
 #include <input.hpp>
-#include <vector2.hpp>
+
+#include <cstring>
 
 void Input::init(GLFWwindow* window) {
     glfwWindow = window;

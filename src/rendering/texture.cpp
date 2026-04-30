@@ -1,8 +1,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <stb_image.h>
-#include <stdexcept>
 #include <texture.hpp>
+
+#include <stdexcept>
 
 Texture::Texture(const std::string& filePath, GLenum wrapMode = GL_REPEAT, GLenum filterMode = GL_LINEAR, bool generateMipmaps = false) {
     glGenTextures(1, &texture);

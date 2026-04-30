@@ -1,6 +1,9 @@
-#include <GLFW/glfw3.h>
-#include <stdexcept>
 #include <window.hpp>
+
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
+
+#include <stdexcept>
 
 Window::Window(const int width, const int height, const std::string& title, bool vsync) {
     if (!glfwInit()) {
@@ -26,11 +29,6 @@ Window::Window(const int width, const int height, const std::string& title, bool
             win->onResize(width, height);
     });
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        glfwTerminate();
-        throw std::runtime_error("Glad has failed to initialize!");
-    }
-
     if (!vsync) {
         glfwSwapInterval(0);
     }
@@ -40,7 +38,7 @@ Window::~Window() {
     glfwTerminate();
 }
 
-void Window::handleEvents() {
+void Window::pollEvents() {
     glfwSwapBuffers(window);
     glfwPollEvents();
 }

@@ -8,7 +8,7 @@ in vec3 Normal;
 void main() {
     float ambientStrength = 0.3;
     vec3 lightColor = vec3(0.8, 0.8, 0.8);
-    vec3 lightPos = vec3(2.0, 4.0, 3.0);
+    vec3 lightPos = vec3(2.0, 10.0, 3.0);
 
     vec3 ambient = ambientStrength * lightColor;
 

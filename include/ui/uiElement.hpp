@@ -1,8 +1,9 @@
 #pragma once
 
-#include <functional>
 #include <vector2.hpp>
 #include <vector3.hpp>
+
+#include <functional>
 #include <vector>
 
 struct UiVertex {

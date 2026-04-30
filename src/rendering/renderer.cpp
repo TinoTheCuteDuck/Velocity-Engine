@@ -1,32 +1,30 @@
-#include "texture.hpp"
+#include <renderer.hpp>
+
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
+
 #include <engineState.hpp>
 #include <mesh.hpp>
-#include <renderer.hpp>
 #include <ressources.hpp>
 #include <shader.hpp>
+#include <texture.hpp>
+#include <uiElement.hpp>
+
 #include <stdexcept>
 #include <tuple>
-#include <uiElement.hpp>
 #include <utility>
 
 Renderer::Renderer() {
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        throw std::runtime_error("Glad has failed to initialize!");
+    }
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     commands.reserve(1024);
-}
-
-Renderer& Renderer::get() {
-    if (!instance) {
-        throw std::runtime_error("Renderer not initialized!");
-    }
-    return *instance;
-}
-
-void Renderer::setInstance(Renderer& renderer) {
-    instance = &renderer;
 }
 
 unsigned int Renderer::addGPUMesh(const std::vector<Vertex>& vertexData, const std::vector<unsigned int>& indices) {
@@ -54,15 +52,11 @@ unsigned int Renderer::addGPUMesh(const std::vector<Vertex>& vertexData, const s
 
     glBindVertexArray(0);
 
-    meshes.emplace(std::make_pair(currentMeshID, GPUMesh{VAO, VBO, EBO, indices.size()}));
+    meshes.emplace(std::piecewise_construct, std::forward_as_tuple(currentMeshID), std::forward_as_tuple(VAO, VBO, EBO, indices.size()));
     return currentMeshID++;
 }
 
 void Renderer::deleteGPUMesh(const unsigned int meshID) {
-    GPUMesh& mesh = meshes.at(meshID);
-    glDeleteVertexArrays(1, &mesh.VAO);
-    glDeleteBuffers(1, &mesh.VBO);
-    glDeleteBuffers(1, &mesh.EBO);
     meshes.erase(meshID);
 }
 
@@ -74,6 +68,8 @@ void Renderer::changeGPUMeshData(const unsigned int meshID, const std::vector<Ve
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+    mesh.vertexCount = indices.size();
 
     glBindVertexArray(0);
 }
@@ -99,15 +95,8 @@ unsigned int Renderer::addGPUUiMesh(const std::vector<UiVertex>& vertexData) {
 
     glBindVertexArray(0);
 
-    meshes.emplace(std::make_pair(currentMeshID, GPUMesh{VAO, VBO, 0, vertexData.size()}));
+    meshes.emplace(std::piecewise_construct, std::forward_as_tuple(currentMeshID), std::forward_as_tuple(VAO, VBO, 0, vertexData.size()));
     return currentMeshID++;
-}
-
-void Renderer::deleteGPUUiMesh(const unsigned int meshID) {
-    GPUMesh& mesh = meshes.at(meshID);
-    glDeleteVertexArrays(1, &mesh.VAO);
-    glDeleteBuffers(1, &mesh.VBO);
-    meshes.erase(meshID);
 }
 
 void Renderer::changeGPUUiMeshData(const unsigned int meshID, const std::vector<UiVertex>& vertexData) {
@@ -115,6 +104,8 @@ void Renderer::changeGPUUiMeshData(const unsigned int meshID, const std::vector<
     glBindVertexArray(mesh.VAO);
     glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(UiVertex) * vertexData.size(), vertexData.data(), GL_DYNAMIC_DRAW);
+
+    mesh.vertexCount = vertexData.size();
 
     glBindVertexArray(0);
 }
@@ -183,4 +174,15 @@ void Renderer::endFrame() {
     if (err != GL_NO_ERROR) {
         std::cout << "GL ERROR: " << err << std::endl;
     }
+}
+
+Renderer& Renderer::get() {
+    if (!instance) {
+        throw std::runtime_error("Renderer not initialized!");
+    }
+    return *instance;
+}
+
+void Renderer::setInstance(Renderer& renderer) {
+    instance = &renderer;
 }

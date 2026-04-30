@@ -1,10 +1,12 @@
 #pragma once
 
-#include <mat4.hpp>
 #include <material.hpp>
-#include <string>
+
+#include <mat4.hpp>
 #include <vector2.hpp>
 #include <vector3.hpp>
+
+#include <string>
 #include <vector>
 
 struct Vertex {
@@ -24,7 +26,7 @@ class Mesh {
         std::vector<Vertex> vertexData;
         std::vector<unsigned int> indices;
 
-        Mesh(const std::string& filePath);
+        Mesh(const std::string& filePath, Vector3 position, float scale);
         ~Mesh();
 
         Mat4 modelMatrice();

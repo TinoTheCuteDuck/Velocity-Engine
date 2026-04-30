@@ -1,24 +1,34 @@
 #pragma once
 
-#include <camera.hpp>
 #include <glad/glad.h>
+
+#include <camera.hpp>
 #include <material.hpp>
-#include <optional>
 #include <shader.hpp>
 #include <texture.hpp>
 #include <uiElement.hpp>
+
+#include <optional>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
 struct RenderCall {
         unsigned int meshID;
-        Material& material;
+        Material material;
         std::optional<Mat4> transform;
 };
 
 struct GPUMesh {
         unsigned int VAO, VBO, EBO;
         size_t vertexCount;
+        ~GPUMesh() {
+            glDeleteVertexArrays(1, &VAO);
+            glDeleteBuffers(1, &VBO);
+            if (EBO != 0) {
+                glDeleteBuffers(1, &EBO);
+            }
+        }
 };
 
 struct Vertex;
@@ -38,7 +48,6 @@ class Renderer {
         void changeGPUMeshData(const unsigned int meshID, const std::vector<Vertex>& vertexData, const std::vector<unsigned int>& indices);
 
         unsigned int addGPUUiMesh(const std::vector<UiVertex>& vertexData);
-        void deleteGPUUiMesh(const unsigned int meshID);
         void changeGPUUiMeshData(const unsigned int meshID, const std::vector<UiVertex>& vertexData);
 
         unsigned int addShader(const std::string& vertexPath, const std::string& fragmentPath);
@@ -49,6 +58,7 @@ class Renderer {
 
     private:
         inline static Renderer* instance = nullptr;
+
         std::vector<RenderCall> commands;
         std::unordered_map<unsigned int, GPUMesh> meshes;
         std::unordered_map<unsigned int, Shader> shaders;

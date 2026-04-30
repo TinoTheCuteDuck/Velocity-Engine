@@ -3,6 +3,7 @@
 #include <camera.hpp>
 #include <renderer.hpp>
 #include <scene.hpp>
+#include <uiManager.hpp>
 #include <window.hpp>
 
 class Engine {
@@ -19,7 +20,8 @@ class Engine {
 
     private:
         Window window;
-        Camera camera;
-        Scene scene;
         Renderer renderer;
+        UiManager uiManager;
+        Scene scene;
+        Camera camera;
 };

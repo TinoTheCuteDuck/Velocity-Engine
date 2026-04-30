@@ -1,19 +1,20 @@
-#include <mat4.hpp>
-#include <material.hpp>
 #include <mesh.hpp>
+
+#include <material.hpp>
 #include <renderer.hpp>
 #include <ressources.hpp>
+
+#include <mat4.hpp>
 #include <vector2.hpp>
 #include <vector3.hpp>
 
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-Mesh::Mesh(const std::string& filePath) : position(Vector3()), scale(Vector3(20)) {
+Mesh::Mesh(const std::string& filePath, Vector3 position, float scale = 1) : position(position), scale(Vector3(scale)) {
     parseOBJ(filePath);
     meshID = Renderer::get().addGPUMesh(vertexData, indices);
     material = Material{Ressources::pbrShader};
