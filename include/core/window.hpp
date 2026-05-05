@@ -1,20 +1,30 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <functional>
+#include <vector2.hpp>
+
 #include <string>
 
 class Window {
-    private:
-        GLFWwindow* window;
-
     public:
-        Window(const int width, const int height, const std::string& title, bool vsync = false);
+        Window();
         ~Window();
 
         void pollEvents();
         bool shouldClose();
 
+        bool getVsync();
+        Vector2 getWindowSize();
         GLFWwindow* getWindow();
-        std::function<void(int, int)> onResize;
+        std::string& getTitle();
+
+        void setVsync(bool enabled);
+        void setWindowSize(int width, int height);
+
+    private:
+        bool vsync = false;
+        std::string title = "Velocity Engine";
+        Vector2 windowSize = Vector2(1920, 1080);
+
+        GLFWwindow* window;
 };

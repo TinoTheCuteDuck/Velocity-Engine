@@ -16,7 +16,7 @@
 struct RenderCall {
         unsigned int meshID;
         Material material;
-        std::optional<Mat4> transform;
+        std::optional<Mat4> transform = std::nullopt;
 };
 
 struct GPUMesh {
@@ -35,12 +35,9 @@ struct Vertex;
 
 class Renderer {
     public:
-        static Renderer& get();
-        static void setInstance(Renderer& renderer);
-
         Renderer();
         void renderQueue(RenderCall cmd);
-        void startFrame(Camera& camera);
+        void startFrame();
         void endFrame();
 
         unsigned int addGPUMesh(const std::vector<Vertex>& vertexData, const std::vector<unsigned int>& indices);
@@ -56,8 +53,11 @@ class Renderer {
         unsigned int addTexture(const std::string& filepath, GLenum wrapMode, GLenum filterMode, bool generateMipmaps);
         void deleteTexture(const unsigned int textureID);
 
+        void enableWireframe(bool state);
+        bool getWireframeEnabled();
+
     private:
-        inline static Renderer* instance = nullptr;
+        bool wireframeEnabled = false;
 
         std::vector<RenderCall> commands;
         std::unordered_map<unsigned int, GPUMesh> meshes;

@@ -5,31 +5,29 @@
 
 class Input {
     private:
-        inline static GLFWwindow* glfwWindow;
-
-        inline static bool currentKeys[GLFW_KEY_LAST + 1];
-        inline static bool previousKeys[GLFW_KEY_LAST + 1];
-        inline static bool currentMouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
-        inline static bool previousMouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
-        inline static Vector2 mousePosition;
-        inline static Vector2 previousMousePosition;
-        inline static Vector2 mouseDelta;
-        inline static Vector2 scrollOffset;
+        bool currentKeys[GLFW_KEY_LAST + 1];
+        bool previousKeys[GLFW_KEY_LAST + 1];
+        bool currentMouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
+        bool previousMouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
+        Vector2 mousePosition;
+        Vector2 previousMousePosition;
+        Vector2 mouseDelta;
+        Vector2 scrollOffset;
 
     public:
-        static void init(GLFWwindow* window);
-        static void update();
+        void init();
+        void update();
 
-        static bool isKeyHeld(int key);
-        static bool isKeyPressed(int key);
-        static bool isKeyReleased(int key);
-        static bool isButtonHeld(int button);
-        static bool isButtonPressed(int button);
-        static bool isButtonReleased(int button);
+        bool isKeyHeld(int key);
+        bool isKeyPressed(int key);
+        bool isKeyReleased(int key);
+        bool isButtonHeld(int button);
+        bool isButtonPressed(int button);
+        bool isButtonReleased(int button);
 
-        static Vector2 getMouseDelta();
-        static Vector2 getMousePos();
-        static Vector2 getScrollOffset();
+        Vector2 getMouseDelta();
+        Vector2 getMousePos();
+        Vector2 getScrollOffset();
 
-        static void setInputMode(int mode, int value);
+        void setInputMode(int mode, int value);
 };

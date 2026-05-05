@@ -1,24 +1,29 @@
-#include <engineState.hpp>
+#include <engine.hpp>
 
 #include <engineUi.hpp>
+#include <uiButton.hpp>
 #include <uiElement.hpp>
 #include <uiManager.hpp>
 #include <uiText.hpp>
+
+#include <input.hpp>
+#include <renderer.hpp>
 #include <vector2.hpp>
+#include <vector3.hpp>
 
 #include <memory>
 
 void setupUi() {
-    int width = EngineState::viewport.width;
-    int height = EngineState::viewport.height;
-    UiManager& manager = UiManager::get();
+    int width = Engine::get().window.getWindowSize().x;
+    int height = Engine::get().window.getWindowSize().x;
+    UiManager& manager = Engine::get().uiManager;
 
     UiText* fpsDisplay = static_cast<UiText*>(manager.addUiElement(std::make_unique<UiText>()));
     fpsDisplay->setPosition(Vector2(10));
     fpsDisplay->setText("FPS: 0", 32);
     fpsDisplay->setColor(1.0f);
     fpsDisplay->setUpdate([fpsDisplay]() {
-        fpsDisplay->setText("FPS: " + std::to_string(EngineState::frame.FPS), 32);
+        fpsDisplay->setText("FPS: " + std::to_string(Engine::get().time.getFPS()), 32);
     });
 
     UiText* dtDisplay = static_cast<UiText*>(manager.addUiElement(std::make_unique<UiText>()));
@@ -26,7 +31,28 @@ void setupUi() {
     dtDisplay->setText("DT: 0ms", 32);
     dtDisplay->setColor(1.0f);
     dtDisplay->setUpdate([dtDisplay]() {
-        dtDisplay->setText("DT: " + std::to_string(EngineState::frame.dt) + "ms", 32);
+        dtDisplay->setText("DT: " + std::to_string(Engine::get().time.getDt()) + "ms", 32);
+    });
+
+    UiText* wireFrameButtonLabel = static_cast<UiText*>(manager.addUiElement(std::make_unique<UiText>()));
+    wireFrameButtonLabel->setPosition(Vector2((float)width / 2 - 48, 84));
+    wireFrameButtonLabel->setText("Enable Wireframe", 16.0f);
+
+    UiButton* wireFrameButton = static_cast<UiButton*>(manager.addUiElement(std::make_unique<UiButton>()));
+    wireFrameButton->setPosition(Vector2((float)width / 2, 100));
+    wireFrameButton->setColor(Vector3(0.8f, 0, 0));
+    wireFrameButton->setSize(Vector2(40));
+    wireFrameButton->setUpdate([wireFrameButton]() {
+        if (wireFrameButton->isPressed()) {
+            Renderer& renderer = Engine::get().renderer;
+            if (renderer.getWireframeEnabled()) {
+                renderer.enableWireframe(false);
+                wireFrameButton->setColor(Vector3(0.8f, 0, 0));
+            } else {
+                renderer.enableWireframe(true);
+                wireFrameButton->setColor(Vector3(0, 0, 0.8f));
+            }
+        }
     });
 
     UiElement* topBar = manager.addUiElement(std::make_unique<UiElement>());

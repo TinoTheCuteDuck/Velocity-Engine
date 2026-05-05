@@ -1,35 +1,41 @@
 #include <GLFW/glfw3.h>
+#include <engine.hpp>
 #include <input.hpp>
 
 #include <cstring>
 
-void Input::init(GLFWwindow* window) {
-    glfwWindow = window;
+void Input::init() {
+    GLFWwindow* window = Engine::get().window.getWindow();
+
     std::memset(currentKeys, false, sizeof(currentKeys));
     std::memset(previousKeys, false, sizeof(previousKeys));
     std::memset(currentMouseButtons, false, sizeof(currentMouseButtons));
     std::memset(previousMouseButtons, false, sizeof(previousMouseButtons));
 
     glfwSetKeyCallback(window, []([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) {
+        Input& input = Engine::get().input;
         if (action == GLFW_PRESS)
-            currentKeys[key] = true;
+            input.currentKeys[key] = true;
         if (action == GLFW_RELEASE)
-            currentKeys[key] = false;
+            input.currentKeys[key] = false;
     });
 
     glfwSetMouseButtonCallback(window, []([[maybe_unused]] GLFWwindow* window, int button, int action, [[maybe_unused]] int mods) {
+        Input& input = Engine::get().input;
         if (action == GLFW_PRESS)
-            currentMouseButtons[button] = true;
+            input.currentMouseButtons[button] = true;
         if (action == GLFW_RELEASE)
-            currentMouseButtons[button] = false;
+            input.currentMouseButtons[button] = false;
     });
 
     glfwSetCursorPosCallback(window, []([[maybe_unused]] GLFWwindow* window, double xpos, double ypos) {
-        mousePosition = Vector2(xpos, ypos);
+        Input& input = Engine::get().input;
+        input.mousePosition = Vector2(xpos, ypos);
     });
 
     glfwSetScrollCallback(window, []([[maybe_unused]] GLFWwindow* window, double xoffset, double yoffset) {
-        scrollOffset = Vector2(xoffset, yoffset);
+        Input& input = Engine::get().input;
+        input.scrollOffset = Vector2(xoffset, yoffset);
     });
 }
 
@@ -82,7 +88,9 @@ Vector2 Input::getScrollOffset() {
 }
 
 void Input::setInputMode(int mode, int value) {
-    glfwSetInputMode(glfwWindow, mode, value);
+    GLFWwindow* window = Engine::get().window.getWindow();
+
+    glfwSetInputMode(window, mode, value);
     previousMousePosition = mousePosition;
 }
 

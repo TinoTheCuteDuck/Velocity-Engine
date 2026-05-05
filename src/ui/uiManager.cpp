@@ -1,7 +1,7 @@
 #include <uiManager.hpp>
 
+#include <engine.hpp>
 #include <material.hpp>
-#include <renderer.hpp>
 #include <ressources.hpp>
 #include <uiElement.hpp>
 
@@ -14,7 +14,7 @@ UiManager::UiManager() {
 
 void UiManager::load() {
     buildGeometry();
-    meshID = Renderer::get().addGPUUiMesh(vertexData);
+    meshID = Engine::get().renderer.addGPUUiMesh(vertexData);
     material = Material{Ressources::uiShader};
     material.textures["uiTexture"] = Ressources::uiTexture;
 }
@@ -24,24 +24,13 @@ void UiManager::update() {
         element->update();
     }
     buildGeometry();
-    Renderer::get().changeGPUUiMeshData(meshID, vertexData);
+    Engine::get().renderer.changeGPUUiMeshData(meshID, vertexData);
 }
 
 void UiManager::submit() {
-    Renderer::get().renderQueue(RenderCall{
+    Engine::get().renderer.renderQueue(RenderCall{
         meshID,
         material});
-}
-
-void UiManager::setInstance(UiManager& uiManager) {
-    instance = &uiManager;
-}
-
-UiManager& UiManager::get() {
-    if (!instance) {
-        throw std::runtime_error("UiManager not initialized!");
-    }
-    return *instance;
 }
 
 UiElement* UiManager::addUiElement(std::unique_ptr<UiElement> element) {

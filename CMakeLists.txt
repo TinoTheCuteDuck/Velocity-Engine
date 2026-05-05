@@ -22,7 +22,7 @@ if (MSVC)
     add_compile_options(/arch:AVX2)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 else()
-    add_compile_options(-Wall -Wextra)
+
 endif()
 
 # Project naming
@@ -90,6 +90,11 @@ if (WIN32)
 endif()
 
 # Include directories
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdParty
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/stb_image
+)
+
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/core
@@ -97,14 +102,13 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include/physics
     ${CMAKE_CURRENT_SOURCE_DIR}/include/rendering
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui
-    ${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/stb_image
 )
 
 target_compile_options(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Release>:-O3 -DNDEBUG -march=native -flto>
 )
 target_compile_options(${PROJECT_NAME} PRIVATE
-    $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra>
+    $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Werror>
 )
 
 # Link the libraries (just add their name to the list)

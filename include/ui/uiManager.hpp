@@ -8,9 +8,6 @@
 
 class UiManager {
     public:
-        static UiManager& get();
-        static void setInstance(UiManager& uiManager);
-
         unsigned int meshID;
         Material material;
 
@@ -22,7 +19,6 @@ class UiManager {
         UiElement* addUiElement(std::unique_ptr<UiElement> element);
 
     private:
-        inline static UiManager* instance = nullptr;
         void buildGeometry();
 
         std::vector<UiVertex> vertexData;

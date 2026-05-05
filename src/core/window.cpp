@@ -2,10 +2,11 @@
 
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <vector2.hpp>
 
 #include <stdexcept>
 
-Window::Window(const int width, const int height, const std::string& title, bool vsync) {
+Window::Window() {
     if (!glfwInit()) {
         throw std::runtime_error("GLFW failed to initialize!");
     }
@@ -14,7 +15,7 @@ Window::Window(const int width, const int height, const std::string& title, bool
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+    window = glfwCreateWindow(windowSize.x, windowSize.y, title.c_str(), NULL, NULL);
     if (!window) {
         glfwTerminate();
         throw std::runtime_error("The window failed to initialize!");
@@ -23,15 +24,12 @@ Window::Window(const int width, const int height, const std::string& title, bool
     glfwMakeContextCurrent(window);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+        Window* win = static_cast<Window*>(glfwGetWindowUserPointer(window));
         glViewport(0, 0, width, height);
-        Window* win = (Window*)glfwGetWindowUserPointer(window);
-        if (win->onResize)
-            win->onResize(width, height);
+        win->setWindowSize(width, height);
     });
 
-    if (!vsync) {
-        glfwSwapInterval(0);
-    }
+    glfwSwapInterval(vsync ? 1 : 0);
 }
 
 Window::~Window() {
@@ -49,4 +47,24 @@ bool Window::shouldClose() {
 
 GLFWwindow* Window::getWindow() {
     return window;
+}
+
+bool Window::getVsync() {
+    return vsync;
+}
+
+std::string& Window::getTitle() {
+    return title;
+}
+
+Vector2 Window::getWindowSize() {
+    return windowSize;
+}
+
+void Window::setVsync(bool enabled) {
+    glfwSwapInterval(enabled ? 1 : 0);
+}
+
+void Window::setWindowSize(int width, int height) {
+    windowSize = Vector2(width, height);
 }

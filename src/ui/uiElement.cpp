@@ -1,9 +1,10 @@
-#include <engineState.hpp>
+#include <engine.hpp>
 #include <uiElement.hpp>
 
 void UiElement::generateQuads(std::vector<UiVertex>& vertexData) {
-    const int width = EngineState::viewport.width;
-    const int height = EngineState::viewport.height;
+    Window& window = Engine::get().window;
+    const int width = window.getWindowSize().x;
+    const int height = window.getWindowSize().y;
 
     float leftX = (position.x / width) * 2 - 1;
     float rightX = ((position.x + size.x) / width) * 2 - 1;

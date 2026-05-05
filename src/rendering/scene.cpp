@@ -1,5 +1,6 @@
 #include <scene.hpp>
 
+#include <engine.hpp>
 #include <mesh.hpp>
 #include <renderer.hpp>
 #include <rigidBody.hpp>
@@ -12,20 +13,8 @@ Scene::Scene() {
 
 void Scene::load() {
     add(std::make_unique<GameObject>(
-        std::make_unique<Mesh>(ASSETS_PATH "meshes/stanford-bunny.obj", Vector3(0, 100, 0), 20),
-        std::make_unique<RigidBody>(Vector3(0, 100, 0))));
-    add(std::make_unique<GameObject>(
-        std::make_unique<Mesh>(ASSETS_PATH "meshes/stanford-bunny.obj", Vector3(10, 80, 0), 20),
-        std::make_unique<RigidBody>(Vector3(10, 80, 0))));
-    add(std::make_unique<GameObject>(
-        std::make_unique<Mesh>(ASSETS_PATH "meshes/stanford-bunny.obj", Vector3(20, 60, 0), 20),
-        std::make_unique<RigidBody>(Vector3(20, 60, 0))));
-    add(std::make_unique<GameObject>(
-        std::make_unique<Mesh>(ASSETS_PATH "meshes/stanford-bunny.obj", Vector3(30, 40, 0), 20),
-        std::make_unique<RigidBody>(Vector3(30, 40, 0))));
-    add(std::make_unique<GameObject>(
-        std::make_unique<Mesh>(ASSETS_PATH "meshes/stanford-bunny.obj", Vector3(40, 20, 0), 20),
-        std::make_unique<RigidBody>(Vector3(40, 20, 0))));
+        std::make_unique<Mesh>(ASSETS_PATH "meshes/stanford-bunny.obj", Vector3(0, 20, 0), 20),
+        std::make_unique<RigidBody>(Vector3(0, 20, 0))));
     add(std::make_unique<GameObject>(
         std::make_unique<Mesh>(ASSETS_PATH "meshes/Plane.obj", Vector3(), 1),
         nullptr));
@@ -42,7 +31,7 @@ void Scene::add(std::unique_ptr<GameObject> gameObject) {
 }
 
 void Scene::submit() {
-    Renderer& renderer = Renderer::get();
+    Renderer& renderer = Engine::get().renderer;
     for (std::unique_ptr<GameObject>& obj : gameObjects) {
         renderer.renderQueue(RenderCall{
             obj->mesh->meshID,

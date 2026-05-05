@@ -1,6 +1,6 @@
-#include <time.hpp>
+#include <engineTime.hpp>
 
-void Time::update() {
+void EngineTime::update() {
     frames += 1;
 
     const time_point now = clockVariant::now();
@@ -20,14 +20,14 @@ void Time::update() {
     }
 }
 
-float Time::getDt() {
+float EngineTime::getDt() {
     return dt;
 }
 
-int Time::getFPS() {
+int EngineTime::getFPS() {
     return fps;
 }
 
-float Time::getTotal() {
+float EngineTime::getTotal() {
     return totalTime;
 }

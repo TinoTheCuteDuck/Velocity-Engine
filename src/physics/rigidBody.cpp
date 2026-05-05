@@ -1,4 +1,4 @@
-#include <engineState.hpp>
+#include <engine.hpp>
 #include <rigidBody.hpp>
 
 #include <assert.h>
@@ -11,18 +11,32 @@ RigidBody::RigidBody(Vector3 position)
 }
 
 void RigidBody::update() {
-    float dt = EngineState::frame.dt;
+    Engine& engine = Engine::get();
+    float dt = engine.time.getDt();
 
-    Vector3 gravity = Vector3(0, EngineState::enginePhysics.gravity, 0);
-    Vector3 force = gravity * mass;
+    Vector3 gravityVec3 = Vector3(0, gravity, 0);
+    Vector3 force = gravityVec3 * mass;
 
     assert(mass > 0);
     acceleration = force / mass;
     velocity += acceleration * dt;
+    velocity *= pow(airResistance, dt * 20.0f);
     position += velocity * dt;
 
     if (position.y <= 0.5) {
         position.y = 0.5;
         velocity.y = -velocity.y * 0.6f;
     }
+}
+
+void RigidBody::applyImpulse(Vector3 impulse) {
+    velocity += impulse;
+}
+
+float RigidBody::getGravity() {
+    return gravity;
+}
+
+float RigidBody::getAirResistance() {
+    return airResistance;
 }

@@ -1,7 +1,7 @@
 #include <mesh.hpp>
 
+#include <engine.hpp>
 #include <material.hpp>
-#include <renderer.hpp>
 #include <ressources.hpp>
 
 #include <mat4.hpp>
@@ -16,12 +16,12 @@
 
 Mesh::Mesh(const std::string& filePath, Vector3 position, float scale = 1) : position(position), scale(Vector3(scale)) {
     parseOBJ(filePath);
-    meshID = Renderer::get().addGPUMesh(vertexData, indices);
+    meshID = Engine::get().renderer.addGPUMesh(vertexData, indices);
     material = Material{Ressources::pbrShader};
 }
 
 Mesh::~Mesh() {
-    Renderer::get().deleteGPUMesh(meshID);
+    Engine::get().renderer.deleteGPUMesh(meshID);
 }
 
 void Mesh::parseOBJ(const std::string& filePath) {

@@ -13,7 +13,7 @@ struct UiVertex {
 };
 
 class UiElement {
-    protected:
+    public:
         Vector2 position;
         Vector2 size;
         Vector3 color;

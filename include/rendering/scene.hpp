@@ -1,5 +1,7 @@
 #pragma once
 
+#include <camera.hpp>
+#include <input.hpp>
 #include <mesh.hpp>
 #include <rigidBody.hpp>
 

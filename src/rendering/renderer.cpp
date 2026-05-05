@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
-#include <engineState.hpp>
+#include <engine.hpp>
 #include <mesh.hpp>
 #include <ressources.hpp>
 #include <shader.hpp>
@@ -132,12 +132,16 @@ void Renderer::renderQueue(RenderCall cmd) {
     commands.emplace_back(std::move(cmd));
 }
 
-void Renderer::startFrame(Camera& camera) {
+void Renderer::startFrame() {
+    Camera& camera = Engine::get().camera;
+    Window& window = Engine::get().window;
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     Shader& shader = shaders.at(Ressources::pbrShader);
     shader.use();
 
-    Mat4 projection = Mat4::projection(EngineState::settings.FOV, (float)EngineState::viewport.width / (float)EngineState::viewport.height, EngineState::settings.nearPlane, EngineState::settings.farPlane);
+    Mat4 projection = Mat4::projection(camera.getFOV(), (float)window.getWindowSize().x / (float)window.getWindowSize().y, camera.getNearPlane(), camera.getFarPlane());
     shader.setMat4("projection", projection);
     shader.setMat4("view", camera.getViewMatrix());
 }
@@ -176,13 +180,11 @@ void Renderer::endFrame() {
     }
 }
 
-Renderer& Renderer::get() {
-    if (!instance) {
-        throw std::runtime_error("Renderer not initialized!");
-    }
-    return *instance;
+void Renderer::enableWireframe(bool state) {
+    glPolygonMode(GL_FRONT_AND_BACK, state ? GL_LINE : GL_FILL);
+    wireframeEnabled = state;
 }
 
-void Renderer::setInstance(Renderer& renderer) {
-    instance = &renderer;
+bool Renderer::getWireframeEnabled() {
+    return wireframeEnabled;
 }

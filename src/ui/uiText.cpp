@@ -1,9 +1,10 @@
-#include <engineState.hpp>
+#include <engine.hpp>
 #include <uiText.hpp>
 
 void UiText::generateQuads(std::vector<UiVertex>& vertexData) {
-    int width = EngineState::viewport.width;
-    int height = EngineState::viewport.height;
+    Window& window = Engine::get().window;
+    int width = window.getWindowSize().x;
+    int height = window.getWindowSize().y;
     float charSpacing = textSize * 0.5f;
 
     for (int i = 0; i < (int)text.size(); i++) {
