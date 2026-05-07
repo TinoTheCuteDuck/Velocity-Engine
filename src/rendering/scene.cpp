@@ -21,6 +21,7 @@ void Scene::load() {
 }
 
 void Scene::update() {
+    pickObject(Engine::get().camera.screenPointToRay(Engine::get().input.getMousePos(), 100.0f));
     for (std::unique_ptr<GameObject>& obj : gameObjects) {
         obj->update();
     }
@@ -38,4 +39,7 @@ void Scene::submit() {
             obj->mesh->material,
             obj->mesh->modelMatrice()});
     }
+}
+
+void Scene::pickObject([[maybe_unused]] const Ray ray) {
 }

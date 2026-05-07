@@ -42,17 +42,21 @@ void setupUi() {
     wireFrameButton->setPosition(Vector2((float)width / 2, 100));
     wireFrameButton->setColor(Vector3(0.8f, 0, 0));
     wireFrameButton->setSize(Vector2(40));
-    wireFrameButton->setUpdate([wireFrameButton]() {
-        if (wireFrameButton->isPressed()) {
-            Renderer& renderer = Engine::get().renderer;
-            if (renderer.getWireframeEnabled()) {
-                renderer.enableWireframe(false);
-                wireFrameButton->setColor(Vector3(0.8f, 0, 0));
-            } else {
-                renderer.enableWireframe(true);
-                wireFrameButton->setColor(Vector3(0, 0, 0.8f));
-            }
-        }
+    wireFrameButton->setOnHover([wireFrameButton]() {
+        wireFrameButton->setColor(Vector3(0, 0, 0.8f));
+    });
+    wireFrameButton->setOnHoverEnd([wireFrameButton]() {
+        wireFrameButton->setColor(Vector3(0.8f, 0, 0));
+    });
+    wireFrameButton->setOnClick([]() {
+        Renderer& renderer = Engine::get().renderer;
+        renderer.enableWireframe(!renderer.getWireframeEnabled());
+    });
+    wireFrameButton->setOnHold([wireFrameButton]() {
+        wireFrameButton->setPosition(Engine::get().input.getMousePos() - wireFrameButton->size / 2);
+    });
+    wireFrameButton->setOnHoldEnd([wireFrameButton]() {
+        wireFrameButton->setColor(Vector3(0, 0, 0.8f));
     });
 
     UiElement* topBar = manager.addUiElement(std::make_unique<UiElement>());

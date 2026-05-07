@@ -2,8 +2,10 @@
 
 #include <assert.h>
 #include <cmath>
+#include <cstddef>
 #include <iostream>
 #include <ostream>
+#include <stdexcept>
 #include <vector3.hpp>
 #include <vector4.hpp>
 
@@ -137,7 +139,7 @@ class Mat4 {
         }
 
         inline friend std::ostream& operator<<(std::ostream& os, const Mat4& mat) {
-            os << "(";
+            os << "(\n";
             for (int row = 0; row < 4; row++) {
                 for (int col = 0; col < 4; col++) {
                     os << mat.m[col * 4 + row] << " ";
@@ -194,5 +196,53 @@ class Mat4 {
             mat.m[11] = -1.0f;
             mat.m[14] = -2 * far * near / (far - near);
             return mat;
+        }
+
+        static constexpr Mat4 inverse(Mat4 a) {
+            Mat4 i(1.0f);
+
+            for (int globCol = 0; globCol < 4; globCol++) {
+                if (std::abs(a.m[globCol * 4 + globCol]) <= 1e-6f) {
+                    for (int row = 0; row < 4; row++) {
+                        if (a.m[globCol * 4 + row] != 0) {
+                            for (int col = 0; col < 4; col++) {
+                                std::swap(a.m[col * 4 + globCol], a.m[col * 4 + row]);
+                                std::swap(i.m[col * 4 + globCol], i.m[col * 4 + row]);
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                float divisor = a.m[globCol * 4 + globCol];
+                assert(divisor != 0);
+                for (int col = 0; col < 4; col++) {
+                    a.m[col * 4 + globCol] /= divisor;
+                    i.m[col * 4 + globCol] /= divisor;
+                }
+
+                for (int row = 0; row < 4; row++) {
+                    if (row == globCol)
+                        continue;
+                    float base = -a.m[globCol * 4 + row];
+
+                    for (int col = 0; col < 4; col++) {
+                        a.m[col * 4 + row] += a.m[col * 4 + globCol] * base;
+                        i.m[col * 4 + row] += i.m[col * 4 + globCol] * base;
+                    }
+                }
+            }
+
+            for (int globCol = 3; globCol >= 0; globCol--) {
+                for (int row = 0; row < globCol; row++) {
+                    float base = -a.m[globCol * 4 + row];
+
+                    for (int col = 0; col < 4; col++) {
+                        a.m[col * 4 + row] += a.m[col * 4 + globCol] * base;
+                        i.m[col * 4 + row] += i.m[col * 4 + globCol] * base;
+                    }
+                }
+            }
+            return i;
         }
 };

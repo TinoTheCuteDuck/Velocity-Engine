@@ -24,9 +24,10 @@ class UiElement {
     public:
         inline UiElement() : position(0.0f), size(100.0f), color(0.8f), UV(0, 0) {};
         virtual ~UiElement() = default;
+
+        virtual void update();
         virtual void generateQuads(std::vector<UiVertex>& vertexData);
 
-        void update();
         void setPosition(const Vector2 position);
         void setSize(const Vector2 size);
         void setColor(const Vector3 color);

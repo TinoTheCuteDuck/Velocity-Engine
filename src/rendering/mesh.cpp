@@ -8,6 +8,8 @@
 #include <vector2.hpp>
 #include <vector3.hpp>
 
+#include <algorithm>
+#include <cfloat>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -18,6 +20,10 @@ Mesh::Mesh(const std::string& filePath, Vector3 position, float scale = 1) : pos
     parseOBJ(filePath);
     meshID = Engine::get().renderer.addGPUMesh(vertexData, indices);
     material = Material{Ressources::pbrShader};
+    generateBoundingBox();
+
+    std::cout << "Bounding min: " << boundingBox.min << std::endl;
+    std::cout << "Bounding max: " << boundingBox.max << std::endl;
 }
 
 Mesh::~Mesh() {
@@ -68,6 +74,21 @@ void Mesh::parseOBJ(const std::string& filePath) {
             }
         }
     }
+}
+
+void Mesh::generateBoundingBox() {
+    Vector3 min = Vector3(FLT_MAX);
+    Vector3 max = Vector3(-FLT_MAX);
+    for (Vertex& vertex : vertexData) {
+        min.x = std::min(min.x, vertex.position.x);
+        min.y = std::min(min.y, vertex.position.y);
+        min.z = std::min(min.z, vertex.position.z);
+
+        max.x = std::max(max.x, vertex.position.x);
+        max.y = std::max(max.y, vertex.position.y);
+        max.z = std::max(max.z, vertex.position.z);
+    }
+    boundingBox = BoundingBox{min, max};
 }
 
 Mat4 Mesh::modelMatrice() {

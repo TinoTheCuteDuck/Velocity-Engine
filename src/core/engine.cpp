@@ -29,9 +29,9 @@ void Engine::init() {
 
 void Engine::run() {
     while (!window.shouldClose()) {
+        window.pollEvents();
         update();
         render();
-        window.pollEvents();
     }
 }
 

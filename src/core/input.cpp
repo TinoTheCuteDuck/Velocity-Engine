@@ -42,7 +42,7 @@ void Input::init() {
 bool Input::isKeyHeld(int key) {
     if (key < 0 || key > GLFW_KEY_LAST)
         return false;
-    return currentKeys[key];
+    return currentKeys[key] && previousKeys[key];
 }
 
 bool Input::isKeyPressed(int key) {
@@ -60,7 +60,7 @@ bool Input::isKeyReleased(int key) {
 bool Input::isButtonHeld(int button) {
     if (button < 0 || button > GLFW_MOUSE_BUTTON_LAST)
         return false;
-    return currentMouseButtons[button];
+    return currentMouseButtons[button] && previousMouseButtons[button];
 }
 
 bool Input::isButtonPressed(int button) {

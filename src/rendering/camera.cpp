@@ -5,6 +5,7 @@
 #include <input.hpp>
 
 #include <mat4.hpp>
+#include <ray.hpp>
 #include <vector3.hpp>
 #include <vector4.hpp>
 
@@ -51,6 +52,21 @@ void Camera::update() {
 
         computeVectors();
     }
+}
+
+Ray Camera::screenPointToRay(Vector2 screenPos, const float scalar) {
+    Vector2 windowSize = Engine::get().window.getWindowSize();
+    float x = (screenPos.x / windowSize.x) * 2 - 1;
+    float y = -((screenPos.y / windowSize.y) * 2 - 1);
+    Vector4 clipCoords(x, y, -1.0f, 1.0f);
+
+    Vector4 eyeDir = Mat4::inverse(Mat4::projection(FOV, windowSize.x / windowSize.y, nearPlane, farPlane)) * clipCoords;
+    eyeDir = Vector4(eyeDir.x, eyeDir.y, -1.0f, 0.0f);
+
+    Vector4 worldDir4 = Mat4::inverse(getViewMatrix()) * eyeDir;
+    Vector3 dir = Vector3(worldDir4.x, worldDir4.y, worldDir4.z).normalize();
+
+    return Ray{position, dir * scalar};
 }
 
 void Camera::computeVectors() {

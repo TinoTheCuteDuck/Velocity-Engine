@@ -1,12 +1,14 @@
 #pragma once
 
 #include <mat4.hpp>
+#include <ray.hpp>
 #include <vector3.hpp>
 
 class Camera {
     public:
         Camera();
         void update();
+        Ray screenPointToRay(Vector2 screenPos, const float scalar);
 
         Mat4 getViewMatrix();
         Vector3 getUp();
@@ -39,5 +41,5 @@ class Camera {
         Vector3 up;
         Vector3 right;
         Vector3 forward;
-        Vector3 position = Vector3(0, 5, 10);
+        Vector3 position = Vector3(0, 3, 5);
 };

@@ -3,6 +3,7 @@
 #include <camera.hpp>
 #include <input.hpp>
 #include <mesh.hpp>
+#include <ray.hpp>
 #include <rigidBody.hpp>
 
 #include <memory>
@@ -31,5 +32,6 @@ class Scene {
         void load();
 
     private:
+        void pickObject(const Ray ray);
         std::vector<std::unique_ptr<GameObject>> gameObjects;
 };

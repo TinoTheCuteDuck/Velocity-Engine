@@ -15,6 +15,11 @@ struct Vertex {
         Vector3 normal;
 };
 
+struct BoundingBox {
+        Vector3 min;
+        Vector3 max;
+};
+
 class Mesh {
     public:
         unsigned int meshID;
@@ -25,6 +30,7 @@ class Mesh {
 
         std::vector<Vertex> vertexData;
         std::vector<unsigned int> indices;
+        BoundingBox boundingBox;
 
         Mesh(const std::string& filePath, Vector3 position, float scale);
         ~Mesh();
@@ -33,4 +39,5 @@ class Mesh {
 
     private:
         void parseOBJ(const std::string& filePath);
+        void generateBoundingBox();
 };
