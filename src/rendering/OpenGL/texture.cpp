@@ -1,7 +1,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 
+#include <rendering/OpenGL/texture.hpp>
+
+#include <glad/glad.h>
 #include <stb_image.h>
-#include <texture.hpp>
 
 #include <stdexcept>
 

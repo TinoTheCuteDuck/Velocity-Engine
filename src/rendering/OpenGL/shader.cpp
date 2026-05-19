@@ -1,4 +1,6 @@
-#include <shader.hpp>
+#include <rendering/OpenGL/shader.hpp>
+
+#include <glad/glad.h>
 
 #include <fstream>
 #include <sstream>

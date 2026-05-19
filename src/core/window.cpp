@@ -1,8 +1,8 @@
-#include <window.hpp>
+#include <core/window.hpp>
 
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
-#include <vector2.hpp>
+#include <math/vector/vector2.hpp>
 
 #include <stdexcept>
 

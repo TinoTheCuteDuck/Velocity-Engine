@@ -1,7 +1,9 @@
 #pragma once
 
 #include <glad/glad.h>
-#include <mat4.hpp>
+#include <math/matrices/mat4.hpp>
+
+#include <string>
 
 class Shader {
     private:

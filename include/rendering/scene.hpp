@@ -1,10 +1,10 @@
 #pragma once
 
-#include <camera.hpp>
-#include <input.hpp>
-#include <mesh.hpp>
-#include <ray.hpp>
-#include <rigidBody.hpp>
+#include <core/input.hpp>
+#include <math/ray.hpp>
+#include <physics/rigidBody.hpp>
+#include <rendering/camera.hpp>
+#include <rendering/mesh.hpp>
 
 #include <memory>
 #include <vector>
@@ -26,12 +26,15 @@ struct GameObject {
 class Scene {
     public:
         Scene();
-        void add(std::unique_ptr<GameObject> gameObject);
+        void add(std::shared_ptr<GameObject> gameObject);
         void update();
         void submit();
         void load();
 
+        std::shared_ptr<GameObject> getSelectedObject();
+
     private:
         void pickObject(const Ray ray);
-        std::vector<std::unique_ptr<GameObject>> gameObjects;
+        std::vector<std::shared_ptr<GameObject>> gameObjects;
+        std::shared_ptr<GameObject> selectedObject;
 };

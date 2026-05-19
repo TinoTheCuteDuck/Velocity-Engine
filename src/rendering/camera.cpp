@@ -1,13 +1,13 @@
-#include <camera.hpp>
+#include <rendering/camera.hpp>
 
 #include <GLFW/glfw3.h>
-#include <engine.hpp>
-#include <input.hpp>
+#include <core/engine.hpp>
+#include <core/input.hpp>
 
-#include <mat4.hpp>
-#include <ray.hpp>
-#include <vector3.hpp>
-#include <vector4.hpp>
+#include <math/matrices/mat4.hpp>
+#include <math/ray.hpp>
+#include <math/vector/vector3.hpp>
+#include <math/vector/vector4.hpp>
 
 Camera::Camera() {
     computeVectors();
@@ -54,19 +54,18 @@ void Camera::update() {
     }
 }
 
-Ray Camera::screenPointToRay(Vector2 screenPos, const float scalar) {
+Ray Camera::screenPointToRay(Vector2 screenPos) {
     Vector2 windowSize = Engine::get().window.getWindowSize();
     float x = (screenPos.x / windowSize.x) * 2 - 1;
     float y = -((screenPos.y / windowSize.y) * 2 - 1);
+
     Vector4 clipCoords(x, y, -1.0f, 1.0f);
+    Vector4 eyeCoords = Mat4::inverse(Mat4::projection(FOV, windowSize.x / windowSize.y, nearPlane, farPlane)) * clipCoords;
 
-    Vector4 eyeDir = Mat4::inverse(Mat4::projection(FOV, windowSize.x / windowSize.y, nearPlane, farPlane)) * clipCoords;
-    eyeDir = Vector4(eyeDir.x, eyeDir.y, -1.0f, 0.0f);
+    Vector4 worldDir = Mat4::inverse(getViewMatrix()) * Vector4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
+    Vector3 dir = Vector3(worldDir.x, worldDir.y, worldDir.z).normalize();
 
-    Vector4 worldDir4 = Mat4::inverse(getViewMatrix()) * eyeDir;
-    Vector3 dir = Vector3(worldDir4.x, worldDir4.y, worldDir4.z).normalize();
-
-    return Ray{position, dir * scalar};
+    return Ray(position, dir);
 }
 
 void Camera::computeVectors() {

@@ -1,12 +1,13 @@
-#include <mesh.hpp>
+#include <rendering/mesh.hpp>
 
-#include <engine.hpp>
-#include <material.hpp>
-#include <ressources.hpp>
+#include <rendering/material.hpp>
 
-#include <mat4.hpp>
-#include <vector2.hpp>
-#include <vector3.hpp>
+#include <core/engine.hpp>
+#include <core/ressources.hpp>
+
+#include <math/matrices/mat4.hpp>
+#include <math/vector/vector2.hpp>
+#include <math/vector/vector3.hpp>
 
 #include <algorithm>
 #include <cfloat>
@@ -16,14 +17,11 @@
 #include <string>
 #include <vector>
 
-Mesh::Mesh(const std::string& filePath, Vector3 position, float scale = 1) : position(position), scale(Vector3(scale)) {
+Mesh::Mesh(const std::string& filePath, Vector3 position, Vector3 scale) : position(position), scale(scale) {
     parseOBJ(filePath);
     meshID = Engine::get().renderer.addGPUMesh(vertexData, indices);
     material = Material{Ressources::pbrShader};
     generateBoundingBox();
-
-    std::cout << "Bounding min: " << boundingBox.min << std::endl;
-    std::cout << "Bounding max: " << boundingBox.max << std::endl;
 }
 
 Mesh::~Mesh() {

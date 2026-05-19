@@ -1,10 +1,10 @@
 #pragma once
 
-#include <material.hpp>
+#include <rendering/material.hpp>
 
-#include <mat4.hpp>
-#include <vector2.hpp>
-#include <vector3.hpp>
+#include <math/matrices/mat4.hpp>
+#include <math/vector/vector2.hpp>
+#include <math/vector/vector3.hpp>
 
 #include <string>
 #include <vector>
@@ -18,6 +18,10 @@ struct Vertex {
 struct BoundingBox {
         Vector3 min;
         Vector3 max;
+
+        Vector3& operator[](int index) {
+            return (index == 0) ? min : max;
+        }
 };
 
 class Mesh {
@@ -32,7 +36,7 @@ class Mesh {
         std::vector<unsigned int> indices;
         BoundingBox boundingBox;
 
-        Mesh(const std::string& filePath, Vector3 position, float scale);
+        Mesh(const std::string& filePath, Vector3 position, Vector3 scale);
         ~Mesh();
 
         Mat4 modelMatrice();

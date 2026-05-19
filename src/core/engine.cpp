@@ -1,14 +1,14 @@
-#include <engine.hpp>
+#include <core/engine.hpp>
 
-#include <camera.hpp>
-#include <engineUi.hpp>
-#include <ressources.hpp>
-#include <uiManager.hpp>
-#include <vector3.hpp>
+#include <core/engineTime.hpp>
+#include <core/input.hpp>
+#include <core/ressources.hpp>
 
-#include <engineTime.hpp>
-#include <input.hpp>
-#include <renderer.hpp>
+#include <rendering/OpenGL/renderer.hpp>
+#include <rendering/camera.hpp>
+
+#include <ui/engineUi.hpp>
+#include <ui/uiManager.hpp>
 
 Engine::Engine() : window(), renderer(), input(), time(), uiManager(), scene(), camera() {
     init();
@@ -22,7 +22,6 @@ void Engine::init() {
     Ressources::uiTexture = renderer.addTexture(ASSETS_PATH "textures/DejaVu Sans Mono.png", GL_REPEAT, GL_NEAREST, false);
 
     input.init();
-    setupUi();
     uiManager.load();
     scene.load();
 }

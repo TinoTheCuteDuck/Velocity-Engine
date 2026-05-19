@@ -97,11 +97,6 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/core
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/math
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/physics
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/rendering
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/ui
 )
 
 target_compile_options(${PROJECT_NAME} PRIVATE

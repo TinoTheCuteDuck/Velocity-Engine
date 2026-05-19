@@ -1,30 +1,46 @@
-#include <uiManager.hpp>
+#include <ui/uiManager.hpp>
 
-#include <engine.hpp>
-#include <material.hpp>
-#include <ressources.hpp>
-#include <uiElement.hpp>
+#include <core/engine.hpp>
+#include <core/ressources.hpp>
+
+#include <rendering/material.hpp>
+
+#include <ui/engineUi.hpp>
+#include <ui/uiWidget.hpp>
 
 #include <memory>
 
 UiManager::UiManager() {
-    vertexData.reserve(8192);
-    uiElements.reserve(1024);
+    uiWidgets.reserve(1024);
+}
+
+UiManager::~UiManager() {
+    Engine::get().renderer.deleteGPUMesh(meshID);
 }
 
 void UiManager::load() {
-    buildGeometry();
-    meshID = Engine::get().renderer.addGPUUiMesh(vertexData);
+    Engine::get().renderer.deleteGPUMesh(meshID);
+    uiWidgets.clear();
+    loadUi();
+
+    size_t offset = 0;
+    for (auto& uiWidget : uiWidgets) {
+        uiWidget->offset = offset;
+        offset += uiWidget->memory;
+    }
+    meshID = Engine::get().renderer.addGPUUiMesh(offset);
     material = Material{Ressources::uiShader};
     material.textures["uiTexture"] = Ressources::uiTexture;
 }
 
 void UiManager::update() {
-    for (std::unique_ptr<UiElement>& element : uiElements) {
-        element->update();
+    size_t vertexCount = 0;
+
+    for (std::unique_ptr<UiWidget>& widget : uiWidgets) {
+        widget->update();
+        vertexCount += widget->vertexCount;
     }
-    buildGeometry();
-    Engine::get().renderer.changeGPUUiMeshData(meshID, vertexData);
+    Engine::get().renderer.changeGPUVertexCount(meshID, vertexCount);
 }
 
 void UiManager::submit() {
@@ -33,14 +49,7 @@ void UiManager::submit() {
         material});
 }
 
-UiElement* UiManager::addUiElement(std::unique_ptr<UiElement> element) {
-    uiElements.push_back(std::move(element));
-    return uiElements.back().get();
-}
-
-void UiManager::buildGeometry() {
-    vertexData.clear();
-    for (std::unique_ptr<UiElement>& element : uiElements) {
-        element->generateQuads(vertexData);
-    }
+UiWidget* UiManager::addUiWidget(std::unique_ptr<UiWidget> element) {
+    uiWidgets.push_back(std::move(element));
+    return uiWidgets.back().get();
 }

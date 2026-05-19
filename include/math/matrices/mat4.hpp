@@ -1,13 +1,12 @@
 #pragma once
 
+#include <math/vector/vector3.hpp>
+#include <math/vector/vector4.hpp>
+
 #include <assert.h>
 #include <cmath>
-#include <cstddef>
 #include <iostream>
 #include <ostream>
-#include <stdexcept>
-#include <vector3.hpp>
-#include <vector4.hpp>
 
 class Mat4 {
     public:

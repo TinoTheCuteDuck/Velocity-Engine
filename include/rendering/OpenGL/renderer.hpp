@@ -2,11 +2,12 @@
 
 #include <glad/glad.h>
 
-#include <camera.hpp>
-#include <material.hpp>
-#include <shader.hpp>
-#include <texture.hpp>
-#include <uiElement.hpp>
+#include <math/matrices/mat4.hpp>
+#include <rendering/OpenGL/shader.hpp>
+#include <rendering/OpenGL/texture.hpp>
+#include <rendering/camera.hpp>
+#include <rendering/material.hpp>
+#include <ui/uiWidget.hpp>
 
 #include <optional>
 #include <string>
@@ -20,13 +21,16 @@ struct RenderCall {
 };
 
 struct GPUMesh {
-        unsigned int VAO, VBO, EBO;
+        unsigned int VAO, VBO, EBO, UBO;
         size_t vertexCount;
         ~GPUMesh() {
             glDeleteVertexArrays(1, &VAO);
             glDeleteBuffers(1, &VBO);
             if (EBO != 0) {
                 glDeleteBuffers(1, &EBO);
+            }
+            if (UBO != 0) {
+                glDeleteBuffers(1, &UBO);
             }
         }
 };
@@ -42,10 +46,11 @@ class Renderer {
 
         unsigned int addGPUMesh(const std::vector<Vertex>& vertexData, const std::vector<unsigned int>& indices);
         void deleteGPUMesh(const unsigned int meshID);
+        void changeGPUVertexCount(const unsigned int meshID, const size_t vertexCount);
         void changeGPUMeshData(const unsigned int meshID, const std::vector<Vertex>& vertexData, const std::vector<unsigned int>& indices);
 
-        unsigned int addGPUUiMesh(const std::vector<UiVertex>& vertexData);
-        void changeGPUUiMeshData(const unsigned int meshID, const std::vector<UiVertex>& vertexData);
+        unsigned int addGPUUiMesh(const size_t memory);
+        void changeGPUUiMeshData(const unsigned int meshID, const size_t offset, const size_t memory, const std::vector<UiVertex>& vertexData);
 
         unsigned int addShader(const std::string& vertexPath, const std::string& fragmentPath);
         void deleteShader(const unsigned int shaderID);

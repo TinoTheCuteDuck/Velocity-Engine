@@ -1,7 +1,7 @@
-#include <engine.hpp>
-#include <rigidBody.hpp>
+#include <core/engine.hpp>
 
 #include <assert.h>
+#include <physics/rigidBody.hpp>
 
 RigidBody::RigidBody(Vector3 position)
     : position(position),

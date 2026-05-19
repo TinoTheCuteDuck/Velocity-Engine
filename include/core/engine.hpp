@@ -1,12 +1,12 @@
 #pragma once
 
-#include <camera.hpp>
-#include <engineTime.hpp>
-#include <input.hpp>
-#include <renderer.hpp>
-#include <scene.hpp>
-#include <uiManager.hpp>
-#include <window.hpp>
+#include <core/engineTime.hpp>
+#include <core/input.hpp>
+#include <core/window.hpp>
+#include <rendering/OpenGL/renderer.hpp>
+#include <rendering/camera.hpp>
+#include <rendering/scene.hpp>
+#include <ui/uiManager.hpp>
 
 class Engine {
     public:

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <material.hpp>
-#include <uiElement.hpp>
+#include <rendering/material.hpp>
+#include <ui/uiWidget.hpp>
 
 #include <memory>
 #include <vector>
@@ -12,15 +12,14 @@ class UiManager {
         Material material;
 
         UiManager();
+        ~UiManager();
+
         void load();
         void update();
         void submit();
 
-        UiElement* addUiElement(std::unique_ptr<UiElement> element);
+        UiWidget* addUiWidget(std::unique_ptr<UiWidget> element);
 
     private:
-        void buildGeometry();
-
-        std::vector<UiVertex> vertexData;
-        std::vector<std::unique_ptr<UiElement>> uiElements;
+        std::vector<std::unique_ptr<UiWidget>> uiWidgets;
 };

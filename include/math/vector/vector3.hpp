@@ -1,9 +1,10 @@
 #pragma once
 
+#include <math/vector/vector2.hpp>
+
 #include <assert.h>
 #include <cmath>
 #include <iostream>
-#include <math/vector2.hpp>
 
 class Vector3 {
     public:

@@ -1,6 +1,7 @@
+#include <core/input.hpp>
+
 #include <GLFW/glfw3.h>
-#include <engine.hpp>
-#include <input.hpp>
+#include <core/engine.hpp>
 
 #include <cstring>
 

@@ -1,3 +1,6 @@
 #pragma once
 
-void setupUi();
+#include <core/engine.hpp>
+
+inline void loadUi() {
+}

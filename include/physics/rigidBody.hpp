@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector3.hpp>
+#include <math/vector/vector3.hpp>
 
 class RigidBody {
     public:

@@ -1,14 +1,16 @@
-#include <renderer.hpp>
+#include <rendering/OpenGL/renderer.hpp>
 
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
-#include <engine.hpp>
-#include <mesh.hpp>
-#include <ressources.hpp>
-#include <shader.hpp>
-#include <texture.hpp>
-#include <uiElement.hpp>
+#include <core/engine.hpp>
+#include <core/ressources.hpp>
+
+#include <rendering/OpenGL/shader.hpp>
+#include <rendering/OpenGL/texture.hpp>
+#include <rendering/mesh.hpp>
+
+#include <ui/uiWidget.hpp>
 
 #include <stdexcept>
 #include <tuple>
@@ -52,12 +54,16 @@ unsigned int Renderer::addGPUMesh(const std::vector<Vertex>& vertexData, const s
 
     glBindVertexArray(0);
 
-    meshes.emplace(std::piecewise_construct, std::forward_as_tuple(currentMeshID), std::forward_as_tuple(VAO, VBO, EBO, indices.size()));
+    meshes.emplace(std::piecewise_construct, std::forward_as_tuple(currentMeshID), std::forward_as_tuple(VAO, VBO, EBO, 0, indices.size()));
     return currentMeshID++;
 }
 
 void Renderer::deleteGPUMesh(const unsigned int meshID) {
     meshes.erase(meshID);
+}
+
+void Renderer::changeGPUVertexCount(const unsigned int meshID, const size_t vertexCount) {
+    meshes.at(meshID).vertexCount = vertexCount;
 }
 
 void Renderer::changeGPUMeshData(const unsigned int meshID, const std::vector<Vertex>& vertexData, const std::vector<unsigned int>& indices) {
@@ -74,20 +80,24 @@ void Renderer::changeGPUMeshData(const unsigned int meshID, const std::vector<Ve
     glBindVertexArray(0);
 }
 
-unsigned int Renderer::addGPUUiMesh(const std::vector<UiVertex>& vertexData) {
-    unsigned int VAO, VBO;
+unsigned int Renderer::addGPUUiMesh(const size_t memory) {
+    unsigned int VAO, VBO, UBO;
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &UBO);
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(UiVertex) * vertexData.size(), vertexData.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, memory, nullptr, GL_DYNAMIC_DRAW);
+
+    glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+    glBufferData(GL_UNIFORM_BUFFER, 24, NULL, GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)offsetof(UiVertex, color));
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)offsetof(UiVertex, color));
     glEnableVertexAttribArray(1);
 
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)offsetof(UiVertex, UV));
@@ -95,17 +105,20 @@ unsigned int Renderer::addGPUUiMesh(const std::vector<UiVertex>& vertexData) {
 
     glBindVertexArray(0);
 
-    meshes.emplace(std::piecewise_construct, std::forward_as_tuple(currentMeshID), std::forward_as_tuple(VAO, VBO, 0, vertexData.size()));
+    meshes.emplace(std::piecewise_construct, std::forward_as_tuple(currentMeshID), std::forward_as_tuple(VAO, VBO, 0, UBO, 0));
     return currentMeshID++;
 }
 
-void Renderer::changeGPUUiMeshData(const unsigned int meshID, const std::vector<UiVertex>& vertexData) {
+void Renderer::changeGPUUiMeshData(const unsigned int meshID, const size_t offset, const size_t memory, const std::vector<UiVertex>& vertexData, const float cornerRadius, const float borderSize, const Vector4 borderColor) {
+    if (vertexData.size() * sizeof(UiVertex) > memory)
+        throw std::runtime_error("Attempted to allocate too much memory to the GPU buffer");
+
     GPUMesh& mesh = meshes.at(meshID);
     glBindVertexArray(mesh.VAO);
     glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(UiVertex) * vertexData.size(), vertexData.data(), GL_DYNAMIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, offset, vertexData.size() * sizeof(UiVertex), vertexData.data());
 
-    mesh.vertexCount = vertexData.size();
+    glBindBuffer(GL_UNIFORM_BUFFER, mesh.UBO);
 
     glBindVertexArray(0);
 }
@@ -148,6 +161,7 @@ void Renderer::startFrame() {
 
 void Renderer::endFrame() {
     for (RenderCall& cmd : commands) {
+        GPUMesh& mesh = meshes.at(cmd.meshID);
         Shader& shader = shaders.at(cmd.material.shaderID);
         shader.use();
 
@@ -155,8 +169,7 @@ void Renderer::endFrame() {
             shader.setMat4("model", *cmd.transform);
         }
 
-        glBindVertexArray(meshes.at(cmd.meshID).VAO);
-        unsigned int count = meshes.at(cmd.meshID).vertexCount;
+        glBindVertexArray(mesh.VAO);
 
         int texCount = 0;
         for (auto& [name, texID] : cmd.material.textures) {
@@ -166,10 +179,10 @@ void Renderer::endFrame() {
             texCount++;
         }
 
-        if (meshes.at(cmd.meshID).EBO) {
-            glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, NULL);
+        if (mesh.EBO) {
+            glDrawElements(GL_TRIANGLES, mesh.vertexCount, GL_UNSIGNED_INT, NULL);
         } else {
-            glDrawArrays(GL_TRIANGLES, 0, count);
+            glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount);
         }
     }
     commands.clear();
