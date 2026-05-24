@@ -73,8 +73,7 @@ std::string Shader::readFile(const std::string& filePath) {
 void Shader::setBool(const std::string& name, const bool value) const {
     int loc = glGetUniformLocation(shaderProgram, name.c_str());
     if (loc == -1) {
-        std::cout << "Uniform not found: " + name << std::endl;
-        // throw std::runtime_error("Uniform not found: " + name);
+        throw std::runtime_error("Uniform not found: " + name);
     }
     glUniform1i(loc, value);
 }
@@ -82,8 +81,7 @@ void Shader::setBool(const std::string& name, const bool value) const {
 void Shader::setInt(const std::string& name, const int value) const {
     int loc = glGetUniformLocation(shaderProgram, name.c_str());
     if (loc == -1) {
-        std::cout << "Uniform not found: " + name << std::endl;
-        throw std::runtime_error("Uniform not found: " + name);
+        // throw std::runtime_error("Uniform not found: " + name);
     }
     glUniform1i(loc, value);
 }
@@ -91,7 +89,6 @@ void Shader::setInt(const std::string& name, const int value) const {
 void Shader::setMat4(const std::string& name, const Mat4& mat) const {
     int loc = glGetUniformLocation(shaderProgram, name.c_str());
     if (loc == -1) {
-        std::cout << "Uniform not found: " + name << std::endl;
         throw std::runtime_error("Uniform not found: " + name);
     }
     glUniformMatrix4fv(loc, 1, GL_FALSE, &mat.m[0]);

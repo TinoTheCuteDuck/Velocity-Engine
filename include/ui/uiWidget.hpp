@@ -12,14 +12,21 @@ struct UiVertex {
         Vector2 position;
         Vector4 color;
         Vector2 UV;
+        unsigned int widgetID;
+};
+
+struct WidgetData {
+        Vector4 rect; // x, y = Position; z, w = Size;
+        Vector4 borderColor;
+        Vector4 params; // x = corner Radius; y = border Size; z, w = unused
 };
 
 // Default UiWidget everything inherits from.
 class UiWidget {
     public:
         // Constructor and Destructor
-        UiWidget();
-        virtual ~UiWidget();
+        UiWidget() = default;
+        virtual ~UiWidget() = default;
 
         // Setters
         void setSize(const Vector2& size);
@@ -35,14 +42,23 @@ class UiWidget {
         void setEnabled(const bool state);
         void setVisible(const bool state);
 
+        void setUpdateCallback(const std::function<void()>& callback);
         void setMouseEnterCallback(const std::function<void()>& callback);
         void setMouseLeaveCallback(const std::function<void()>& callback);
+
+        void playAnimation(const Vector2& goal, const float duration);
+
+        // Getters
+        Vector2 getSize();
+        Vector4 getColor();
+        Vector2 getPosition();
 
     public:
         // Public attributes
         UiWidget* parent = nullptr;
         std::vector<UiWidget*> children;
 
+        unsigned int elementID = 0;
         size_t memory = sizeof(UiVertex) * 6;
         size_t offset = 0;
         size_t vertexCount = 6;
@@ -63,8 +79,20 @@ class UiWidget {
         bool visible = true;
         bool wasEntered = false;
 
+        // Internal Attributes
+
+        Vector2 animationGoal = Vector2();
+        Vector2 animationStart = Vector2();
+
+        float timer = 0.0f;
+        float animationDuration = 0.0f;
+        bool isPlayingAnimation = false;
+
+        std::vector<UiVertex> vertexData;
+
     protected:
         // Event Callbacks
+        std::function<void()> updateCallback;
         std::function<void()> mouseEnterCallback;
         std::function<void()> mouseLeaveCallback;
 
@@ -75,8 +103,8 @@ class UiWidget {
 
     private:
         // Private methods
-        virtual void onFocused();
-        virtual void onFocusLost();
+        // virtual void onFocused();
+        // virtual void onFocusLost();
         virtual void onMouseEnter();
         virtual void onMouseLeave();
 };

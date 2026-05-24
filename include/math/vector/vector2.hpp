@@ -60,6 +60,11 @@ class Vector2 {
                 x - other.x,
                 y - other.y);
         }
+        inline constexpr Vector2 operator*(const Vector2& other) const {
+            return Vector2(
+                x * other.x,
+                y * other.y);
+        }
 
         inline constexpr Vector2 operator+(const float scalar) const {
             return Vector2(
@@ -135,6 +140,10 @@ class Vector2 {
             return Vector2(
                 x / len,
                 y / len);
+        }
+
+        inline static constexpr Vector2 lerp(const Vector2& a, const Vector2& b, const float t) {
+            return (1.0f - t) * a + t * b;
         }
 };
 

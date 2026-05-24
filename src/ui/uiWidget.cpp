@@ -2,6 +2,7 @@
 #include <ui/uiWidget.hpp>
 
 #include <core/engine.hpp>
+#include <math/vector/vector2.hpp>
 
 // Setters
 void UiWidget::setSize(const Vector2& size) {
@@ -37,11 +38,31 @@ void UiWidget::setVisible(const bool state) {
     this->visible = state;
 }
 
+void UiWidget::setUpdateCallback(const std::function<void()>& callback) {
+    this->updateCallback = callback;
+}
 void UiWidget::setMouseEnterCallback(const std::function<void()>& callback) {
     this->mouseEnterCallback = callback;
 }
 void UiWidget::setMouseLeaveCallback(const std::function<void()>& callback) {
     this->mouseLeaveCallback = callback;
+}
+void UiWidget::playAnimation(const Vector2& goal, const float duration) {
+    timer = 0.0f;
+    animationGoal = goal;
+    animationStart = position;
+    animationDuration = duration;
+    isPlayingAnimation = true;
+}
+
+Vector2 UiWidget::getSize() {
+    return size;
+}
+Vector4 UiWidget::getColor() {
+    return Vector4(color, opacity);
+}
+Vector2 UiWidget::getPosition() {
+    return position;
 }
 
 void onFocused();
@@ -59,7 +80,27 @@ void UiWidget::onMouseLeave() {
 
 void UiWidget::update() {
     bool entered = false;
+    float dt = Engine::get().time.getDt();
     Vector2 mousePos = Engine::get().input.getMousePos();
+
+    // Update
+    if (updateCallback) {
+        updateCallback();
+    }
+
+    // Animate
+    if (isPlayingAnimation) {
+        timer += dt;
+        float alpha = std::min(timer / animationDuration, 1.0f);
+        position = Vector2::lerp(animationStart, animationGoal, alpha);
+
+        if (alpha >= 1.0f) {
+            isPlayingAnimation = false;
+            position = animationGoal;
+        }
+        dirty = true;
+    }
+
     // Mouse hit detection
     if (mousePos.x >= position.x && mousePos.x <= (position.x + size.x) &&
         mousePos.y >= position.y && mousePos.y <= (position.y + size.y))
@@ -81,25 +122,35 @@ void UiWidget::update() {
     }
 }
 void UiWidget::render() {
+    // Reset vertexData
+    vertexData.clear();
+
     Vector2 windowSize = Engine::get().window.getWindowSize();
+    Vector2 normalizedPosition = position * windowSize;
+    Vector2 normalizedSize = size * windowSize;
+
     // Convert pixel coordinates to NDC
-    float left = position.x / windowSize.x * 2.0f - 1.0f;
-    float right = (position.x + size.x) / windowSize.x * 2.0f - 1.0f;
-    float top = -(position.y / windowSize.y * 2.0f - 1.0f);
-    float bottom = -((position.y + size.y) / windowSize.y) * 2.0f - 1.0f;
+    float left = normalizedPosition.x / windowSize.x * 2.0f - 1.0f;
+    float right = (normalizedPosition.x + normalizedSize.x) / windowSize.x * 2.0f - 1.0f;
+    float top = -(normalizedPosition.y / windowSize.y * 2.0f - 1.0f);
+    float bottom = -((normalizedPosition.y + normalizedSize.y) / windowSize.y * 2.0f - 1.0f);
 
     // Generate vertex data with position, color with transparency and solid Color UVs
-    std::vector<UiVertex> vertexData;
-    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color, opacity), Vector2(1.0f)});
-    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color, opacity), Vector2(1.0f)});
-    vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color, opacity), Vector2(1.0f)});
+    vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
 
-    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color, opacity), Vector2(1.0f)});
-    vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color, opacity), Vector2(1.0f)});
-    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color, opacity), Vector2(1.0f)});
+    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
 
     // Reset and upload to the GPU
     vertexCount = vertexData.size();
     setDirty(false);
-    Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, offset, memory, vertexData);
+    Vector2 flippedPos(normalizedPosition.x, windowSize.y - normalizedPosition.y - normalizedSize.y);
+    WidgetData data = {
+        Vector4(flippedPos, normalizedSize),
+        borderColor,
+        Vector4(cornerRadius, borderSize, 0, 0)};
+    Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
 }

@@ -49,8 +49,8 @@ class Renderer {
         void changeGPUVertexCount(const unsigned int meshID, const size_t vertexCount);
         void changeGPUMeshData(const unsigned int meshID, const std::vector<Vertex>& vertexData, const std::vector<unsigned int>& indices);
 
-        unsigned int addGPUUiMesh(const size_t memory);
-        void changeGPUUiMeshData(const unsigned int meshID, const size_t offset, const size_t memory, const std::vector<UiVertex>& vertexData);
+        unsigned int addGPUUiMesh(const size_t memory, const unsigned int elementID);
+        void changeGPUUiMeshData(const unsigned int meshID, const unsigned int elementID, const size_t offset, const size_t memory, const std::vector<UiVertex>& vertexData, WidgetData& widgetData);
 
         unsigned int addShader(const std::string& vertexPath, const std::string& fragmentPath);
         void deleteShader(const unsigned int shaderID);

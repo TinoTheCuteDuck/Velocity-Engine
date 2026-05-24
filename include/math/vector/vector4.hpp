@@ -13,6 +13,7 @@ class Vector4 {
         constexpr Vector4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {};
         constexpr Vector4(const float xyzw) : x(xyzw), y(xyzw), z(xyzw), w(xyzw) {};
         constexpr Vector4(const float x, const float y, const float z, const float w) : x(x), y(y), z(z), w(w) {};
+        constexpr Vector4(const Vector2& vec1, const Vector2& vec2) : x(vec1.x), y(vec1.y), z(vec2.x), w(vec2.y) {};
         constexpr Vector4(const Vector3& vec, const float w) : x(vec.x), y(vec.y), z(vec.z), w(w) {};
 
         static const Vector4 zero;
@@ -79,6 +80,13 @@ class Vector4 {
                 y - other.y,
                 z - other.z,
                 w - other.w);
+        }
+        inline constexpr Vector4 operator*(const Vector4& other) const {
+            return Vector4(
+                x * other.x,
+                y * other.y,
+                z * other.z,
+                w * other.w);
         }
 
         inline constexpr Vector4 operator+(const float scalar) const {
@@ -171,6 +179,9 @@ class Vector4 {
                 y / len,
                 z / len,
                 w / len);
+        }
+        inline static constexpr Vector4 lerp(const Vector4& a, const Vector4& b, const float t) {
+            return (1.0f - t) * a + t * b;
         }
 };
 

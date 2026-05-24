@@ -24,6 +24,8 @@ Texture::Texture(const std::string& filePath, GLenum wrapMode = GL_REPEAT, GLenu
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
     }
 
+    stbi_set_flip_vertically_on_load(true);
+
     unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &nrChannels, 0);
     if (!data) {
         throw std::runtime_error("STB failed to load texture with the filepath: " + filePath);

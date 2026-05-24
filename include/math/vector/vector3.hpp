@@ -72,6 +72,12 @@ class Vector3 {
                 y - other.y,
                 z - other.z);
         }
+        inline constexpr Vector3 operator*(const Vector3& other) const {
+            return Vector3(
+                x * other.x,
+                y * other.y,
+                z * other.z);
+        }
 
         inline constexpr Vector3 operator+(const float scalar) const {
             return Vector3(
@@ -161,6 +167,9 @@ class Vector3 {
                 y * other.z - z * other.y,
                 z * other.x - x * other.z,
                 x * other.y - y * other.x);
+        }
+        inline static constexpr Vector3 lerp(const Vector3& a, const Vector3& b, const float t) {
+            return (1.0f - t) * a + t * b;
         }
 };
 

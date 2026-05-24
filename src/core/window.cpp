@@ -1,6 +1,7 @@
 #include <core/window.hpp>
 
 #include <GLFW/glfw3.h>
+#include <core/engine.hpp>
 #include <glad/glad.h>
 #include <math/vector/vector2.hpp>
 
@@ -67,4 +68,5 @@ void Window::setVsync(bool enabled) {
 
 void Window::setWindowSize(int width, int height) {
     windowSize = Vector2(width, height);
+    Engine::get().uiManager.reRender();
 }

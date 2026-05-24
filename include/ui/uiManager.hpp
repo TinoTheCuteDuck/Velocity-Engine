@@ -17,6 +17,7 @@ class UiManager {
         void load();
         void update();
         void submit();
+        void reRender();
 
         UiWidget* addUiWidget(std::unique_ptr<UiWidget> element);
 
