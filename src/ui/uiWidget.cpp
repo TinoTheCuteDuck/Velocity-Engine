@@ -5,8 +5,15 @@
 #include <math/vector/vector2.hpp>
 
 // Setters
-void UiWidget::setSize(const Vector2& size) {
+void UiWidget::setSize(const Vector2& size, const bool lockAspect) {
     this->size = size;
+    if (lockAspect) {
+        Vector2 windowSize = Engine::get().window.getWindowSize();
+        Vector2 pixelSize = size * windowSize;
+        aspect = pixelSize.x / pixelSize.y;
+    } else {
+        aspect = 0.0f;
+    }
 }
 void UiWidget::setColor(const Vector3& color) {
     this->color = color;
@@ -14,8 +21,14 @@ void UiWidget::setColor(const Vector3& color) {
 void UiWidget::setPosition(const Vector2& pos) {
     this->position = pos;
 }
+void UiWidget::setAnchorPoint(const Vector2& point) {
+    this->anchorPoint = point;
+}
 void UiWidget::setBorderColor(const Vector4& color) {
     this->borderColor = color;
+}
+void UiWidget::setSizeConstraint(const Vector2& constraint) {
+    this->sizeConstraint = constraint;
 }
 
 void UiWidget::setOpacity(const float opacity) {
@@ -55,6 +68,7 @@ void UiWidget::playAnimation(const Vector2& goal, const float duration) {
     isPlayingAnimation = true;
 }
 
+// Getters
 Vector2 UiWidget::getSize() {
     return size;
 }
@@ -65,6 +79,7 @@ Vector2 UiWidget::getPosition() {
     return position;
 }
 
+//
 void onFocused();
 void onFocusLost();
 void UiWidget::onMouseEnter() {
@@ -82,6 +97,9 @@ void UiWidget::update() {
     bool entered = false;
     float dt = Engine::get().time.getDt();
     Vector2 mousePos = Engine::get().input.getMousePos();
+    Vector2 windowSize = Engine::get().window.getWindowSize();
+    Vector2 absolutePosition = position * windowSize;
+    Vector2 absoluteSize = size * windowSize;
 
     // Update
     if (updateCallback) {
@@ -102,8 +120,8 @@ void UiWidget::update() {
     }
 
     // Mouse hit detection
-    if (mousePos.x >= position.x && mousePos.x <= (position.x + size.x) &&
-        mousePos.y >= position.y && mousePos.y <= (position.y + size.y))
+    if (mousePos.x >= absolutePosition.x && mousePos.x <= (absolutePosition.x + absoluteSize.x) &&
+        mousePos.y >= absolutePosition.y && mousePos.y <= (absolutePosition.y + absoluteSize.y))
         entered = true;
 
     if (!wasEntered && entered)
@@ -126,14 +144,36 @@ void UiWidget::render() {
     vertexData.clear();
 
     Vector2 windowSize = Engine::get().window.getWindowSize();
-    Vector2 normalizedPosition = position * windowSize;
-    Vector2 normalizedSize = size * windowSize;
+    Vector2 absolutePosition = position * windowSize;
+    Vector2 absoluteSize = size * windowSize;
+    float absoluteRadius = cornerRadius * std::min(windowSize.x, windowSize.y);
+
+    // Set Size constraint
+    if (absoluteSize.x > sizeConstraint.x && sizeConstraint.x != 0) {
+        absoluteSize.x = sizeConstraint.x;
+    }
+    if (absoluteSize.y > sizeConstraint.y && sizeConstraint.y != 0) {
+        absoluteSize.y = sizeConstraint.y;
+    }
+
+    // Enforce aspect ratio
+    if (aspect > 0.0f) {
+        float currentAspect = absoluteSize.x / absoluteSize.y;
+        if (currentAspect > aspect) {
+            absoluteSize.x = absoluteSize.y * aspect;
+        } else {
+            absoluteSize.y = absoluteSize.x / aspect;
+        }
+    }
+
+    // Apply anchorPoint
+    absolutePosition -= absoluteSize * anchorPoint;
 
     // Convert pixel coordinates to NDC
-    float left = normalizedPosition.x / windowSize.x * 2.0f - 1.0f;
-    float right = (normalizedPosition.x + normalizedSize.x) / windowSize.x * 2.0f - 1.0f;
-    float top = -(normalizedPosition.y / windowSize.y * 2.0f - 1.0f);
-    float bottom = -((normalizedPosition.y + normalizedSize.y) / windowSize.y * 2.0f - 1.0f);
+    float left = absolutePosition.x / windowSize.x * 2.0f - 1.0f;
+    float right = (absolutePosition.x + absoluteSize.x) / windowSize.x * 2.0f - 1.0f;
+    float top = -(absolutePosition.y / windowSize.y * 2.0f - 1.0f);
+    float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f);
 
     // Generate vertex data with position, color with transparency and solid Color UVs
     vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
@@ -147,10 +187,12 @@ void UiWidget::render() {
     // Reset and upload to the GPU
     vertexCount = vertexData.size();
     setDirty(false);
-    Vector2 flippedPos(normalizedPosition.x, windowSize.y - normalizedPosition.y - normalizedSize.y);
+
+    Vector2 flippedPos(absolutePosition.x, windowSize.y - absolutePosition.y - absoluteSize.y);
     WidgetData data = {
-        Vector4(flippedPos, normalizedSize),
+        Vector4(flippedPos, absoluteSize),
         borderColor,
-        Vector4(cornerRadius, borderSize, 0, 0)};
+        Vector4(absoluteRadius, borderSize, 0, 0)};
+
     Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
 }

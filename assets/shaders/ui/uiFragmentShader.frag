@@ -25,8 +25,8 @@ void main() {
     vec2 size = data.rect.zw;
     vec2 halfSize = size * 0.5;
 
-    vec2 localSpace = gl_FragCoord.xy - position - (size * 0.5);
-    float distance = length(max(abs(localSpace) - halfSize + radius, 0)) - radius;
+    vec2 localSpace = gl_FragCoord.xy - position - halfSize;
+    float distance = length(max(abs(localSpace) - (halfSize - radius), 0)) - radius;
     float alpha = 1.0f - smoothstep(0.0f, 2.0f, distance);
 
     vec4 texColor = texture(uiTexture, UV);

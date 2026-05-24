@@ -29,10 +29,12 @@ class UiWidget {
         virtual ~UiWidget() = default;
 
         // Setters
-        void setSize(const Vector2& size);
+        void setSize(const Vector2& size, const bool lockAspect);
         void setColor(const Vector3& color);
         void setPosition(const Vector2& pos);
+        void setAnchorPoint(const Vector2& point);
         void setBorderColor(const Vector4& color);
+        void setSizeConstraint(const Vector2& constraint);
 
         void setOpacity(const float opacity);
         void setBorderSize(const float size);
@@ -68,8 +70,11 @@ class UiWidget {
         Vector2 size = Vector2(100.0f);
         Vector3 color = Vector3(1.0f);
         Vector2 position = Vector2(0.0f);
+        Vector2 anchorPoint = Vector2(0.0f);
         Vector4 borderColor = Vector4(0.0f);
+        Vector2 sizeConstraint = Vector2(0.0f, 0.0f);
 
+        float aspect = 0.0f;
         float opacity = 1.0f;
         float borderSize = 0.0f;
         float cornerRadius = 0.0f;
@@ -80,7 +85,6 @@ class UiWidget {
         bool wasEntered = false;
 
         // Internal Attributes
-
         Vector2 animationGoal = Vector2();
         Vector2 animationStart = Vector2();
 
