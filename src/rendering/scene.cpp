@@ -40,7 +40,8 @@ void Scene::submit() {
         renderer.renderQueue(RenderCall{
             obj->mesh->meshID,
             obj->mesh->material,
-            obj->mesh->modelMatrice()});
+            obj->mesh->modelMatrice(),
+            true});
     }
 }
 

@@ -36,6 +36,7 @@ class UiWidget {
         void setBorderColor(const Vector4& color);
         void setSizeConstraint(const Vector2& constraint);
 
+        void setMemory(const size_t memorySize);
         void setOpacity(const float opacity);
         void setBorderSize(const float size);
         void setCornerRadius(const float radius);
@@ -87,12 +88,20 @@ class UiWidget {
         // Internal Attributes
         Vector2 animationGoal = Vector2();
         Vector2 animationStart = Vector2();
+        Vector2 absoluteSize = Vector2();
+        Vector2 absolutePosition = Vector2();
 
+        float absoluteRadius = 0.0f;
         float timer = 0.0f;
         float animationDuration = 0.0f;
         bool isPlayingAnimation = false;
 
         std::vector<UiVertex> vertexData;
+
+    public:
+        // Public Methods
+        virtual void update();
+        virtual void render();
 
     protected:
         // Event Callbacks
@@ -100,15 +109,10 @@ class UiWidget {
         std::function<void()> mouseEnterCallback;
         std::function<void()> mouseLeaveCallback;
 
-    public:
-        // Public Methods
-        virtual void update();
-        virtual void render();
-
-    private:
-        // Private methods
+        // Private Methods
         // virtual void onFocused();
         // virtual void onFocusLost();
-        virtual void onMouseEnter();
-        virtual void onMouseLeave();
+        void onMouseEnter();
+        void onMouseLeave();
+        void applyConstraints();
 };

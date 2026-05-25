@@ -80,7 +80,7 @@ void Renderer::changeGPUMeshData(const unsigned int meshID, const std::vector<Ve
     glBindVertexArray(0);
 }
 
-unsigned int Renderer::addGPUUiMesh(const size_t memory, const unsigned int elementID) {
+unsigned int Renderer::addGPUUiMesh(const size_t memory) {
     unsigned int VAO, VBO, UBO;
 
     glGenVertexArrays(1, &VAO);
@@ -92,7 +92,7 @@ unsigned int Renderer::addGPUUiMesh(const size_t memory, const unsigned int elem
     glBufferData(GL_ARRAY_BUFFER, memory, nullptr, GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-    glBufferData(GL_UNIFORM_BUFFER, elementID * sizeof(WidgetData), NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, 512 * sizeof(WidgetData), NULL, GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_UNIFORM_BUFFER, 2, UBO);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)0);
@@ -104,7 +104,7 @@ unsigned int Renderer::addGPUUiMesh(const size_t memory, const unsigned int elem
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)offsetof(UiVertex, UV));
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(3, 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(UiVertex), (void*)offsetof(UiVertex, widgetID));
+    glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(UiVertex), (void*)offsetof(UiVertex, widgetID));
     glEnableVertexAttribArray(3);
 
     glBindVertexArray(0);
@@ -175,6 +175,7 @@ void Renderer::endFrame() {
         }
 
         glBindVertexArray(mesh.VAO);
+        cmd.depthTest == true ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
 
         int texCount = 0;
         for (auto& [name, texID] : cmd.material.textures) {

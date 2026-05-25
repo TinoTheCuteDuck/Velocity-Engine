@@ -18,6 +18,7 @@ struct RenderCall {
         unsigned int meshID;
         Material material;
         std::optional<Mat4> transform = std::nullopt;
+        std::optional<bool> depthTest = true;
 };
 
 struct GPUMesh {
@@ -49,7 +50,7 @@ class Renderer {
         void changeGPUVertexCount(const unsigned int meshID, const size_t vertexCount);
         void changeGPUMeshData(const unsigned int meshID, const std::vector<Vertex>& vertexData, const std::vector<unsigned int>& indices);
 
-        unsigned int addGPUUiMesh(const size_t memory, const unsigned int elementID);
+        unsigned int addGPUUiMesh(const size_t memory);
         void changeGPUUiMeshData(const unsigned int meshID, const unsigned int elementID, const size_t offset, const size_t memory, const std::vector<UiVertex>& vertexData, WidgetData& widgetData);
 
         unsigned int addShader(const std::string& vertexPath, const std::string& fragmentPath);

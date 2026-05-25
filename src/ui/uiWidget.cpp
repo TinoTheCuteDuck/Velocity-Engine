@@ -31,6 +31,9 @@ void UiWidget::setSizeConstraint(const Vector2& constraint) {
     this->sizeConstraint = constraint;
 }
 
+void UiWidget::setMemory(const size_t memorySize) {
+    this->memory = memorySize;
+}
 void UiWidget::setOpacity(const float opacity) {
     this->opacity = opacity;
 }
@@ -92,6 +95,28 @@ void UiWidget::onMouseLeave() {
         mouseLeaveCallback();
     }
 }
+void UiWidget::applyConstraints() {
+    // Apply size constraint
+    if (absoluteSize.x > sizeConstraint.x && sizeConstraint.x != 0) {
+        absoluteSize.x = sizeConstraint.x;
+    }
+    if (absoluteSize.y > sizeConstraint.y && sizeConstraint.y != 0) {
+        absoluteSize.y = sizeConstraint.y;
+    }
+
+    // Enforce aspect ratio
+    if (aspect > 0.0f) {
+        float currentAspect = absoluteSize.x / absoluteSize.y;
+        if (currentAspect > aspect) {
+            absoluteSize.x = absoluteSize.y * aspect;
+        } else {
+            absoluteSize.y = absoluteSize.x / aspect;
+        }
+    }
+
+    // Apply anchorPoint
+    absolutePosition -= absoluteSize * anchorPoint;
+}
 
 void UiWidget::update() {
     bool entered = false;
@@ -143,31 +168,13 @@ void UiWidget::render() {
     // Reset vertexData
     vertexData.clear();
 
+    // Update constraints
     Vector2 windowSize = Engine::get().window.getWindowSize();
-    Vector2 absolutePosition = position * windowSize;
-    Vector2 absoluteSize = size * windowSize;
-    float absoluteRadius = cornerRadius * std::min(windowSize.x, windowSize.y);
+    absolutePosition = position * windowSize;
+    absoluteSize = size * windowSize;
+    absoluteRadius = cornerRadius * std::min(windowSize.x, windowSize.y);
 
-    // Set Size constraint
-    if (absoluteSize.x > sizeConstraint.x && sizeConstraint.x != 0) {
-        absoluteSize.x = sizeConstraint.x;
-    }
-    if (absoluteSize.y > sizeConstraint.y && sizeConstraint.y != 0) {
-        absoluteSize.y = sizeConstraint.y;
-    }
-
-    // Enforce aspect ratio
-    if (aspect > 0.0f) {
-        float currentAspect = absoluteSize.x / absoluteSize.y;
-        if (currentAspect > aspect) {
-            absoluteSize.x = absoluteSize.y * aspect;
-        } else {
-            absoluteSize.y = absoluteSize.x / aspect;
-        }
-    }
-
-    // Apply anchorPoint
-    absolutePosition -= absoluteSize * anchorPoint;
+    applyConstraints();
 
     // Convert pixel coordinates to NDC
     float left = absolutePosition.x / windowSize.x * 2.0f - 1.0f;
@@ -176,16 +183,16 @@ void UiWidget::render() {
     float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f);
 
     // Generate vertex data with position, color with transparency and solid Color UVs
-    vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
-    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
-    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color, opacity), Vector2(0.9375f, 0.833f), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color, opacity), Vector2(0.9375f, 1.0f), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color, opacity), Vector2(1.0f, 0.833f), elementID});
 
-    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
-    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
-    vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color, opacity), Vector2(0.98f, 0.02f), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color, opacity), Vector2(1.0f, 0.833f), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color, opacity), Vector2(0.9375f, 1.0f), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color, opacity), Vector2(1.0f, 1.0f), elementID});
 
     // Reset and upload to the GPU
-    vertexCount = vertexData.size();
+    vertexCount = memory / sizeof(UiVertex);
     setDirty(false);
 
     Vector2 flippedPos(absolutePosition.x, windowSize.y - absolutePosition.y - absoluteSize.y);

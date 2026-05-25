@@ -24,11 +24,16 @@ void main() {
     vec2 position = data.rect.xy;
     vec2 size = data.rect.zw;
     vec2 halfSize = size * 0.5;
+    float alpha = 1.0f;
 
-    vec2 localSpace = gl_FragCoord.xy - position - halfSize;
-    float distance = length(max(abs(localSpace) - (halfSize - radius), 0)) - radius;
-    float alpha = 1.0f - smoothstep(0.0f, 2.0f, distance);
+    if (!(radius <= 0)) {
+        vec2 localSpace = gl_FragCoord.xy - position - halfSize;
+        float distance = length(max(abs(localSpace) - (halfSize - radius), 0)) - radius;
+        alpha = smoothstep(2.0f, 0.0f, distance);
+    }
 
     vec4 texColor = texture(uiTexture, UV);
-    FragColor = vec4(Color.rgb, alpha * Color.a * texColor.a);
+    float finalAlpha = alpha * Color.a * texColor.a;
+
+    FragColor = vec4(Color.rgb, finalAlpha);
 }

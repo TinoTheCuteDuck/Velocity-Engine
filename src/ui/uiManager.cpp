@@ -28,9 +28,10 @@ void UiManager::load() {
     for (auto& uiWidget : uiWidgets) {
         uiWidget->offset = offset;
         offset += uiWidget->memory;
-        uiWidget->elementID = elementID++;
+        uiWidget->elementID = elementID;
+        elementID++;
     }
-    meshID = Engine::get().renderer.addGPUUiMesh(offset, elementID);
+    meshID = Engine::get().renderer.addGPUUiMesh(offset);
     material = Material{Ressources::uiShader};
     material.textures["uiTexture"] = Ressources::uiTexture;
 }
@@ -42,14 +43,15 @@ void UiManager::update() {
         widget->update();
         vertexCount += widget->vertexCount;
     }
-
     Engine::get().renderer.changeGPUVertexCount(meshID, vertexCount);
 }
 
 void UiManager::submit() {
     Engine::get().renderer.renderQueue(RenderCall{
         meshID,
-        material});
+        material,
+        std::nullopt,
+        false});
 }
 
 void UiManager::reRender() {
