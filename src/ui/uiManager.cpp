@@ -39,7 +39,7 @@ void UiManager::load() {
 void UiManager::update() {
     size_t vertexCount = 0;
 
-    for (std::unique_ptr<UiWidget>& widget : uiWidgets) {
+    for (std::shared_ptr<UiWidget>& widget : uiWidgets) {
         widget->update();
         vertexCount += widget->vertexCount;
     }
@@ -56,11 +56,13 @@ void UiManager::submit() {
 
 void UiManager::reRender() {
     for (auto& uiWidget : uiWidgets) {
-        uiWidget->setDirty(true);
+        uiWidget->dirty = true;
     }
 }
 
-UiWidget* UiManager::addUiWidget(std::unique_ptr<UiWidget> element) {
-    uiWidgets.push_back(std::move(element));
-    return uiWidgets.back().get();
+template <typename T, typename... Args>
+std::shared_ptr<T> UiManager::addUiWidget(Args&&... args) {
+    auto ptr = std::make_shared<T>(std::forward<Args>(args)...);
+    uiWidgets.push_back(ptr);
+    return ptr;
 }

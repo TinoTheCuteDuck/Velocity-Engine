@@ -1,23 +1,21 @@
 #pragma once
 
+#include <ui/uiStructs.hpp>
 #include <ui/uiWidget.hpp>
 
 #include <functional>
 #include <string>
 
+using Callback = std::function<void()>;
+
 class UiText : public UiWidget {
     public:
-        // Setters
-        void setText(const std::string& text, const float textSize);
-        void setTextCallback(const std::function<void()>& callback);
-
-    protected:
-        // Attributes
-        std::string text = "";
-        float textSize = 0.00833f;
+        // Public Attributes
+        WidgetAttribute<std::string> text{""};
+        WidgetAttribute<float> textSize = 0.029629f;
 
         // Callbacks
-        std::function<void()> textCallback = []() {};
+        Callback textCallback{[]() {}};
 
     public:
         // Public Methods

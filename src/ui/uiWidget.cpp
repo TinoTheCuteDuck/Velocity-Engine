@@ -1,130 +1,98 @@
 // Includes
+#include <memory>
 #include <ui/uiWidget.hpp>
 
 #include <core/engine.hpp>
 #include <math/vector/vector2.hpp>
 
-// Setters
-void UiWidget::setSize(const Vector2& size, const bool lockAspect) {
-    this->size = size;
-    if (lockAspect) {
-        Vector2 windowSize = Engine::get().window.getWindowSize();
-        Vector2 pixelSize = size * windowSize;
-        aspect = pixelSize.x / pixelSize.y;
-    } else {
-        aspect = 0.0f;
-    }
+// Public Methods
+float UiWidget::getAbsoluteRadius() const {
+    return absoluteRadius;
 }
-void UiWidget::setColor(const Vector3& color) {
-    this->color = color;
+Vector2 UiWidget::getAbsoluteSize() const {
+    return absoluteSize;
 }
-void UiWidget::setPosition(const Vector2& pos) {
-    this->position = pos;
-}
-void UiWidget::setAnchorPoint(const Vector2& point) {
-    this->anchorPoint = point;
-}
-void UiWidget::setBorderColor(const Vector4& color) {
-    this->borderColor = color;
-}
-void UiWidget::setSizeConstraint(const Vector2& constraint) {
-    this->sizeConstraint = constraint;
+Vector2 UiWidget::getAbsolutePosition() const {
+    return absolutePosition;
 }
 
-void UiWidget::setMemory(const size_t memorySize) {
-    this->memory = memorySize;
-}
-void UiWidget::setOpacity(const float opacity) {
-    this->opacity = opacity;
-}
-void UiWidget::setBorderSize(const float size) {
-    this->borderSize = size;
-}
-void UiWidget::setCornerRadius(const float radius) {
-    this->cornerRadius = radius;
-}
-
-void UiWidget::setDirty(const bool state) {
-    this->dirty = state;
-}
-void UiWidget::setEnabled(const bool state) {
-    this->enabled = state;
-}
-void UiWidget::setVisible(const bool state) {
-    this->visible = state;
-}
-
-void UiWidget::setUpdateCallback(const std::function<void()>& callback) {
-    this->updateCallback = callback;
-}
-void UiWidget::setMouseEnterCallback(const std::function<void()>& callback) {
-    this->mouseEnterCallback = callback;
-}
-void UiWidget::setMouseLeaveCallback(const std::function<void()>& callback) {
-    this->mouseLeaveCallback = callback;
+void UiWidget::addChild(std::shared_ptr<UiWidget> child) {
+    child->parent = this;
+    children.push_back(std::move(child));
 }
 void UiWidget::playAnimation(const Vector2& goal, const float duration) {
     timer = 0.0f;
     animationGoal = goal;
-    animationStart = position;
+    animationStart = position.get();
     animationDuration = duration;
     isPlayingAnimation = true;
 }
 
-// Getters
-Vector2 UiWidget::getSize() {
-    return size;
-}
-Vector4 UiWidget::getColor() {
-    return Vector4(color, opacity);
-}
-Vector2 UiWidget::getPosition() {
-    return position;
-}
+// Event callbacks
+void UiWidget::hitDetection() {
+    focused = false;
+    dragging = false;
 
-//
-void onFocused();
-void onFocusLost();
-void UiWidget::onMouseEnter() {
-    if (mouseEnterCallback) {
+    Input& input = Engine::get().input;
+    Vector2 mousePos = input.getMousePos();
+
+    // Mouse hit detection
+    if (mousePos.x >= absolutePosition.x && mousePos.x <= (absolutePosition.x + absoluteSize.x) &&
+        mousePos.y >= absolutePosition.y && mousePos.y <= (absolutePosition.y + absoluteSize.y))
+        focused = true;
+
+    if (focused && input.isButtonHeld(GLFW_MOUSE_BUTTON_LEFT)) {
+        dragging = true;
+    }
+
+    if (!wasDragging && dragging) {
+        dragStartCallback();
+    }
+
+    if (wasDragging && dragging) {
+        dragCallback();
+    }
+
+    if (wasDragging && !dragging) {
+        dragEndCallback();
+    }
+
+    if (!wasFocused && focused)
         mouseEnterCallback();
-    }
-}
-void UiWidget::onMouseLeave() {
-    if (mouseLeaveCallback) {
+    if (wasFocused && !focused)
         mouseLeaveCallback();
-    }
+
+    wasFocused = focused;
+    wasDragging = dragging;
 }
 void UiWidget::applyConstraints() {
-    // Apply size constraint
-    if (absoluteSize.x > sizeConstraint.x && sizeConstraint.x != 0) {
-        absoluteSize.x = sizeConstraint.x;
-    }
-    if (absoluteSize.y > sizeConstraint.y && sizeConstraint.y != 0) {
-        absoluteSize.y = sizeConstraint.y;
-    }
-
     // Enforce aspect ratio
-    if (aspect > 0.0f) {
+    float aspectRatio = aspect.get();
+    if (aspectRatio > 0.0f) {
         float currentAspect = absoluteSize.x / absoluteSize.y;
-        if (currentAspect > aspect) {
-            absoluteSize.x = absoluteSize.y * aspect;
+        if (currentAspect > aspectRatio) {
+            absoluteSize.x = absoluteSize.y * aspectRatio;
         } else {
-            absoluteSize.y = absoluteSize.x / aspect;
+            absoluteSize.y = absoluteSize.x / aspectRatio;
         }
     }
 
+    // Apply size constraint
+    Vector2 constraint = sizeConstraint.get();
+    if (absoluteSize.x > constraint.x && constraint.x != 0) {
+        absoluteSize.x = constraint.x;
+    }
+    if (absoluteSize.y > constraint.y && constraint.y != 0) {
+        absoluteSize.y = constraint.y;
+    }
+
     // Apply anchorPoint
-    absolutePosition -= absoluteSize * anchorPoint;
+    absolutePosition -= absoluteSize * anchorPoint.get();
 }
 
 void UiWidget::update() {
-    bool entered = false;
     float dt = Engine::get().time.getDt();
-    Vector2 mousePos = Engine::get().input.getMousePos();
-    Vector2 windowSize = Engine::get().window.getWindowSize();
-    Vector2 absolutePosition = position * windowSize;
-    Vector2 absoluteSize = size * windowSize;
+    hitDetection();
 
     // Update
     if (updateCallback) {
@@ -135,26 +103,14 @@ void UiWidget::update() {
     if (isPlayingAnimation) {
         timer += dt;
         float alpha = std::min(timer / animationDuration, 1.0f);
-        position = Vector2::lerp(animationStart, animationGoal, alpha);
+        position.set(Vector2::lerp(animationStart, animationGoal, alpha));
 
         if (alpha >= 1.0f) {
             isPlayingAnimation = false;
-            position = animationGoal;
+            position.set(animationGoal);
         }
         dirty = true;
     }
-
-    // Mouse hit detection
-    if (mousePos.x >= absolutePosition.x && mousePos.x <= (absolutePosition.x + absoluteSize.x) &&
-        mousePos.y >= absolutePosition.y && mousePos.y <= (absolutePosition.y + absoluteSize.y))
-        entered = true;
-
-    if (!wasEntered && entered)
-        onMouseEnter();
-    if (wasEntered && !entered)
-        onMouseLeave();
-
-    wasEntered = entered;
 
     // Renders itself and children if it's dirty
     if (dirty) {
@@ -170,9 +126,14 @@ void UiWidget::render() {
 
     // Update constraints
     Vector2 windowSize = Engine::get().window.getWindowSize();
-    absolutePosition = position * windowSize;
-    absoluteSize = size * windowSize;
-    absoluteRadius = cornerRadius * std::min(windowSize.x, windowSize.y);
+    if (parent) {
+        absolutePosition = parent->getAbsolutePosition() + position.get() * parent->getAbsoluteSize();
+        absoluteSize = size.get() * parent->getAbsoluteSize();
+    } else {
+        absolutePosition = position.get() * windowSize;
+        absoluteSize = size.get() * windowSize;
+    }
+    absoluteRadius = cornerRadius.get() * std::min(windowSize.x, windowSize.y);
 
     applyConstraints();
 
@@ -183,23 +144,23 @@ void UiWidget::render() {
     float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f);
 
     // Generate vertex data with position, color with transparency and solid Color UVs
-    vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color, opacity), Vector2(0.9375f, 0.833f), elementID});
-    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color, opacity), Vector2(0.9375f, 1.0f), elementID});
-    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color, opacity), Vector2(1.0f, 0.833f), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color.get(), opacity.get()), Vector2(0.9375f, 0.833f), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.9375f, 1.0f), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(1.0f, 0.833f), elementID});
 
-    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color, opacity), Vector2(1.0f, 0.833f), elementID});
-    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color, opacity), Vector2(0.9375f, 1.0f), elementID});
-    vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color, opacity), Vector2(1.0f, 1.0f), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(1.0f, 0.833f), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.9375f, 1.0f), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color.get(), opacity.get()), Vector2(1.0f, 1.0f), elementID});
 
     // Reset and upload to the GPU
     vertexCount = memory / sizeof(UiVertex);
-    setDirty(false);
+    dirty = false;
 
     Vector2 flippedPos(absolutePosition.x, windowSize.y - absolutePosition.y - absoluteSize.y);
     WidgetData data = {
         Vector4(flippedPos, absoluteSize),
-        borderColor,
-        Vector4(absoluteRadius, borderSize, 0, 0)};
+        borderColor.get(),
+        Vector4(absoluteRadius, borderSize.get(), 0, 0)};
 
     Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
 }

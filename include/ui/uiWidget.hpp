@@ -5,21 +5,13 @@
 #include <math/vector/vector3.hpp>
 #include <math/vector/vector4.hpp>
 
+#include <ui/uiStructs.hpp>
+
 #include <functional>
+#include <memory>
 #include <vector>
 
-struct UiVertex {
-        Vector2 position;
-        Vector4 color;
-        Vector2 UV;
-        unsigned int widgetID;
-};
-
-struct WidgetData {
-        Vector4 rect; // x, y = Position; z, w = Size;
-        Vector4 borderColor;
-        Vector4 params; // x = corner Radius; y = border Size; z, w = unused
-};
+using Callback = std::function<void()>;
 
 // Default UiWidget everything inherits from.
 class UiWidget {
@@ -28,73 +20,69 @@ class UiWidget {
         UiWidget() = default;
         virtual ~UiWidget() = default;
 
-        // Setters
-        void setSize(const Vector2& size, const bool lockAspect);
-        void setColor(const Vector3& color);
-        void setPosition(const Vector2& pos);
-        void setAnchorPoint(const Vector2& point);
-        void setBorderColor(const Vector4& color);
-        void setSizeConstraint(const Vector2& constraint);
+        // Read-only getters
+        float getAbsoluteRadius() const;
+        Vector2 getAbsoluteSize() const;
+        Vector2 getAbsolutePosition() const;
 
-        void setMemory(const size_t memorySize);
-        void setOpacity(const float opacity);
-        void setBorderSize(const float size);
-        void setCornerRadius(const float radius);
-
-        void setDirty(const bool state);
-        void setEnabled(const bool state);
-        void setVisible(const bool state);
-
-        void setUpdateCallback(const std::function<void()>& callback);
-        void setMouseEnterCallback(const std::function<void()>& callback);
-        void setMouseLeaveCallback(const std::function<void()>& callback);
-
+        void addChild(std::shared_ptr<UiWidget> child);
         void playAnimation(const Vector2& goal, const float duration);
 
-        // Getters
-        Vector2 getSize();
-        Vector4 getColor();
-        Vector2 getPosition();
+    public:
+        // Public Attributes
+        UiWidget* parent{nullptr};
+        std::vector<std::shared_ptr<UiWidget>> children;
+
+        unsigned int elementID{0};
+        size_t memory{sizeof(UiVertex) * 6};
+        size_t offset{0};
+        size_t vertexCount{6};
 
     public:
-        // Public attributes
-        UiWidget* parent = nullptr;
-        std::vector<UiWidget*> children;
+        // Attributes
+        WidgetAttribute<Vector2> size{0.1f};
+        WidgetAttribute<Vector3> color{1.0f};
+        WidgetAttribute<Vector2> position{0.0f};
+        WidgetAttribute<Vector2> anchorPoint{0.0f};
+        WidgetAttribute<Vector4> borderColor{0.0f};
+        WidgetAttribute<Vector2> sizeConstraint{0.0f};
 
-        unsigned int elementID = 0;
-        size_t memory = sizeof(UiVertex) * 6;
-        size_t offset = 0;
-        size_t vertexCount = 6;
+        WidgetAttribute<float> aspect{0.0f};
+        WidgetAttribute<float> opacity{1.0f};
+        WidgetAttribute<float> borderSize{0.0f};
+        WidgetAttribute<float> cornerRadius{0.0f};
+
+        bool dirty{true};
+        bool enabled{true};
+        bool visible{true};
+
+    public:
+        // Event Callbacks
+        Callback updateCallback{[]() {}};
+        Callback mouseEnterCallback{[]() {}};
+        Callback mouseLeaveCallback{[]() {}};
+
+        Callback dragCallback{[]() {}};
+        Callback dragEndCallback{[]() {}};
+        Callback dragStartCallback{[]() {}};
 
     protected:
-        // Attributes
-        Vector2 size = Vector2(100.0f);
-        Vector3 color = Vector3(1.0f);
-        Vector2 position = Vector2(0.0f);
-        Vector2 anchorPoint = Vector2(0.0f);
-        Vector4 borderColor = Vector4(0.0f);
-        Vector2 sizeConstraint = Vector2(0.0f, 0.0f);
-
-        float aspect = 0.0f;
-        float opacity = 1.0f;
-        float borderSize = 0.0f;
-        float cornerRadius = 0.0f;
-
-        bool dirty = true;
-        bool enabled = true;
-        bool visible = true;
-        bool wasEntered = false;
-
         // Internal Attributes
-        Vector2 animationGoal = Vector2();
-        Vector2 animationStart = Vector2();
-        Vector2 absoluteSize = Vector2();
-        Vector2 absolutePosition = Vector2();
+        Vector2 animationGoal{};
+        Vector2 animationStart{};
 
-        float absoluteRadius = 0.0f;
-        float timer = 0.0f;
-        float animationDuration = 0.0f;
-        bool isPlayingAnimation = false;
+        Vector2 absoluteSize{};
+        Vector2 absolutePosition{};
+        float absoluteRadius{0.0f};
+
+        float timer{0.0f};
+        float animationDuration{0.0f};
+        bool isPlayingAnimation{false};
+
+        bool focused{false};
+        bool wasFocused{false};
+        bool dragging{false};
+        bool wasDragging{false};
 
         std::vector<UiVertex> vertexData;
 
@@ -104,15 +92,9 @@ class UiWidget {
         virtual void render();
 
     protected:
-        // Event Callbacks
-        std::function<void()> updateCallback;
-        std::function<void()> mouseEnterCallback;
-        std::function<void()> mouseLeaveCallback;
-
         // Private Methods
         // virtual void onFocused();
         // virtual void onFocusLost();
-        void onMouseEnter();
-        void onMouseLeave();
+        void hitDetection();
         void applyConstraints();
 };

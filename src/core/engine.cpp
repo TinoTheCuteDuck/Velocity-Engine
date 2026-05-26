@@ -19,7 +19,7 @@ void Engine::init() {
 
     Ressources::pbrShader = renderer.addShader(ASSETS_PATH "shaders/scene/vertexShader.vert", ASSETS_PATH "shaders/scene/fragmentShader.frag");
     Ressources::uiShader = renderer.addShader(ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag");
-    Ressources::uiTexture = renderer.addTexture(ASSETS_PATH "textures/JetBrainsMonoNerdFont-Regular-atlas.png", GL_REPEAT, GL_NEAREST, false);
+    Ressources::uiTexture = renderer.addTexture(ASSETS_PATH "textures/JetBrainsMonoNerdFont-Regular-atlas.png", GL_REPEAT, GL_LINEAR, false);
 
     input.init();
     uiManager.load();

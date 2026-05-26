@@ -1,4 +1,5 @@
 // Includes
+#include "math/vector/vector2.hpp"
 #include <ui/uiText.hpp>
 
 #include <core/engine.hpp>
@@ -7,21 +8,11 @@
 #include <functional>
 #include <string>
 
-// Setters
-void UiText::setText(const std::string& text, const float textSize) {
-    this->text = text;
-    this->textSize = textSize;
-}
-void UiText::setTextCallback(const std::function<void()>& callback) {
-    this->textCallback = callback;
-}
-
 // Public methods
 void UiText::update() {
     // Update text
     if (textCallback) {
         textCallback();
-        setDirty(true);
     }
 
     // Update default UiWidget
@@ -33,17 +24,23 @@ void UiText::render() {
 
     // Update constraints
     Vector2 windowSize = Engine::get().window.getWindowSize();
-    float absoluteTextSize = textSize * std::min(windowSize.x, windowSize.y);
+    float absoluteTextSize = textSize.get() * std::min(windowSize.x, windowSize.y);
     float characterSpacing = absoluteTextSize * 0.55f;
+    absoluteSize = Vector2(characterSpacing * text.get().size(), absoluteTextSize);
+    absoluteRadius = cornerRadius.get() * std::min(windowSize.x, windowSize.y);
 
-    absolutePosition = position * windowSize;
-    absoluteSize = Vector2(characterSpacing * text.size(), absoluteTextSize);
-    absoluteRadius = cornerRadius * std::min(windowSize.x, windowSize.y);
+    if (parent) {
+        Vector2 absoluteParentSize = parent->getAbsoluteSize();
+        Vector2 absoluteParentPosition = parent->getAbsolutePosition();
+        absolutePosition = absoluteParentPosition + position.get() * absoluteParentSize;
+    } else {
+        absolutePosition = position.get() * windowSize;
+    }
 
     applyConstraints();
 
     // Generate text quads
-    for (size_t i = 0; i < text.size(); i++) {
+    for (size_t i = 0; i < text.get().size(); i++) {
         // Convert pixel coordinates to NDC
         float x = absolutePosition.x + i * characterSpacing;
         float y = absolutePosition.y;
@@ -57,7 +54,7 @@ void UiText::render() {
         float cellSize = 72.0f;
         Vector2 texSize(1152.0f, 432.0f);
 
-        int character = text.at(i) - 32;
+        int character = text.get().at(i) - 32;
         int col = character % 16;
         int row = character / 16;
 
@@ -67,24 +64,25 @@ void UiText::render() {
         float bottomUV = ((row + 1) * cellSize) / texSize.y;
 
         // Generate VertexData
-        vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color, opacity), Vector2(leftUV, topUV), elementID});
-        vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color, opacity), Vector2(leftUV, bottomUV), elementID});
-        vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color, opacity), Vector2(rightUV, topUV), elementID});
+        Vector4 color4(color.get(), opacity.get());
+        vertexData.push_back(UiVertex{Vector2(left, top), color4, Vector2(leftUV, topUV), elementID});
+        vertexData.push_back(UiVertex{Vector2(left, bottom), color4, Vector2(leftUV, bottomUV), elementID});
+        vertexData.push_back(UiVertex{Vector2(right, top), color4, Vector2(rightUV, topUV), elementID});
 
-        vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color, opacity), Vector2(rightUV, topUV), elementID});
-        vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color, opacity), Vector2(leftUV, bottomUV), elementID});
-        vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color, opacity), Vector2(rightUV, bottomUV), elementID});
+        vertexData.push_back(UiVertex{Vector2(right, top), color4, Vector2(rightUV, topUV), elementID});
+        vertexData.push_back(UiVertex{Vector2(left, bottom), color4, Vector2(leftUV, bottomUV), elementID});
+        vertexData.push_back(UiVertex{Vector2(right, bottom), color4, Vector2(rightUV, bottomUV), elementID});
     }
 
     // Reset and upload to the GPU
     vertexCount = memory / sizeof(UiVertex);
-    setDirty(false);
+    dirty = false;
 
     Vector2 flippedPos(absolutePosition.x, windowSize.y - absolutePosition.y - absoluteSize.y);
     WidgetData data = {
         Vector4(flippedPos, absoluteSize),
-        borderColor,
-        Vector4(absoluteRadius, borderSize, 0, 0)};
+        borderColor.get(),
+        Vector4(absoluteRadius, borderSize.get(), 0, 0)};
 
     Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
 };

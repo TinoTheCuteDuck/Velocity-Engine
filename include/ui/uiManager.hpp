@@ -19,8 +19,9 @@ class UiManager {
         void submit();
         void reRender();
 
-        UiWidget* addUiWidget(std::unique_ptr<UiWidget> element);
+        template <typename T, typename... Args>
+        std::shared_ptr<T> addUiWidget(Args&&... args);
 
     private:
-        std::vector<std::unique_ptr<UiWidget>> uiWidgets;
+        std::vector<std::shared_ptr<UiWidget>> uiWidgets;
 };

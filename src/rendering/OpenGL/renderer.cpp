@@ -10,7 +10,7 @@
 #include <rendering/OpenGL/texture.hpp>
 #include <rendering/mesh.hpp>
 
-#include <ui/uiWidget.hpp>
+#include <ui/uiStructs.hpp>
 
 #include <stdexcept>
 #include <tuple>
