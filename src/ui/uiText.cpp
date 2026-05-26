@@ -1,5 +1,6 @@
 // Includes
 #include "math/vector/vector2.hpp"
+#include <stdexcept>
 #include <ui/uiText.hpp>
 
 #include <core/engine.hpp>
@@ -76,6 +77,8 @@ void UiText::render() {
 
     // Reset and upload to the GPU
     vertexCount = memory / sizeof(UiVertex);
+    if (vertexCount < vertexData.size())
+        throw std::runtime_error("Not enough memory on the UiText");
     dirty = false;
 
     Vector2 flippedPos(absolutePosition.x, windowSize.y - absolutePosition.y - absoluteSize.y);

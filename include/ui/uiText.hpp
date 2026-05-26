@@ -3,17 +3,15 @@
 #include <ui/uiStructs.hpp>
 #include <ui/uiWidget.hpp>
 
-#include <functional>
 #include <string>
-
-using Callback = std::function<void()>;
 
 class UiText : public UiWidget {
     public:
         // Public Attributes
         WidgetAttribute<std::string> text{""};
-        WidgetAttribute<float> textSize = 0.029629f;
+        WidgetAttribute<float> textSize{0.029629f};
 
+    public:
         // Callbacks
         Callback textCallback{[]() {}};
 

@@ -1,5 +1,6 @@
 // Includes
 #include <memory>
+#include <ui/uiStructs.hpp>
 #include <ui/uiWidget.hpp>
 
 #include <core/engine.hpp>
@@ -31,7 +32,6 @@ void UiWidget::playAnimation(const Vector2& goal, const float duration) {
 // Event callbacks
 void UiWidget::hitDetection() {
     focused = false;
-    dragging = false;
 
     Input& input = Engine::get().input;
     Vector2 mousePos = input.getMousePos();
@@ -41,29 +41,12 @@ void UiWidget::hitDetection() {
         mousePos.y >= absolutePosition.y && mousePos.y <= (absolutePosition.y + absoluteSize.y))
         focused = true;
 
-    if (focused && input.isButtonHeld(GLFW_MOUSE_BUTTON_LEFT)) {
-        dragging = true;
-    }
-
-    if (!wasDragging && dragging) {
-        dragStartCallback();
-    }
-
-    if (wasDragging && dragging) {
-        dragCallback();
-    }
-
-    if (wasDragging && !dragging) {
-        dragEndCallback();
-    }
-
     if (!wasFocused && focused)
         mouseEnterCallback();
     if (wasFocused && !focused)
         mouseLeaveCallback();
 
     wasFocused = focused;
-    wasDragging = dragging;
 }
 void UiWidget::applyConstraints() {
     // Enforce aspect ratio

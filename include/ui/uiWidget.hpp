@@ -62,10 +62,6 @@ class UiWidget {
         Callback mouseEnterCallback{[]() {}};
         Callback mouseLeaveCallback{[]() {}};
 
-        Callback dragCallback{[]() {}};
-        Callback dragEndCallback{[]() {}};
-        Callback dragStartCallback{[]() {}};
-
     protected:
         // Internal Attributes
         Vector2 animationGoal{};
@@ -81,8 +77,6 @@ class UiWidget {
 
         bool focused{false};
         bool wasFocused{false};
-        bool dragging{false};
-        bool wasDragging{false};
 
         std::vector<UiVertex> vertexData;
 

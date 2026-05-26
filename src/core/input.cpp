@@ -8,6 +8,8 @@
 void Input::init() {
     GLFWwindow* window = Engine::get().window.getWindow();
 
+    currentCharacters.reserve(128);
+
     std::memset(currentKeys, false, sizeof(currentKeys));
     std::memset(previousKeys, false, sizeof(previousKeys));
     std::memset(currentMouseButtons, false, sizeof(currentMouseButtons));
@@ -19,6 +21,11 @@ void Input::init() {
             input.currentKeys[key] = true;
         if (action == GLFW_RELEASE)
             input.currentKeys[key] = false;
+    });
+
+    glfwSetCharCallback(window, []([[maybe_unused]] GLFWwindow* window, unsigned int codepoint) {
+        Input& input = Engine::get().input;
+        input.currentCharacters.push_back((char)codepoint);
     });
 
     glfwSetMouseButtonCallback(window, []([[maybe_unused]] GLFWwindow* window, int button, int action, [[maybe_unused]] int mods) {
@@ -76,6 +83,10 @@ bool Input::isButtonReleased(int button) {
     return !currentMouseButtons[button] && previousMouseButtons[button];
 }
 
+const std::vector<char>& Input::getCurrentCharacter() {
+    return currentCharacters;
+}
+
 Vector2 Input::getMouseDelta() {
     return mousePosition - previousMousePosition;
 }
@@ -100,4 +111,5 @@ void Input::update() {
     std::memcpy(previousMouseButtons, currentMouseButtons, sizeof(currentMouseButtons));
     previousMousePosition = mousePosition;
     scrollOffset = Vector2();
+    currentCharacters.clear();
 }

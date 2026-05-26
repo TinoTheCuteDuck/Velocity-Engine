@@ -6,7 +6,9 @@
 #include <memory>
 #include <ui/uiButton.hpp>
 #include <ui/uiManager.hpp>
+#include <ui/uiSlider.hpp>
 #include <ui/uiText.hpp>
+#include <ui/uiTextBox.hpp>
 #include <ui/uiWidget.hpp>
 
 inline void loadUi() {
@@ -60,5 +62,35 @@ inline void loadUi() {
             renderer.enableWireframe(!renderer.getWireframeEnabled());
             button->color.set(renderer.getWireframeEnabled() ? Vector3(1.0f, 0, 0) : Vector3(0, 0, 1.0f));
         };
+    }
+    {
+        auto dragAble = manager.addUiWidget<UiSlider>();
+        dragAble->position.set(Vector2(0.5, 0.7));
+        dragAble->size.set(Vector2(0.1));
+        dragAble->aspect.set(1.0f);
+        dragAble->color.set(Vector3(0.1, 1, 0.1));
+        dragAble->onDragStart = [dragAble]() {
+            Vector2 mousePos = Engine::get().input.getMousePos();
+            Vector2 windowSize = Engine::get().window.getWindowSize();
+
+            Vector2 offset = mousePos - dragAble->getAbsolutePosition();
+            Vector2 normalizedOffset = Vector2(offset.x / windowSize.x, offset.y / windowSize.y);
+            dragAble->dragOffset.set(normalizedOffset);
+        };
+        dragAble->onDrag = [dragAble]() {
+            Vector2 mousePos = Engine::get().input.getMousePos();
+            Vector2 windowSize = Engine::get().window.getWindowSize();
+            Vector2 normalizedPos = Vector2(mousePos.x / windowSize.x, mousePos.y / windowSize.y);
+            dragAble->position.set(normalizedPos - dragAble->dragOffset.get());
+            dragAble->dirty = true;
+        };
+    }
+    {
+        auto textBox = manager.addUiWidget<UiTextBox>();
+        textBox->position.set(Vector2(0.5f));
+        textBox->size.set(Vector2(0.1f));
+        textBox->aspect.set(1.0f);
+        textBox->color.set(Vector3(0.0f, 1.0f, 1.0f));
+        textBox->opacity.set(0.0f);
     }
 }
