@@ -120,6 +120,11 @@ void Renderer::changeGPUUiMeshData(const unsigned int meshID, const unsigned int
     GPUMesh& mesh = meshes.at(meshID);
     glBindVertexArray(mesh.VAO);
     glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
+    if (vertexData.size() * sizeof(UiVertex) < memory) {
+        size_t clearSize = memory - (vertexData.size() * sizeof(UiVertex));
+        std::vector<char> zeros(clearSize, 0);
+        glBufferSubData(GL_ARRAY_BUFFER, offset + vertexData.size() * sizeof(UiVertex), clearSize, zeros.data());
+    }
     glBufferSubData(GL_ARRAY_BUFFER, offset, vertexData.size() * sizeof(UiVertex), vertexData.data());
 
     glBindBuffer(GL_UNIFORM_BUFFER, mesh.UBO);

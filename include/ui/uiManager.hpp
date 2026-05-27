@@ -20,7 +20,11 @@ class UiManager {
         void reRender();
 
         template <typename T, typename... Args>
-        std::shared_ptr<T> addUiWidget(Args&&... args);
+        std::shared_ptr<T> addUiWidget(Args&&... args) {
+            auto ptr = std::make_shared<T>(std::forward<Args>(args)...);
+            uiWidgets.push_back(ptr);
+            return ptr;
+        }
 
     private:
         std::vector<std::shared_ptr<UiWidget>> uiWidgets;

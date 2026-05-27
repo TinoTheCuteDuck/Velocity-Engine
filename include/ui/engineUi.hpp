@@ -38,7 +38,7 @@ inline void loadUi() {
         };
 
         {
-            auto test3 = manager.addUiWidget<UiText>();
+            auto test3 = std::make_shared<UiText>();
             test3->position.set(Vector2(0.5f, 0.01));
             test3->anchorPoint.set(Vector2(0.5f, 0));
             test3->memory = sizeof(UiVertex) * 6 * 24;
@@ -88,9 +88,9 @@ inline void loadUi() {
     {
         auto textBox = manager.addUiWidget<UiTextBox>();
         textBox->position.set(Vector2(0.5f));
+        textBox->anchorPoint.set(Vector2(0.5f));
         textBox->size.set(Vector2(0.1f));
         textBox->aspect.set(1.0f);
         textBox->color.set(Vector3(0.0f, 1.0f, 1.0f));
-        textBox->opacity.set(0.0f);
     }
 }
