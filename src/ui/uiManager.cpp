@@ -49,10 +49,14 @@ void UiManager::load() {
 
 void UiManager::update() {
     size_t vertexCount = 0;
+    uiFocus = false;
 
     std::function<void(std::shared_ptr<UiWidget>&)> updateRecursive =
         [&](std::shared_ptr<UiWidget>& widget) {
             widget->update();
+            if (widget->focused && !uiFocus) {
+                uiFocus = true;
+            }
             vertexCount += widget->vertexCount;
 
             for (auto& child : widget->children) {

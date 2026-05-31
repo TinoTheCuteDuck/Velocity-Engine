@@ -13,6 +13,7 @@ struct Vertex {
         Vector3 position;
         Vector2 UV;
         Vector3 normal;
+        Vector3 color;
 };
 
 struct BoundingBox {
@@ -29,8 +30,9 @@ class Mesh {
         unsigned int meshID;
         Material material;
 
-        Vector3 position;
-        Vector3 scale;
+        Vector3 position = Vector3(0);
+        Vector3 scale = Vector3(1);
+        Vector3 color = Vector3(1);
 
         std::vector<Vertex> vertexData;
         std::vector<unsigned int> indices;

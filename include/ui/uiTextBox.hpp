@@ -12,12 +12,13 @@ class UiTextBox : public UiWidget {
 
         // Public Attributes
         WidgetAttribute<std::string> defaultText{""};
-
-    protected:
         std::shared_ptr<UiText> textObject;
 
-        // Internal Attributes
         bool keyboardFocus{false};
+
+        // Callbacks
+        Callback onKeyboardFocusCallback{[]() {}};
+        Callback onKeyboardFocusLostCallback{[]() {}};
 
     public:
         // Public methods

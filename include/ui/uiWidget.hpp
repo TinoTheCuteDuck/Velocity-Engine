@@ -22,11 +22,12 @@ class UiWidget {
 
         // Read-only getters
         float getAbsoluteRadius() const;
+        float getAbsoluteBorderSize() const;
         Vector2 getAbsoluteSize() const;
         Vector2 getAbsolutePosition() const;
 
         void addChild(std::shared_ptr<UiWidget> child);
-        void playAnimation(const Vector2& goal, const float duration);
+        void playAnimation(std::unique_ptr<WidgetAnimationBase> animation);
 
     public:
         // Public Attributes
@@ -37,6 +38,9 @@ class UiWidget {
         size_t memory{sizeof(UiVertex) * 6};
         size_t offset{0};
         size_t vertexCount{6};
+
+        bool focused{false};
+        bool wasFocused{false};
 
     public:
         // Attributes
@@ -52,6 +56,8 @@ class UiWidget {
         WidgetAttribute<float> borderSize{0.0f};
         WidgetAttribute<float> cornerRadius{0.0f};
 
+        WidgetAttribute<bool> clipDescendants{true};
+
         bool dirty{true};
         bool enabled{true};
         bool visible{true};
@@ -64,21 +70,13 @@ class UiWidget {
 
     protected:
         // Internal Attributes
-        Vector2 animationGoal{};
-        Vector2 animationStart{};
-
         Vector2 absoluteSize{};
         Vector2 absolutePosition{};
         float absoluteRadius{0.0f};
-
-        float timer{0.0f};
-        float animationDuration{0.0f};
-        bool isPlayingAnimation{false};
-
-        bool focused{false};
-        bool wasFocused{false};
+        float absoluteBorderSize{0.0f};
 
         std::vector<UiVertex> vertexData;
+        std::vector<std::unique_ptr<WidgetAnimationBase>> activeAnimations;
 
     public:
         // Public Methods

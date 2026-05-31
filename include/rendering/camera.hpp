@@ -26,6 +26,8 @@ class Camera {
         float getNearPlane();
         float getFarPlane();
 
+        bool movementBlocked = false;
+
     private:
         void computeVectors();
 
@@ -37,9 +39,9 @@ class Camera {
         float farPlane = 5000.0f;
 
         float yaw = -90.0f;
-        float pitch = -45.0f;
+        float pitch = 0.0f;
         Vector3 up;
         Vector3 right;
         Vector3 forward;
-        Vector3 position = Vector3(0);
+        Vector3 position = Vector3(0, 3, 8);
 };

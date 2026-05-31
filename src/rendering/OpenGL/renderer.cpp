@@ -24,6 +24,7 @@ Renderer::Renderer() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
+    glEnable(GL_STENCIL_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     commands.reserve(1024);
@@ -51,6 +52,9 @@ unsigned int Renderer::addGPUMesh(const std::vector<Vertex>& vertexData, const s
 
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
     glEnableVertexAttribArray(2);
+
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
+    glEnableVertexAttribArray(3);
 
     glBindVertexArray(0);
 
@@ -159,7 +163,7 @@ void Renderer::startFrame() {
     Camera& camera = Engine::get().camera;
     Window& window = Engine::get().window;
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     Shader& shader = shaders.at(Ressources::pbrShader);
     shader.use();

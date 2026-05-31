@@ -1,12 +1,12 @@
 // Includes
-#include "math/vector/vector2.hpp"
-#include <stdexcept>
 #include <ui/uiText.hpp>
 
 #include <core/engine.hpp>
+#include <math/vector/vector2.hpp>
 #include <ui/uiWidget.hpp>
 
 #include <functional>
+#include <stdexcept>
 #include <string>
 
 // Public methods
@@ -27,8 +27,11 @@ void UiText::render() {
     Vector2 windowSize = Engine::get().window.getWindowSize();
     float absoluteTextSize = textSize.get() * std::min(windowSize.x, windowSize.y);
     float characterSpacing = absoluteTextSize * 0.55f;
-    absoluteSize = Vector2(characterSpacing * text.get().size(), absoluteTextSize);
+
+    float padding = absoluteTextSize * 0.15f;
+    absoluteSize = Vector2(characterSpacing * text.get().size() + padding, absoluteTextSize + padding);
     absoluteRadius = cornerRadius.get() * std::min(windowSize.x, windowSize.y);
+    absoluteBorderSize = borderSize.get() * std::min(windowSize.x, windowSize.y);
 
     if (parent) {
         Vector2 absoluteParentSize = parent->getAbsoluteSize();
@@ -85,7 +88,25 @@ void UiText::render() {
     WidgetData data = {
         Vector4(flippedPos, absoluteSize),
         borderColor.get(),
-        Vector4(absoluteRadius, borderSize.get(), 0, 0)};
+        Vector4(absoluteRadius, absoluteBorderSize, 0, 0),
+        Vector4(0.0f),
+        Vector4(0.0f)};
+
+    if (parent && clipDescendants.get()) {
+        Vector2 absoluteParentSize = parent->getAbsoluteSize();
+        Vector2 absoluteParentPosition = parent->getAbsolutePosition();
+        Vector2 flippedParentPos(absoluteParentPosition.x, windowSize.y - absoluteParentPosition.y - absoluteParentSize.y);
+        data = {
+            Vector4(flippedPos, absoluteSize),
+            borderColor.get(),
+            Vector4(absoluteRadius, absoluteBorderSize, 0, 0),
+            Vector4(flippedParentPos, absoluteParentSize),
+            Vector4(parent->getAbsoluteRadius(), parent->getAbsoluteBorderSize(), 0, 0)};
+    }
 
     Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
+    // Render children recursively
+    for (auto& child : children) {
+        child->render();
+    }
 };

@@ -26,6 +26,8 @@ class UiManager {
             return ptr;
         }
 
+        bool uiFocus = false;
+
     private:
         std::vector<std::shared_ptr<UiWidget>> uiWidgets;
 };

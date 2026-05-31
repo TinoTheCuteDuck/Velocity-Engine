@@ -14,6 +14,9 @@ Camera::Camera() {
 }
 
 void Camera::update() {
+    if (movementBlocked)
+        return;
+
     Input& input = Engine::get().input;
     float dt = Engine::get().time.getDt();
     float flightSpeed = flySpeed * dt;

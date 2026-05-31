@@ -10,6 +10,9 @@
 float UiWidget::getAbsoluteRadius() const {
     return absoluteRadius;
 }
+float UiWidget::getAbsoluteBorderSize() const {
+    return absoluteBorderSize;
+}
 Vector2 UiWidget::getAbsoluteSize() const {
     return absoluteSize;
 }
@@ -21,12 +24,13 @@ void UiWidget::addChild(std::shared_ptr<UiWidget> child) {
     child->parent = this;
     children.push_back(std::move(child));
 }
-void UiWidget::playAnimation(const Vector2& goal, const float duration) {
-    timer = 0.0f;
-    animationGoal = goal;
-    animationStart = position.get();
-    animationDuration = duration;
-    isPlayingAnimation = true;
+void UiWidget::playAnimation(std::unique_ptr<WidgetAnimationBase> animation) {
+    for (int i = (int)activeAnimations.size() - 1; i >= 0; i--) {
+        if (animation->getChannel() == activeAnimations.at(i)->getChannel() || animation->getChannel() == WidgetAnimationBase::ALL) {
+            activeAnimations.erase(activeAnimations.begin() + i);
+        }
+    }
+    activeAnimations.push_back(std::move(animation));
 }
 
 // Event callbacks
@@ -83,24 +87,16 @@ void UiWidget::update() {
     }
 
     // Animate
-    if (isPlayingAnimation) {
-        timer += dt;
-        float alpha = std::min(timer / animationDuration, 1.0f);
-        position.set(Vector2::lerp(animationStart, animationGoal, alpha));
-
-        if (alpha >= 1.0f) {
-            isPlayingAnimation = false;
-            position.set(animationGoal);
+    for (int i = (int)activeAnimations.size() - 1; i >= 0; i--) {
+        bool finished = activeAnimations.at(i)->update(dt);
+        if (finished) {
+            activeAnimations.erase(activeAnimations.begin() + i);
         }
-        dirty = true;
     }
 
-    // Renders itself and children if it's dirty
+    // Renders itself if dirty
     if (dirty) {
         render();
-        for (auto& child : children) {
-            child->render();
-        }
     }
 }
 void UiWidget::render() {
@@ -117,6 +113,7 @@ void UiWidget::render() {
         absoluteSize = size.get() * windowSize;
     }
     absoluteRadius = cornerRadius.get() * std::min(windowSize.x, windowSize.y);
+    absoluteBorderSize = borderSize.get() * std::min(windowSize.x, windowSize.y);
 
     applyConstraints();
 
@@ -124,16 +121,16 @@ void UiWidget::render() {
     float left = absolutePosition.x / windowSize.x * 2.0f - 1.0f;
     float right = (absolutePosition.x + absoluteSize.x) / windowSize.x * 2.0f - 1.0f;
     float top = -(absolutePosition.y / windowSize.y * 2.0f - 1.0f);
-    float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f);
+    float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f); // 0.0625 / 2 = 0.03125
 
     // Generate vertex data with position, color with transparency and solid Color UVs
-    vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color.get(), opacity.get()), Vector2(0.9375f, 0.833f), elementID});
-    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.9375f, 1.0f), elementID});
-    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(1.0f, 0.833f), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.9375f, 0.96875f), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
 
-    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(1.0f, 0.833f), elementID});
-    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.9375f, 1.0f), elementID});
-    vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color.get(), opacity.get()), Vector2(1.0f, 1.0f), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
 
     // Reset and upload to the GPU
     vertexCount = memory / sizeof(UiVertex);
@@ -143,7 +140,26 @@ void UiWidget::render() {
     WidgetData data = {
         Vector4(flippedPos, absoluteSize),
         borderColor.get(),
-        Vector4(absoluteRadius, borderSize.get(), 0, 0)};
+        Vector4(absoluteRadius, absoluteBorderSize, 0, 0),
+        Vector4(0.0f),
+        Vector4(0.0f)};
+
+    if (parent && clipDescendants.get()) {
+        Vector2 absoluteParentSize = parent->getAbsoluteSize();
+        Vector2 absoluteParentPosition = parent->getAbsolutePosition();
+        Vector2 flippedParentPos(absoluteParentPosition.x, windowSize.y - absoluteParentPosition.y - absoluteParentSize.y);
+        data = {
+            Vector4(flippedPos, absoluteSize),
+            borderColor.get(),
+            Vector4(absoluteRadius, absoluteBorderSize, 0, 0),
+            Vector4(flippedParentPos, absoluteParentSize),
+            Vector4(parent->getAbsoluteRadius(), parent->getAbsoluteBorderSize(), 0, 0)};
+    }
 
     Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
+
+    // Render children recursively
+    for (auto& child : children) {
+        child->render();
+    }
 }

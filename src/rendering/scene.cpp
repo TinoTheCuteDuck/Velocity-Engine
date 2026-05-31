@@ -24,7 +24,10 @@ void Scene::load() {
 }
 
 void Scene::update() {
-    pickObject(Engine::get().camera.screenPointToRay(Engine::get().input.getMousePos()));
+    if (!Engine::get().uiManager.uiFocus) {
+        pickObject(Engine::get().camera.screenPointToRay(Engine::get().input.getMousePos()));
+    }
+
     for (std::shared_ptr<GameObject>& obj : gameObjects) {
         obj->update();
     }
@@ -95,10 +98,11 @@ void Scene::pickObject(const Ray ray) {
             closestObject = obj;
         }
     }
-    if (closestObject) {
-        if (Engine::get().input.isButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
+    if (Engine::get().input.isButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
+        if (closestObject) {
             selectedObject = closestObject;
-            std::cout << "Selected ID: " << selectedObject->mesh->meshID << std::endl;
+        } else {
+            selectedObject = nullptr;
         }
     }
 }

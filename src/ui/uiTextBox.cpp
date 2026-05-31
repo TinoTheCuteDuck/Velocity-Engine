@@ -20,12 +20,22 @@ void UiTextBox::update() {
     hitDetection();
 
     // Get keyboard focus
-    if (focused && input.isButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
+    if (focused && input.isButtonPressed(GLFW_MOUSE_BUTTON_LEFT) && !keyboardFocus) {
         keyboardFocus = true;
+        Engine::get().camera.movementBlocked = true;
+
+        if (onKeyboardFocusCallback)
+            onKeyboardFocusCallback();
+    }
 
     // Release keyboard focus
-    if (!focused && input.isButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
+    if (!focused && input.isButtonPressed(GLFW_MOUSE_BUTTON_LEFT) && keyboardFocus) {
         keyboardFocus = false;
+        Engine::get().camera.movementBlocked = false;
+
+        if (onKeyboardFocusLostCallback)
+            onKeyboardFocusLostCallback();
+    }
 
     // Get characters
     if (keyboardFocus) {
@@ -43,6 +53,13 @@ void UiTextBox::update() {
                 textObject->text.set(text);
                 textObject->dirty = true;
             }
+        }
+        if (input.isKeyPressed(GLFW_KEY_ENTER)) {
+            keyboardFocus = false;
+            Engine::get().camera.movementBlocked = false;
+
+            if (onKeyboardFocusLostCallback)
+                onKeyboardFocusLostCallback();
         }
     }
 

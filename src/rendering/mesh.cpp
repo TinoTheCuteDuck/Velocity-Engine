@@ -66,7 +66,7 @@ void Mesh::parseOBJ(const std::string& filePath) {
                 while (std::getline(indicesF, token, '/')) {
                     idx.push_back(std::stoi(token) - 1);
                 }
-                vertexData.push_back(Vertex{vertices[idx[0]], UVs[idx[1]], normals[idx[2]]});
+                vertexData.push_back(Vertex{vertices[idx[0]], UVs[idx[1]], normals[idx[2]], color});
                 indices.push_back(vertexCount);
                 vertexCount += 1;
             }
