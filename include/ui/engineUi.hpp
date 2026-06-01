@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <core/engine.hpp>
 #include <math/vector/vector2.hpp>
+#include <rendering/scene.hpp>
 #include <ui/uiButton.hpp>
 #include <ui/uiManager.hpp>
 #include <ui/uiSlider.hpp>
@@ -71,7 +72,7 @@ inline void loadUi() {
         inspector->updateCallback = [inspector] {
             static Vector2 inspectorTarget = Vector2(-0.3f, 580.0f / 1080.0f);
 
-            Vector2 newTarget = Engine::get().scene.getSelectedObject()
+            Vector2 newTarget = Engine::get().scene.getSelectedEntity() > 0
                                     ? Vector2(155.0f / 1920.0f, 580.0f / 1080.0f)
                                     : Vector2(-0.3f, 580.0f / 1080.0f);
 
@@ -166,8 +167,9 @@ inline void loadUi() {
                     positionValue->textObject->color.set(text);
                     positionValue->memory = sizeof(UiVertex) * 6 * 24;
                     positionValue->updateCallback = [positionValue] {
-                        if (Engine::get().scene.getSelectedObject() && !positionValue->keyboardFocus) {
-                            Vector3 position = Engine::get().scene.getSelectedObject()->mesh->position;
+                        unsigned int id = Engine::get().scene.getSelectedEntity();
+                        if (id > 0 && !positionValue->keyboardFocus) {
+                            Vector3 position = Engine::get().scene.transforms.at(id).position;
                             positionValue->textObject->text.set(setPrecision(position, 2));
                             positionValue->dirty = true;
                         }
@@ -184,20 +186,19 @@ inline void loadUi() {
                         float x, y, z;
                         char comma;
 
-                        if (!Engine::get().scene.getSelectedObject()) {
+                        Scene& scene = Engine::get().scene;
+                        unsigned int entityID = Engine::get().scene.getSelectedEntity();
+
+                        if (entityID == 0) {
                             positionValue->textObject->text.set("");
                             return;
                         }
 
-                        auto obj = Engine::get().scene.getSelectedObject();
-
                         if (ss >> x >> comma >> y >> comma >> z) {
-                            obj->mesh->position = Vector3(x, y, z);
-                            if (obj->body) {
-                                obj->body->position = Vector3(x, y, z);
-                            }
+                            scene.transforms.at(entityID).position = Vector3(x, y, z);
+
                         } else {
-                            positionValue->textObject->text.set(setPrecision(obj->mesh->position, 2));
+                            positionValue->textObject->text.set(setPrecision(scene.transforms.at(entityID).position, 2));
                         }
                     };
                     positionLabel->addChild(positionValue);
@@ -259,8 +260,9 @@ inline void loadUi() {
                     colorValue->textObject->color.set(text);
                     colorValue->memory = sizeof(UiVertex) * 6 * 24;
                     colorValue->updateCallback = [colorValue] {
-                        if (Engine::get().scene.getSelectedObject() && !colorValue->keyboardFocus) {
-                            Vector3 color = Engine::get().scene.getSelectedObject()->mesh->color * 255;
+                        unsigned int id = Engine::get().scene.getSelectedEntity();
+                        if (id > 0 && !colorValue->keyboardFocus) {
+                            Vector3 color = Engine::get().scene.meshes.at(id).color * 255;
                             colorValue->textObject->text.set(setPrecision(color, 0));
                             colorValue->dirty = true;
                         }
@@ -277,17 +279,18 @@ inline void loadUi() {
                         float x, y, z;
                         char comma;
 
-                        if (!Engine::get().scene.getSelectedObject()) {
+                        Scene& scene = Engine::get().scene;
+                        unsigned int entityID = Engine::get().scene.getSelectedEntity();
+
+                        if (entityID == 0) {
                             colorValue->textObject->text.set("");
                             return;
                         }
 
-                        auto obj = Engine::get().scene.getSelectedObject();
-
                         if (ss >> x >> comma >> y >> comma >> z) {
-                            obj->mesh->color = Vector3(x, y, z) / 255;
+                            scene.meshes.at(entityID).color = Vector3(x, y, z) / 255;
                         } else {
-                            Vector3 color = obj->mesh->color * 255;
+                            Vector3 color = scene.meshes.at(entityID).color * 255;
                             colorValue->textObject->text.set(setPrecision(color, 0));
                         }
                     };
@@ -350,8 +353,9 @@ inline void loadUi() {
                     scaleValue->textObject->color.set(text);
                     scaleValue->memory = sizeof(UiVertex) * 6 * 24;
                     scaleValue->updateCallback = [scaleValue] {
-                        if (Engine::get().scene.getSelectedObject() && !scaleValue->keyboardFocus) {
-                            Vector3 scale = Engine::get().scene.getSelectedObject()->mesh->scale;
+                        unsigned int id = Engine::get().scene.getSelectedEntity();
+                        if (id > 0 && !scaleValue->keyboardFocus) {
+                            Vector3 scale = Engine::get().scene.transforms.at(id).scale;
                             scaleValue->textObject->text.set(setPrecision(scale, 2));
                             scaleValue->dirty = true;
                         }
@@ -368,17 +372,18 @@ inline void loadUi() {
                         float x, y, z;
                         char comma;
 
-                        if (!Engine::get().scene.getSelectedObject()) {
+                        Scene& scene = Engine::get().scene;
+                        unsigned int entityID = Engine::get().scene.getSelectedEntity();
+
+                        if (entityID == 0) {
                             scaleValue->textObject->text.set("");
                             return;
                         }
 
-                        auto obj = Engine::get().scene.getSelectedObject();
-
                         if (ss >> x >> comma >> y >> comma >> z) {
-                            obj->mesh->scale = Vector3(x, y, z);
+                            scene.transforms.at(entityID).scale = Vector3(x, y, z);
                         } else {
-                            Vector3 scale = obj->mesh->scale;
+                            Vector3 scale = scene.transforms.at(entityID).scale;
                             scaleValue->textObject->text.set(setPrecision(scale, 2));
                         }
                     };

@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-Mesh::Mesh(const std::string& filePath, Vector3 position, Vector3 scale) : position(position), scale(scale) {
+Mesh::Mesh(const std::string& filePath) {
     parseOBJ(filePath);
     meshID = Engine::get().renderer.addGPUMesh(vertexData, indices);
     material = Material{Ressources::pbrShader};
@@ -72,6 +72,7 @@ void Mesh::parseOBJ(const std::string& filePath) {
             }
         }
     }
+    file.close();
 }
 
 void Mesh::generateBoundingBox() {
@@ -87,8 +88,4 @@ void Mesh::generateBoundingBox() {
         max.z = std::max(max.z, vertex.position.z);
     }
     boundingBox = BoundingBox{min, max};
-}
-
-Mat4 Mesh::modelMatrice() {
-    return Mat4::translate(position) * Mat4::scale(scale);
 }

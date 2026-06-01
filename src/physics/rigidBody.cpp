@@ -3,14 +3,7 @@
 #include <assert.h>
 #include <physics/rigidBody.hpp>
 
-RigidBody::RigidBody(Vector3 position)
-    : position(position),
-      velocity(),
-      acceleration(),
-      mass(10) {
-}
-
-void RigidBody::update() {
+void RigidBody::update(Transform& transform) {
     Engine& engine = Engine::get();
     float dt = engine.time.getDt();
 
@@ -21,16 +14,12 @@ void RigidBody::update() {
     acceleration = force / mass;
     velocity += acceleration * dt;
     velocity *= pow(airResistance, dt * 20.0f);
-    position += velocity * dt;
+    transform.position += velocity * dt;
 
-    if (position.y <= 0.5) {
-        position.y = 0.5;
+    if (transform.position.y <= 0.5) {
+        transform.position.y = 0.5;
         velocity.y = -velocity.y * 0.6f;
     }
-}
-
-void RigidBody::applyImpulse(Vector3 impulse) {
-    velocity += impulse;
 }
 
 float RigidBody::getGravity() {

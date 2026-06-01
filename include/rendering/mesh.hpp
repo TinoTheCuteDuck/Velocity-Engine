@@ -29,19 +29,25 @@ class Mesh {
     public:
         unsigned int meshID;
         Material material;
-
-        Vector3 position = Vector3(0);
-        Vector3 scale = Vector3(1);
         Vector3 color = Vector3(1);
 
         std::vector<Vertex> vertexData;
         std::vector<unsigned int> indices;
         BoundingBox boundingBox;
 
-        Mesh(const std::string& filePath, Vector3 position, Vector3 scale);
+        Mesh(const std::string& filePath);
         ~Mesh();
 
-        Mat4 modelMatrice();
+        Mesh(Mesh&& other) noexcept {
+            meshID = other.meshID;
+            material = std::move(other.material);
+            color = other.color;
+            vertexData = std::move(other.vertexData);
+            indices = std::move(other.indices);
+            boundingBox = std::move(other.boundingBox);
+
+            other.meshID = 0;
+        }
 
     private:
         void parseOBJ(const std::string& filePath);

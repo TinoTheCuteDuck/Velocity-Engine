@@ -1,26 +1,22 @@
 #include <rendering/scene.hpp>
 
 #include <core/engine.hpp>
-
+#include <physics/rigidBody.hpp>
 #include <rendering/OpenGL/renderer.hpp>
 #include <rendering/mesh.hpp>
 
-#include <physics/rigidBody.hpp>
-
 #include <cfloat>
-#include <memory>
-#include <vector>
-
-Scene::Scene() {
-}
+#include <utility>
 
 void Scene::load() {
-    add(std::make_shared<GameObject>(
-        std::make_unique<Mesh>(ASSETS_PATH "meshes/stanford-bunny.obj", Vector3(0, 20, 0), Vector3(20)),
-        std::make_unique<RigidBody>(Vector3(0, 20, 0))));
-    add(std::make_shared<GameObject>(
-        std::make_unique<Mesh>(ASSETS_PATH "meshes/Plane.obj", Vector3(), Vector3(1)),
-        nullptr));
+    unsigned int bunnyId = addEntity();
+    addMeshComponent(bunnyId, Mesh(ASSETS_PATH "meshes/stanford-bunny.obj"));
+    addTransformComponent(bunnyId, Transform{Vector3(0, 50, 0), Vector3(20), Vector3()});
+    addRigidBodyComponent(bunnyId, RigidBody());
+
+    unsigned int planeId = addEntity();
+    addMeshComponent(planeId, Mesh(ASSETS_PATH "meshes/Plane.obj"));
+    addTransformComponent(planeId, Transform{Vector3(0), Vector3(1), Vector3()});
 }
 
 void Scene::update() {
@@ -28,35 +24,73 @@ void Scene::update() {
         pickObject(Engine::get().camera.screenPointToRay(Engine::get().input.getMousePos()));
     }
 
-    for (std::shared_ptr<GameObject>& obj : gameObjects) {
-        obj->update();
+    for (auto& [id, component] : rigidBodys) {
+        component.update(transforms.at(id));
     }
 }
 
-void Scene::add(std::shared_ptr<GameObject> gameObject) {
-    gameObjects.push_back(std::move(gameObject));
+void Scene::addTransformComponent(unsigned int entity, Transform&& transform) {
+    transforms.emplace(entity, std::move(transform));
+}
+void Scene::removeTransformComponent(unsigned int entity) {
+    transforms.erase(entity);
+}
+
+void Scene::addMeshComponent(unsigned int entity, Mesh&& mesh) {
+    meshes.emplace(entity, std::move(mesh));
+}
+void Scene::removeMeshComponent(unsigned int entity) {
+    meshes.erase(entity);
+}
+
+void Scene::addRigidBodyComponent(unsigned int entity, RigidBody&& body) {
+    rigidBodys.emplace(entity, std::move(body));
+}
+void Scene::removeRigidBodyComponent(unsigned int entity) {
+    rigidBodys.erase(entity);
+}
+
+unsigned int Scene::addEntity() {
+    entities.emplace(currentEntityId, currentEntityId);
+    return currentEntityId++;
+}
+void Scene::removeEntity(unsigned int entity) {
+    entities.erase(entity);
+    removeTransformComponent(entity);
+    removeMeshComponent(entity);
+    removeRigidBodyComponent(entity);
 }
 
 void Scene::submit() {
     Renderer& renderer = Engine::get().renderer;
-    for (std::shared_ptr<GameObject>& obj : gameObjects) {
+    for (auto& [id, component] : meshes) {
+        if (!transforms.count(id)) {
+            std::cout << "Mesh does not contain a transform!" << std::endl;
+            continue;
+        }
+
         renderer.renderQueue(RenderCall{
-            obj->mesh->meshID,
-            obj->mesh->material,
-            obj->mesh->modelMatrice(),
+            component.meshID,
+            component.material,
+            transforms.at(id).getMatrice(),
             true});
     }
 }
 
 void Scene::pickObject(const Ray ray) {
     float closestT = FLT_MAX;
-    std::shared_ptr<GameObject> closestObject = nullptr;
+    unsigned int closestEntity = 0;
 
-    for (std::shared_ptr<GameObject>& obj : gameObjects) {
+    for (auto& [id, component] : meshes) {
         float t0x, t1x, t0y, t1y, t0z, t1z;
 
-        BoundingBox bounds = obj->mesh->boundingBox;
-        Mat4 model = obj->mesh->modelMatrice();
+        BoundingBox bounds = component.boundingBox;
+        if (!transforms.count(id)) {
+            std::cout << "Mesh does not have a transform!" << std::endl;
+            continue;
+        }
+
+        Mat4 model = transforms.at(id).getMatrice();
         Vector4 min = model * Vector4(bounds.min, 1.0f);
         Vector4 max = model * Vector4(bounds.max, 1.0f);
         bounds.min = Vector3(min.x, min.y, min.z);
@@ -95,18 +129,18 @@ void Scene::pickObject(const Ray ray) {
 
         if (t0x < closestT && t0x > 0) {
             closestT = t0x;
-            closestObject = obj;
+            closestEntity = id;
         }
     }
     if (Engine::get().input.isButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
-        if (closestObject) {
-            selectedObject = closestObject;
+        if (closestEntity > 0) {
+            selectedEntity = closestEntity;
         } else {
-            selectedObject = nullptr;
+            selectedEntity = 0;
         }
     }
 }
 
-std::shared_ptr<GameObject> Scene::getSelectedObject() {
-    return selectedObject;
+unsigned int Scene::getSelectedEntity() {
+    return selectedEntity;
 }

@@ -1,14 +1,11 @@
 #pragma once
 
 #include <math/vector/vector3.hpp>
+#include <rendering/sceneECS.hpp>
 
 class RigidBody {
     public:
-        Vector3 position;
-
-        RigidBody(Vector3 position);
-        void update();
-        void applyImpulse(Vector3 impulse);
+        void update(Transform& transform);
 
         float getGravity();
         float getAirResistance();
@@ -17,7 +14,7 @@ class RigidBody {
         float gravity = -9.81f;
         float airResistance = 0.98f;
 
-        Vector3 velocity;
-        Vector3 acceleration;
-        float mass;
+        Vector3 velocity = Vector3();
+        Vector3 acceleration = Vector3();
+        float mass = 10.0f;
 };

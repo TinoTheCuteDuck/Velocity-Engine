@@ -5,36 +5,40 @@
 #include <physics/rigidBody.hpp>
 #include <rendering/camera.hpp>
 #include <rendering/mesh.hpp>
+#include <rendering/sceneECS.hpp>
 
-#include <memory>
-#include <vector>
-
-struct GameObject {
-        std::unique_ptr<Mesh> mesh;
-        std::unique_ptr<RigidBody> body;
-
-        GameObject(std::unique_ptr<Mesh> m, std::unique_ptr<RigidBody> b) : mesh(std::move(m)), body(std::move(b)) {}
-
-        void update() {
-            if (body) {
-                body->update();
-                mesh->position = body->position;
-            }
-        }
-};
+#include <unordered_map>
 
 class Scene {
     public:
-        Scene();
-        void add(std::shared_ptr<GameObject> gameObject);
+        void load();
         void update();
         void submit();
-        void load();
 
-        std::shared_ptr<GameObject> getSelectedObject();
+        void addTransformComponent(unsigned int entity, Transform&& transform);
+        void removeTransformComponent(const unsigned int entity);
+
+        void addMeshComponent(unsigned int entity, Mesh&& mesh);
+        void removeMeshComponent(unsigned int entity);
+
+        void addRigidBodyComponent(unsigned int entity, RigidBody&& body);
+        void removeRigidBodyComponent(unsigned int entity);
+
+        unsigned int addEntity();
+        void removeEntity(unsigned int entity);
+
+        unsigned int getSelectedEntity();
+
+    public:
+        // Components
+        std::unordered_map<unsigned int, unsigned int> entities;
+        std::unordered_map<unsigned int, Transform> transforms;
+        std::unordered_map<unsigned int, Mesh> meshes;
+        std::unordered_map<unsigned int, RigidBody> rigidBodys;
 
     private:
+        unsigned int currentEntityId = 1;
+
         void pickObject(const Ray ray);
-        std::vector<std::shared_ptr<GameObject>> gameObjects;
-        std::shared_ptr<GameObject> selectedObject;
+        unsigned int selectedEntity = 0;
 };
