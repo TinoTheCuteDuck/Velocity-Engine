@@ -68,6 +68,8 @@ class UiWidget {
 
   protected:
     // Internal Attributes
+    bool allocated{false};
+
     Vector2 absoluteSize{};
     Vector2 absolutePosition{};
     float absoluteRadius{0.0f};

@@ -3,9 +3,11 @@
 #include <rendering/material.hpp>
 #include <ui/engineUi.hpp>
 #include <ui/uiManager.hpp>
+#include <ui/uiStructs.hpp>
 #include <ui/uiWidget.hpp>
 
 UiManager::UiManager() {
+    std::cout << "Size: " << sizeof(UiVertex) << std::endl;
     uiWidgets.reserve(1024);
     allocatedMemory.resize(totalMemory, false);
 }

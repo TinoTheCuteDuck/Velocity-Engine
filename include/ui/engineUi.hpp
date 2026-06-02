@@ -85,10 +85,12 @@ inline std::shared_ptr<UiWidget> createScaleProperty() {
     value->textObject->text.set("");
     value->textObject->textSize.set(15.0f / 1080.0f);
     value->textObject->color.set(Colors::foreground);
-    value->memory = sizeof(UiVertex) * 6 * 24;
+    value->textObject->memory = sizeof(UiVertex) * 6 * 24;
     value->updateCallback = [value] {
+        static unsigned int lastID = 0;
         unsigned int id = Engine::get().scene.getSelectedEntity();
-        if (id > 0 && !value->keyboardFocus) {
+        if (id != lastID && id > 0 && !value->keyboardFocus) {
+            lastID = id;
             Vector3 scale = Engine::get().scene.transforms.at(id).scale;
             value->textObject->text.set(setPrecision(scale, 2));
             value->dirty = true;
@@ -176,10 +178,12 @@ inline std::shared_ptr<UiWidget> createColorProperty() {
     value->textObject->text.set("");
     value->textObject->textSize.set(15.0f / 1080.0f);
     value->textObject->color.set(Colors::foreground);
-    value->memory = sizeof(UiVertex) * 6 * 24;
+    value->textObject->memory = sizeof(UiVertex) * 6 * 24;
     value->updateCallback = [value] {
+        static unsigned int lastID = 0;
         unsigned int id = Engine::get().scene.getSelectedEntity();
-        if (id > 0 && !value->keyboardFocus) {
+        if (id != lastID && id > 0 && !value->keyboardFocus) {
+            lastID = id;
             Vector3 color = Engine::get().scene.meshes.at(id).color * 255;
             value->textObject->text.set(setPrecision(color, 0));
             value->dirty = true;
@@ -267,10 +271,12 @@ inline std::shared_ptr<UiWidget> createPositionProperty() {
     value->textObject->text.set("");
     value->textObject->textSize.set(15.0f / 1080.0f);
     value->textObject->color.set(Colors::foreground);
-    value->memory = sizeof(UiVertex) * 6 * 24;
+    value->textObject->memory = sizeof(UiVertex) * 6 * 24;
     value->updateCallback = [value] {
+        static unsigned int lastID = 0;
         unsigned int id = Engine::get().scene.getSelectedEntity();
-        if (id > 0 && !value->keyboardFocus) {
+        if (id != lastID && id > 0 && !value->keyboardFocus) {
+            lastID = id;
             Vector3 position = Engine::get().scene.transforms.at(id).position;
             value->textObject->text.set(setPrecision(position, 2));
             value->dirty = true;
@@ -388,9 +394,9 @@ inline void createInspector(UiManager& manager) {
     container->addChild(createScaleProperty());
 }
 
-inline std::shared_ptr<UiWidget> createEntityEmblem() {
+inline std::shared_ptr<UiWidget> createEntityEmblem(float offset, unsigned int entityID) {
     auto container = std::make_shared<UiButton>();
-    container->position.set(Vector2(0.5f, 0.112f));
+    container->position.set(Vector2(0.5f, offset));
     container->size.set(Vector2(0.96f, 0.045f));
     container->anchorPoint.set(Vector2(0.5f));
     container->color.set(Colors::background_dark);
@@ -419,6 +425,19 @@ inline std::shared_ptr<UiWidget> createEntityEmblem() {
                 container->dirty = true;
             }));
     };
+    container->onMouseButton1Click = [container, entityID] {
+        Engine::get().scene.setSelectedEntity(entityID);
+    };
+
+    auto text = std::make_shared<UiText>();
+    text->position.set(Vector2(0.5f));
+    text->anchorPoint.set(Vector2(0.5f));
+    text->color.set(Colors::foreground);
+    text->text.set("Entity " + std::to_string(entityID));
+    text->textSize.set(16.0f / 1080.0f);
+    text->memory = sizeof(UiVertex) * text->text.get().size() * 6;
+
+    container->addChild(text);
 
     return container;
 }
@@ -461,9 +480,11 @@ inline void createSceneHierarchy(UiManager& manager) {
             lastSize = newSize;
             container->children.clear();
 
+            int count = 0;
             for (auto [index, id] : Engine::get().scene.entities) {
-                (void) index;
-                (void) id;
+                float offset = count * 0.053f + 0.06f;
+                container->addChild(createEntityEmblem(offset, id));
+                count++;
             }
         }
     };

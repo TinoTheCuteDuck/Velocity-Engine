@@ -1,6 +1,7 @@
 // Includes
 #include <core/engine.hpp>
 #include <math/vector/vector2.hpp>
+#include <math/vector/vector4.hpp>
 #include <memory>
 #include <ui/uiStructs.hpp>
 #include <ui/uiWidget.hpp>
@@ -12,6 +13,9 @@ UiWidget::UiWidget() {
 
 UiWidget::~UiWidget() {
     Engine::get().uiManager.freeMemory(elementID, offset, memory);
+    vertexData.clear();
+    WidgetData data{Vector4(), Vector4(), Vector4(), Vector4(), Vector4()};
+    Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
 }
 
 float UiWidget::getAbsoluteRadius() const {
@@ -85,6 +89,11 @@ void UiWidget::applyConstraints() {
 }
 
 void UiWidget::update() {
+    if (!allocated) {
+        Engine::get().uiManager.allocateMemory(this);
+        allocated = true;
+    }
+
     float dt = Engine::get().time.getDt();
     hitDetection();
 
@@ -132,7 +141,7 @@ void UiWidget::render() {
     float left = absolutePosition.x / windowSize.x * 2.0f - 1.0f;
     float right = (absolutePosition.x + absoluteSize.x) / windowSize.x * 2.0f - 1.0f;
     float top = -(absolutePosition.y / windowSize.y * 2.0f - 1.0f);
-    float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f);  // 0.0625 / 2 = 0.03125
+    float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f);
 
     // Generate vertex data with position, color with transparency and solid Color UVs
     vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});

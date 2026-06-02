@@ -201,7 +201,7 @@ void Renderer::endFrame() {
 
     GLenum err = glGetError();
     if (err != GL_NO_ERROR) {
-        std::cout << "GL ERROR: " << err << std::endl;
+        // std::cout << "GL ERROR: " << err << std::endl;
     }
 }
 

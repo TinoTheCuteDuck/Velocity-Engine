@@ -141,6 +141,10 @@ void Scene::pickObject(const Ray ray) {
     }
 }
 
+void Scene::setSelectedEntity(unsigned int id) {
+    selectedEntity = id;
+}
+
 unsigned int Scene::getSelectedEntity() {
     return selectedEntity;
 }

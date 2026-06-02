@@ -34,7 +34,7 @@ class UiManager {
     bool uiFocus = false;
 
   private:
-    size_t totalMemory = 128 * sizeof(UiVertex) * 6;
+    size_t totalMemory = 256 * sizeof(UiVertex) * 6;
     std::vector<bool> allocatedMemory;
     std::vector<std::shared_ptr<UiWidget>> uiWidgets;
     IDAllocator elementIDAllocator = IDAllocator(1024);

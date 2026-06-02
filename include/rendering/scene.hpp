@@ -27,6 +27,7 @@ class Scene {
     unsigned int addEntity();
     void removeEntity(unsigned int entity);
 
+    void setSelectedEntity(unsigned int id);
     unsigned int getSelectedEntity();
 
   public:
