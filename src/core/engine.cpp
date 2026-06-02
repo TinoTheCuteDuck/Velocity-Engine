@@ -1,12 +1,9 @@
 #include <core/engine.hpp>
-
 #include <core/engineTime.hpp>
 #include <core/input.hpp>
 #include <core/ressources.hpp>
-
 #include <rendering/OpenGL/renderer.hpp>
 #include <rendering/camera.hpp>
-
 #include <ui/engineUi.hpp>
 #include <ui/uiManager.hpp>
 
@@ -22,8 +19,8 @@ void Engine::init() {
     Ressources::uiTexture = renderer.addTexture(ASSETS_PATH "textures/JetBrainsMonoNerdFont-Regular-atlas.png", GL_REPEAT, GL_LINEAR, false);
 
     input.init();
-    uiManager.load();
     scene.load();
+    uiManager.load();
 }
 
 void Engine::run() {

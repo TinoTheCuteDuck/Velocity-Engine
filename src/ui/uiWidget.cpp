@@ -1,12 +1,19 @@
 // Includes
+#include <core/engine.hpp>
+#include <math/vector/vector2.hpp>
 #include <memory>
 #include <ui/uiStructs.hpp>
 #include <ui/uiWidget.hpp>
 
-#include <core/engine.hpp>
-#include <math/vector/vector2.hpp>
-
 // Public Methods
+UiWidget::UiWidget() {
+    Engine::get().uiManager.allocateMemory(this);
+}
+
+UiWidget::~UiWidget() {
+    Engine::get().uiManager.freeMemory(elementID, offset, memory);
+}
+
 float UiWidget::getAbsoluteRadius() const {
     return absoluteRadius;
 }
@@ -25,7 +32,7 @@ void UiWidget::addChild(std::shared_ptr<UiWidget> child) {
     children.push_back(std::move(child));
 }
 void UiWidget::playAnimation(std::unique_ptr<WidgetAnimationBase> animation) {
-    for (int i = (int)activeAnimations.size() - 1; i >= 0; i--) {
+    for (int i = (int) activeAnimations.size() - 1; i >= 0; i--) {
         if (animation->getChannel() == activeAnimations.at(i)->getChannel() || animation->getChannel() == WidgetAnimationBase::ALL) {
             activeAnimations.erase(activeAnimations.begin() + i);
         }
@@ -87,7 +94,7 @@ void UiWidget::update() {
     }
 
     // Animate
-    for (int i = (int)activeAnimations.size() - 1; i >= 0; i--) {
+    for (int i = (int) activeAnimations.size() - 1; i >= 0; i--) {
         bool finished = activeAnimations.at(i)->update(dt);
         if (finished) {
             activeAnimations.erase(activeAnimations.begin() + i);
@@ -97,6 +104,10 @@ void UiWidget::update() {
     // Renders itself if dirty
     if (dirty) {
         render();
+    }
+
+    for (auto& child : children) {
+        child->update();
     }
 }
 void UiWidget::render() {
@@ -121,7 +132,7 @@ void UiWidget::render() {
     float left = absolutePosition.x / windowSize.x * 2.0f - 1.0f;
     float right = (absolutePosition.x + absoluteSize.x) / windowSize.x * 2.0f - 1.0f;
     float top = -(absolutePosition.y / windowSize.y * 2.0f - 1.0f);
-    float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f); // 0.0625 / 2 = 0.03125
+    float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f);  // 0.0625 / 2 = 0.03125
 
     // Generate vertex data with position, color with transparency and solid Color UVs
     vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});

@@ -1,11 +1,9 @@
-#include <rendering/scene.hpp>
-
+#include <cfloat>
 #include <core/engine.hpp>
 #include <physics/rigidBody.hpp>
 #include <rendering/OpenGL/renderer.hpp>
 #include <rendering/mesh.hpp>
-
-#include <cfloat>
+#include <rendering/scene.hpp>
 #include <utility>
 
 void Scene::load() {
@@ -51,10 +49,12 @@ void Scene::removeRigidBodyComponent(unsigned int entity) {
 }
 
 unsigned int Scene::addEntity() {
-    entities.emplace(currentEntityId, currentEntityId);
-    return currentEntityId++;
+    unsigned int entityID = entityIDAllocator.allocate();
+    entities.emplace(entityID, entityID);
+    return entityID;
 }
 void Scene::removeEntity(unsigned int entity) {
+    entityIDAllocator.free(entity);
     entities.erase(entity);
     removeTransformComponent(entity);
     removeMeshComponent(entity);

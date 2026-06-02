@@ -1,23 +1,18 @@
-#include <rendering/OpenGL/renderer.hpp>
-
 #include <GLFW/glfw3.h>
-#include <glad/glad.h>
-
 #include <core/engine.hpp>
 #include <core/ressources.hpp>
-
+#include <glad/glad.h>
+#include <rendering/OpenGL/renderer.hpp>
 #include <rendering/OpenGL/shader.hpp>
 #include <rendering/OpenGL/texture.hpp>
 #include <rendering/mesh.hpp>
-
-#include <ui/uiStructs.hpp>
-
 #include <stdexcept>
 #include <tuple>
+#include <ui/uiStructs.hpp>
 #include <utility>
 
 Renderer::Renderer() {
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         throw std::runtime_error("Glad has failed to initialize!");
     }
 
@@ -44,30 +39,28 @@ unsigned int Renderer::addGPUMesh(const std::vector<Vertex>& vertexData, const s
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) 0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, UV));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, UV));
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, color));
     glEnableVertexAttribArray(3);
 
     glBindVertexArray(0);
 
-    meshes.emplace(std::piecewise_construct, std::forward_as_tuple(currentMeshID), std::forward_as_tuple(VAO, VBO, EBO, 0, indices.size()));
-    return currentMeshID++;
+    unsigned int meshID = meshIdAllocator.allocate();
+    meshes.emplace(std::piecewise_construct, std::forward_as_tuple(meshID), std::forward_as_tuple(VAO, VBO, EBO, 0, indices.size()));
+    return meshID;
 }
 
 void Renderer::deleteGPUMesh(const unsigned int meshID) {
+    meshIdAllocator.free(meshID);
     meshes.erase(meshID);
-}
-
-void Renderer::changeGPUVertexCount(const unsigned int meshID, const size_t vertexCount) {
-    meshes.at(meshID).vertexCount = vertexCount;
 }
 
 void Renderer::changeGPUMeshData(const unsigned int meshID, const std::vector<Vertex>& vertexData, const std::vector<unsigned int>& indices) {
@@ -99,22 +92,23 @@ unsigned int Renderer::addGPUUiMesh(const size_t memory) {
     glBufferData(GL_UNIFORM_BUFFER, 512 * sizeof(WidgetData), NULL, GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_UNIFORM_BUFFER, 2, UBO);
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*) 0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)offsetof(UiVertex, color));
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*) offsetof(UiVertex, color));
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)offsetof(UiVertex, UV));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*) offsetof(UiVertex, UV));
     glEnableVertexAttribArray(2);
 
-    glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(UiVertex), (void*)offsetof(UiVertex, widgetID));
+    glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(UiVertex), (void*) offsetof(UiVertex, widgetID));
     glEnableVertexAttribArray(3);
 
     glBindVertexArray(0);
 
-    meshes.emplace(std::piecewise_construct, std::forward_as_tuple(currentMeshID), std::forward_as_tuple(VAO, VBO, 0, UBO, 0));
-    return currentMeshID++;
+    unsigned int meshID = meshIdAllocator.allocate();
+    meshes.emplace(std::piecewise_construct, std::forward_as_tuple(meshID), std::forward_as_tuple(VAO, VBO, 0, UBO, memory / sizeof(UiVertex)));
+    return meshID;
 }
 
 void Renderer::changeGPUUiMeshData(const unsigned int meshID, const unsigned int elementID, const size_t offset, const size_t memory, const std::vector<UiVertex>& vertexData, WidgetData& widgetData) {
@@ -138,20 +132,24 @@ void Renderer::changeGPUUiMeshData(const unsigned int meshID, const unsigned int
 }
 
 unsigned int Renderer::addShader(const std::string& vertexPath, const std::string& fragmentPath) {
-    shaders.emplace(std::piecewise_construct, std::forward_as_tuple(currentShaderID), std::forward_as_tuple(vertexPath, fragmentPath));
-    return currentShaderID++;
+    unsigned int shaderID = shaderIDAllocator.allocate();
+    shaders.emplace(std::piecewise_construct, std::forward_as_tuple(shaderID), std::forward_as_tuple(vertexPath, fragmentPath));
+    return shaderID;
 }
 
 void Renderer::deleteShader(const unsigned int shaderID) {
+    shaderIDAllocator.free(shaderID);
     shaders.erase(shaderID);
 }
 
 unsigned int Renderer::addTexture(const std::string& filepath, GLenum wrapMode, GLenum filterMode, bool generateMipmaps) {
-    textures.emplace(std::piecewise_construct, std::forward_as_tuple(currentTextureID), std::forward_as_tuple(filepath, wrapMode, filterMode, generateMipmaps));
-    return currentTextureID++;
+    unsigned int textureID = textureIDAllocator.allocate();
+    textures.emplace(std::piecewise_construct, std::forward_as_tuple(textureID), std::forward_as_tuple(filepath, wrapMode, filterMode, generateMipmaps));
+    return textureID;
 }
 
 void Renderer::deleteTexture(const unsigned int textureID) {
+    textureIDAllocator.free(textureID);
     textures.erase(textureID);
 }
 
@@ -168,7 +166,7 @@ void Renderer::startFrame() {
     Shader& shader = shaders.at(Ressources::pbrShader);
     shader.use();
 
-    Mat4 projection = Mat4::projection(camera.getFOV(), (float)window.getWindowSize().x / (float)window.getWindowSize().y, camera.getNearPlane(), camera.getFarPlane());
+    Mat4 projection = Mat4::projection(camera.getFOV(), (float) window.getWindowSize().x / (float) window.getWindowSize().y, camera.getNearPlane(), camera.getFarPlane());
     shader.setMat4("projection", projection);
     shader.setMat4("view", camera.getViewMatrix());
 }

@@ -1,8 +1,6 @@
-#include <rendering/OpenGL/shader.hpp>
-
-#include <glad/glad.h>
-
 #include <fstream>
+#include <glad/glad.h>
+#include <rendering/OpenGL/shader.hpp>
 #include <sstream>
 #include <stdexcept>
 
@@ -33,7 +31,8 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) {
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        throw std::runtime_error(std::string("Fragment shader compilation failed!: ") + infoLog);
+        throw std::runtime_error(
+            std::string("Fragment shader compilation failed!: ") + infoLog);
     }
 
     shaderProgram = glCreateProgram();
@@ -81,7 +80,7 @@ void Shader::setBool(const std::string& name, const bool value) const {
 void Shader::setInt(const std::string& name, const int value) const {
     int loc = glGetUniformLocation(shaderProgram, name.c_str());
     if (loc == -1) {
-        // throw std::runtime_error("Uniform not found: " + name);
+        throw std::runtime_error("Uniform not found: " + name);
     }
     glUniform1i(loc, value);
 }
