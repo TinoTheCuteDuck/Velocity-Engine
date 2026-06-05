@@ -24,18 +24,20 @@ class UiManager {
     void allocateMemory(UiWidget* widget);
     size_t getLowestMemoryRegion(const size_t requiredMemory);
 
-    template <typename T, typename... Args>
-    std::shared_ptr<T> addUiWidget(Args&&... args) {
-        auto ptr = std::make_shared<T>(std::forward<Args>(args)...);
-        uiWidgets.push_back(ptr);
-        return ptr;
+    template <typename T>
+    T* addUiWidget() {
+        auto ptr = std::make_unique<T>();
+        T* raw = ptr.get();
+        uiWidgets.push_back(std::move(ptr));
+        return raw;
     }
 
     bool uiFocus = false;
 
   private:
     size_t totalMemory = 256 * sizeof(UiVertex) * 6;
+    bool reloadUi = false;
     std::vector<bool> allocatedMemory;
-    std::vector<std::shared_ptr<UiWidget>> uiWidgets;
+    std::vector<std::unique_ptr<UiWidget>> uiWidgets;
     IDAllocator elementIDAllocator = IDAllocator(1024);
 };

@@ -24,13 +24,19 @@ class UiWidget {
     Vector2 getAbsoluteSize() const;
     Vector2 getAbsolutePosition() const;
 
-    void addChild(std::shared_ptr<UiWidget> child);
+    template <typename T>
+    void addChild(std::unique_ptr<T> child) {
+        static_assert(std::is_base_of_v<UiWidget, T>, "T must derive from UiWidget");
+        child->parent = this;
+        children.push_back(std::move(child));
+    }
+
     void playAnimation(std::unique_ptr<WidgetAnimationBase> animation);
 
   public:
     // Public Attributes
     UiWidget* parent{nullptr};
-    std::vector<std::shared_ptr<UiWidget>> children;
+    std::vector<std::unique_ptr<UiWidget>> children;
 
     unsigned int elementID{0};
     size_t memory{sizeof(UiVertex) * 6};

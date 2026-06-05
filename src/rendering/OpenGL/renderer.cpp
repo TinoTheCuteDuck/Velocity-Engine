@@ -64,6 +64,8 @@ void Renderer::deleteGPUMesh(const unsigned int meshID) {
 }
 
 void Renderer::changeGPUMeshData(const unsigned int meshID, const std::vector<Vertex>& vertexData, const std::vector<unsigned int>& indices) {
+    if (!meshes.count(meshID))
+        return;
     GPUMesh& mesh = meshes.at(meshID);
     glBindVertexArray(mesh.VAO);
     glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
@@ -115,7 +117,10 @@ void Renderer::changeGPUUiMeshData(const unsigned int meshID, const unsigned int
     if (vertexData.size() * sizeof(UiVertex) > memory)
         throw std::runtime_error("Attempted to allocate too much memory to the GPU buffer");
 
+    if (!meshes.count(meshID))
+        return;
     GPUMesh& mesh = meshes.at(meshID);
+
     glBindVertexArray(mesh.VAO);
     glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
     if (vertexData.size() * sizeof(UiVertex) < memory) {
@@ -201,7 +206,7 @@ void Renderer::endFrame() {
 
     GLenum err = glGetError();
     if (err != GL_NO_ERROR) {
-        // std::cout << "GL ERROR: " << err << std::endl;
+        std::cout << "GL ERROR: " << err << std::endl;
     }
 }
 

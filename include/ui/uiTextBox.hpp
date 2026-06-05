@@ -4,23 +4,21 @@
 #include <ui/uiText.hpp>
 #include <ui/uiWidget.hpp>
 
-#include <memory>
-
 class UiTextBox : public UiWidget {
-    public:
-        UiTextBox();
+  public:
+    UiTextBox();
 
-        // Public Attributes
-        WidgetAttribute<std::string> defaultText{""};
-        std::shared_ptr<UiText> textObject;
+    // Public Attributes
+    WidgetAttribute<std::string> defaultText{""};
+    UiText* textObject;
 
-        bool keyboardFocus{false};
+    bool keyboardFocus{false};
 
-        // Callbacks
-        Callback onKeyboardFocusCallback{[]() {}};
-        Callback onKeyboardFocusLostCallback{[]() {}};
+    // Callbacks
+    Callback onKeyboardFocusCallback{[]() {}};
+    Callback onKeyboardFocusLostCallback{[]() {}};
 
-    public:
-        // Public methods
-        void update() override;
+  public:
+    // Public methods
+    void update() override;
 };

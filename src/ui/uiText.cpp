@@ -1,13 +1,11 @@
 // Includes
-#include <ui/uiText.hpp>
-
 #include <core/engine.hpp>
-#include <math/vector/vector2.hpp>
-#include <ui/uiWidget.hpp>
-
 #include <functional>
+#include <math/vector/vector2.hpp>
 #include <stdexcept>
 #include <string>
+#include <ui/uiText.hpp>
+#include <ui/uiWidget.hpp>
 
 // Public methods
 void UiText::update() {
@@ -22,6 +20,17 @@ void UiText::update() {
 void UiText::render() {
     // clear VertexData
     vertexData.clear();
+
+    if (!visible || (parent && !parent->visible)) {
+        WidgetData data = {Vector4(), Vector4(), Vector4(), Vector4(), Vector4()};
+        Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
+
+        for (auto& child : children) {
+            child->render();
+        }
+
+        return;
+    }
 
     // Update constraints
     Vector2 windowSize = Engine::get().window.getWindowSize();

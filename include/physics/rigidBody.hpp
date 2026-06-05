@@ -4,17 +4,17 @@
 #include <rendering/sceneECS.hpp>
 
 class RigidBody {
-    public:
-        void update(Transform& transform);
+  public:
+    void update(Transform& transform);
 
-        float getGravity();
-        float getAirResistance();
+    float getGravity();
+    float getAirResistance();
 
-    private:
-        float gravity = -9.81f;
-        float airResistance = 0.98f;
+  public:
+    float gravity = -9.81f;
+    float airResistance = 0.98f;
 
-        Vector3 velocity = Vector3();
-        Vector3 acceleration = Vector3();
-        float mass = 10.0f;
+    Vector3 velocity = Vector3();
+    Vector3 acceleration = Vector3();
+    float mass = 10.0f;
 };

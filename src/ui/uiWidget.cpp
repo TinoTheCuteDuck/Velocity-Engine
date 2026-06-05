@@ -31,10 +31,6 @@ Vector2 UiWidget::getAbsolutePosition() const {
     return absolutePosition;
 }
 
-void UiWidget::addChild(std::shared_ptr<UiWidget> child) {
-    child->parent = this;
-    children.push_back(std::move(child));
-}
 void UiWidget::playAnimation(std::unique_ptr<WidgetAnimationBase> animation) {
     for (int i = (int) activeAnimations.size() - 1; i >= 0; i--) {
         if (animation->getChannel() == activeAnimations.at(i)->getChannel() || animation->getChannel() == WidgetAnimationBase::ALL) {
@@ -47,6 +43,9 @@ void UiWidget::playAnimation(std::unique_ptr<WidgetAnimationBase> animation) {
 // Event callbacks
 void UiWidget::hitDetection() {
     focused = false;
+
+    if (!enabled)
+        return;
 
     Input& input = Engine::get().input;
     Vector2 mousePos = input.getMousePos();
@@ -89,6 +88,7 @@ void UiWidget::applyConstraints() {
 }
 
 void UiWidget::update() {
+    // Allocate memory
     if (!allocated) {
         Engine::get().uiManager.allocateMemory(this);
         allocated = true;
@@ -110,18 +110,30 @@ void UiWidget::update() {
         }
     }
 
+    // Update children
+    for (auto& child : children) {
+        child->update();
+    }
+
     // Renders itself if dirty
     if (dirty) {
         render();
-    }
-
-    for (auto& child : children) {
-        child->update();
     }
 }
 void UiWidget::render() {
     // Reset vertexData
     vertexData.clear();
+
+    if (!visible || (parent && !parent->visible)) {
+        WidgetData data = {Vector4(), Vector4(), Vector4(), Vector4(), Vector4()};
+        Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
+
+        for (auto& child : children) {
+            child->render();
+        }
+
+        return;
+    }
 
     // Update constraints
     Vector2 windowSize = Engine::get().window.getWindowSize();

@@ -1,6 +1,5 @@
-#include <core/engine.hpp>
-
 #include <assert.h>
+#include <core/engine.hpp>
 #include <physics/rigidBody.hpp>
 
 void RigidBody::update(Transform& transform) {
@@ -15,11 +14,6 @@ void RigidBody::update(Transform& transform) {
     velocity += acceleration * dt;
     velocity *= pow(airResistance, dt * 20.0f);
     transform.position += velocity * dt;
-
-    if (transform.position.y <= 0.5) {
-        transform.position.y = 0.5;
-        velocity.y = -velocity.y * 0.6f;
-    }
 }
 
 float RigidBody::getGravity() {

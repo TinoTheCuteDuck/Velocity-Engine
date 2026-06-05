@@ -7,7 +7,6 @@
 #include <ui/uiWidget.hpp>
 
 UiManager::UiManager() {
-    std::cout << "Size: " << sizeof(UiVertex) << std::endl;
     uiWidgets.reserve(1024);
     allocatedMemory.resize(totalMemory, false);
 }
@@ -19,6 +18,7 @@ UiManager::~UiManager() {
 void UiManager::load() {
     Engine::get().renderer.deleteGPUMesh(meshID);
     uiWidgets.clear();
+    allocatedMemory.clear();
     allocatedMemory.resize(totalMemory, false);
     loadUi();
 
@@ -29,6 +29,11 @@ void UiManager::load() {
 }
 
 void UiManager::update() {
+    if (reloadUi) {
+        load();
+        reloadUi = false;
+    }
+
     for (auto& widget : uiWidgets) {
         widget->update();
     }
@@ -69,7 +74,11 @@ size_t UiManager::getLowestMemoryRegion(const size_t requiredMemory) {
     for (size_t i = 0; i < allocatedMemory.size(); i++) {
         if (allocatedMemory.at(i) == false) {
             bool freeRange = true;
-            for (size_t j = i; j < i + requiredMemory && j < allocatedMemory.size(); j++) {
+            for (size_t j = i; j < i + requiredMemory; j++) {
+                if (j >= allocatedMemory.size()) {
+                    freeRange = false;
+                    break;
+                }
                 if (allocatedMemory.at(j) == true) {
                     freeRange = false;
                     break;
@@ -80,7 +89,7 @@ size_t UiManager::getLowestMemoryRegion(const size_t requiredMemory) {
             }
         }
     }
-    totalMemory *= 1.5f;
-    load();
+    totalMemory *= 2.0f;
+    reloadUi = true;
     return 0;
 }

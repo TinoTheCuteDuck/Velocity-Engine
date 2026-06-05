@@ -4,13 +4,19 @@
 #include <rendering/OpenGL/renderer.hpp>
 #include <rendering/mesh.hpp>
 #include <rendering/scene.hpp>
+#include <rendering/sceneECS.hpp>
 #include <utility>
 
 void Scene::load() {
-    unsigned int bunnyId = addEntity();
-    addMeshComponent(bunnyId, Mesh(ASSETS_PATH "meshes/stanford-bunny.obj"));
-    addTransformComponent(bunnyId, Transform{Vector3(0, 50, 0), Vector3(20), Vector3()});
-    addRigidBodyComponent(bunnyId, RigidBody());
+    // unsigned int bunnyId = addEntity();
+    // addMeshComponent(bunnyId, Mesh(ASSETS_PATH "meshes/stanford-bunny.obj"));
+    // addTransformComponent(bunnyId, Transform{Vector3(0, 50, 0), Vector3(20), Vector3()});
+    // addRigidBodyComponent(bunnyId, RigidBody());
+
+    // unsigned int bunnyId2 = addEntity();
+    // addMeshComponent(bunnyId2, Mesh(ASSETS_PATH "meshes/stanford-bunny.obj"));
+    // addTransformComponent(bunnyId2, Transform{Vector3(0, 100, 0), Vector3(20), Vector3()});
+    // addRigidBodyComponent(bunnyId2, RigidBody());
 
     unsigned int planeId = addEntity();
     addMeshComponent(planeId, Mesh(ASSETS_PATH "meshes/Plane.obj"));
@@ -18,12 +24,55 @@ void Scene::load() {
 }
 
 void Scene::update() {
-    if (!Engine::get().uiManager.uiFocus) {
-        pickObject(Engine::get().camera.screenPointToRay(Engine::get().input.getMousePos()));
+    // if (!Engine::get().uiManager.uiFocus) {
+    //     pickObject(Engine::get().camera.screenPointToRay(Engine::get().input.getMousePos()));
+    // }
+
+    // Physics update
+    for (auto& [id, component] : rigidBodys) {
+        if (transforms.count(id)) {
+            component.update(transforms.at(id));
+        }
     }
 
-    for (auto& [id, component] : rigidBodys) {
-        component.update(transforms.at(id));
+    // Collision update
+    for (auto& [id, component] : meshes) {
+        if (transforms.count(id) && rigidBodys.count(id)) {
+            Transform& transform = transforms.at(id);
+            BoundingBox bounds = component.boundingBox;
+            Mat4 matrix = transform.getMatrice();
+            Vector4 min = matrix * Vector4(bounds.min, 1);
+            Vector4 max = matrix * Vector4(bounds.max, 1);
+            bounds.min = Vector3(min.x, min.y, min.z);
+            bounds.max = Vector3(max.x, max.y, max.z);
+
+            for (auto& [iterationID, iterationComponent] : meshes) {
+                if (id == iterationID)
+                    continue;
+                Transform& transform = transforms.at(iterationID);
+                BoundingBox iterationBounds = iterationComponent.boundingBox;
+                Mat4 matrix = transform.getMatrice();
+                Vector4 min = matrix * Vector4(iterationBounds.min, 1);
+                Vector4 max = matrix * Vector4(iterationBounds.max, 1);
+                iterationBounds.min = Vector3(min.x, min.y, min.z);
+                iterationBounds.max = Vector3(max.x, max.y, max.z);
+
+                bool minX = bounds.min.x < iterationBounds.max.x;
+                bool minY = bounds.min.y < iterationBounds.max.y;
+                bool minZ = bounds.min.z < iterationBounds.max.z;
+
+                bool maxX = bounds.max.x > iterationBounds.min.x;
+                bool maxY = bounds.max.y > iterationBounds.min.y;
+                bool maxZ = bounds.max.z > iterationBounds.min.z;
+
+                if (minX && minY && minZ && maxX && maxY && maxZ) {
+                    rigidBodys.at(id).velocity *= -0.6f;
+                    if (rigidBodys.count(iterationID)) {
+                        rigidBodys.at(iterationID).velocity *= -0.6f;
+                    }
+                }
+            }
+        }
     }
 }
 

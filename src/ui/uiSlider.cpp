@@ -1,6 +1,5 @@
-#include <ui/uiSlider.hpp>
-
 #include <core/engine.hpp>
+#include <ui/uiSlider.hpp>
 #include <ui/uiWidget.hpp>
 
 void UiSlider::update() {
@@ -9,24 +8,27 @@ void UiSlider::update() {
 
     // Detect dragging and fire events
     dragging = false;
-    if (focused && input.isButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
-        dragging = true;
+    if (enabled) {
+        if (focused && input.isButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
+            dragging = true;
 
-    if (!wasDragging && dragging) {
-        if (onDragStart)
-            onDragStart();
+        if (!wasDragging && dragging) {
+            if (onDragStart)
+                onDragStart();
+        }
+
+        if (wasDragging && !dragging) {
+            if (onDragEnd)
+                onDragEnd();
+        }
+
+        if (wasDragging && dragging) {
+            if (onDrag)
+                onDrag();
+        }
+
+        wasDragging = dragging;
     }
 
-    if (wasDragging && !dragging) {
-        if (onDragEnd)
-            onDragEnd();
-    }
-
-    if (wasDragging && dragging) {
-        if (onDrag)
-            onDrag();
-    }
-
-    wasDragging = dragging;
     UiWidget::update();
 }

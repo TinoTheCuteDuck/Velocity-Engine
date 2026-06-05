@@ -1,8 +1,7 @@
-#include <ui/uiButton.hpp>
-
 #include <GLFW/glfw3.h>
 #include <core/engine.hpp>
 #include <core/input.hpp>
+#include <ui/uiButton.hpp>
 
 // Update override
 void UiButton::update() {
@@ -10,7 +9,7 @@ void UiButton::update() {
     hitDetection();
 
     // Click Detection
-    if (focused) {
+    if (focused && enabled) {
         if (input.isButtonReleased(GLFW_MOUSE_BUTTON_LEFT)) {
             if (onMouseButton1Up) {
                 onMouseButton1Up();

@@ -2,29 +2,28 @@
 
 #include <GLFW/glfw3.h>
 #include <math/vector/vector2.hpp>
-
 #include <string>
 
 class Window {
-    public:
-        Window();
-        ~Window();
+  public:
+    Window();
+    ~Window();
 
-        void pollEvents();
-        bool shouldClose();
+    void pollEvents();
+    bool shouldClose();
 
-        bool getVsync();
-        Vector2 getWindowSize();
-        GLFWwindow* getWindow();
-        std::string& getTitle();
+    bool getVsync();
+    Vector2 getWindowSize();
+    GLFWwindow* getWindow();
+    std::string& getTitle();
 
-        void setVsync(bool enabled);
-        void setWindowSize(int width, int height);
+    void setVsync(bool enabled);
+    void setWindowSize(int width, int height);
 
-    private:
-        bool vsync = false;
-        std::string title = "Velocity Engine";
-        Vector2 windowSize = Vector2(1920, 1080);
+  private:
+    bool vsync = true;
+    std::string title = "Velocity Engine";
+    Vector2 windowSize = Vector2(1920, 1080);
 
-        GLFWwindow* window;
+    GLFWwindow* window;
 };

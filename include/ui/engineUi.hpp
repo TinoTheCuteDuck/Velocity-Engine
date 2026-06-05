@@ -2,10 +2,13 @@
 
 #include <GLFW/glfw3.h>
 #include <core/engine.hpp>
+#include <cstdlib>
+#include <filesystem>
 #include <iomanip>
 #include <math/vector/vector2.hpp>
 #include <memory>
 #include <rendering/scene.hpp>
+#include <rendering/sceneECS.hpp>
 #include <sstream>
 #include <string>
 #include <ui/uiButton.hpp>
@@ -25,6 +28,11 @@ inline Vector3 accent_inactive(65.0f / 255.0f, 72.0f / 255.0f, 104.0f / 255.0f);
 // inline Vector3 tertiary(40.0f / 255.0f, 52.0f / 255.0f, 87.0f / 255.0f);
 }  // namespace Colors
 
+namespace UiState {
+inline bool import3DVisible = false;
+inline size_t lastEntitySize = 0;
+}  // namespace UiState
+
 inline std::string setPrecision(float number, int precision) {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(precision) << number;
@@ -37,8 +45,8 @@ inline std::string setPrecision(Vector3& vector, int precision) {
     return ss.str();
 }
 
-inline std::shared_ptr<UiWidget> createScaleProperty() {
-    auto container = std::make_shared<UiWidget>();
+inline std::unique_ptr<UiWidget> createScaleProperty() {
+    auto container = std::make_unique<UiWidget>();
     container->position.set(Vector2(0.5f, 0.21825f));
     container->size.set(Vector2(0.96f, 0.045f));
     container->anchorPoint.set(Vector2(0.5f));
@@ -46,7 +54,7 @@ inline std::shared_ptr<UiWidget> createScaleProperty() {
     container->borderSize.set(3.0f / 1080.0f);
     container->borderColor.set(Vector4(Colors::accent_inactive, 1.0f));
     container->cornerRadius.set(20.0f / 1080.0f);
-    container->mouseEnterCallback = [container] {
+    container->mouseEnterCallback = [container = container.get()] {
         container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
             container->borderColor.get(),
             Vector4(Colors::accent_active, 1.0f),
@@ -57,7 +65,7 @@ inline std::shared_ptr<UiWidget> createScaleProperty() {
                 container->dirty = true;
             }));
     };
-    container->mouseLeaveCallback = [container] {
+    container->mouseLeaveCallback = [container = container.get()] {
         container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
             container->borderColor.get(),
             Vector4(Colors::accent_inactive, 1.0f),
@@ -69,7 +77,7 @@ inline std::shared_ptr<UiWidget> createScaleProperty() {
             }));
     };
 
-    auto text = std::make_shared<UiText>();
+    auto text = std::make_unique<UiText>();
     text->position.set(Vector2(0.0f, 0.5f));
     text->anchorPoint.set(Vector2(0.0f, 0.5f));
     text->color.set(Colors::foreground);
@@ -77,7 +85,7 @@ inline std::shared_ptr<UiWidget> createScaleProperty() {
     text->textSize.set(16.0f / 1080.0f);
     text->memory = sizeof(UiVertex) * 6 * text->text.get().size();
 
-    auto value = std::make_shared<UiTextBox>();
+    auto value = std::make_unique<UiTextBox>();
     value->position.set(Vector2(0.35f, 0.5f));
     value->size.set(Vector2(0.63f, 1.0f));
     value->anchorPoint.set(Vector2(0.0f, 0.5f));
@@ -86,21 +94,19 @@ inline std::shared_ptr<UiWidget> createScaleProperty() {
     value->textObject->textSize.set(15.0f / 1080.0f);
     value->textObject->color.set(Colors::foreground);
     value->textObject->memory = sizeof(UiVertex) * 6 * 24;
-    value->updateCallback = [value] {
-        static unsigned int lastID = 0;
+    value->updateCallback = [value = value.get()] {
         unsigned int id = Engine::get().scene.getSelectedEntity();
-        if (id != lastID && id > 0 && !value->keyboardFocus) {
-            lastID = id;
+        if (id > 0 && !value->keyboardFocus) {
             Vector3 scale = Engine::get().scene.transforms.at(id).scale;
             value->textObject->text.set(setPrecision(scale, 2));
             value->dirty = true;
         }
     };
-    value->onKeyboardFocusCallback = [value] {
+    value->onKeyboardFocusCallback = [value = value.get()] {
         value->textObject->text.set("");
         value->dirty = true;
     };
-    value->onKeyboardFocusLostCallback = [value] {
+    value->onKeyboardFocusLostCallback = [value = value.get()] {
         value->dirty = true;
 
         std::string input = value->textObject->text.get();
@@ -124,14 +130,14 @@ inline std::shared_ptr<UiWidget> createScaleProperty() {
         }
     };
 
-    container->addChild(text);
-    container->addChild(value);
+    container->addChild(std::move(text));
+    container->addChild(std::move(value));
 
     return container;
 }
 
-inline std::shared_ptr<UiWidget> createColorProperty() {
-    auto container = std::make_shared<UiWidget>();
+inline std::unique_ptr<UiWidget> createColorProperty() {
+    auto container = std::make_unique<UiWidget>();
     container->position.set(Vector2(0.5f, 0.165f));
     container->size.set(Vector2(0.96f, 0.045f));
     container->anchorPoint.set(Vector2(0.5f));
@@ -139,7 +145,7 @@ inline std::shared_ptr<UiWidget> createColorProperty() {
     container->borderSize.set(3.0f / 1080.0f);
     container->borderColor.set(Vector4(Colors::accent_inactive, 1.0f));
     container->cornerRadius.set(20.0f / 1080.0f);
-    container->mouseEnterCallback = [container] {
+    container->mouseEnterCallback = [container = container.get()] {
         container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
             container->borderColor.get(),
             Vector4(Colors::accent_active, 1.0f),
@@ -150,7 +156,7 @@ inline std::shared_ptr<UiWidget> createColorProperty() {
                 container->dirty = true;
             }));
     };
-    container->mouseLeaveCallback = [container] {
+    container->mouseLeaveCallback = [container = container.get()] {
         container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
             container->borderColor.get(),
             Vector4(Colors::accent_inactive, 1.0f),
@@ -162,7 +168,7 @@ inline std::shared_ptr<UiWidget> createColorProperty() {
             }));
     };
 
-    auto text = std::make_shared<UiText>();
+    auto text = std::make_unique<UiText>();
     text->position.set(Vector2(0.0f, 0.5f));
     text->anchorPoint.set(Vector2(0.0f, 0.5f));
     text->color.set(Colors::foreground);
@@ -170,7 +176,7 @@ inline std::shared_ptr<UiWidget> createColorProperty() {
     text->textSize.set(16.0f / 1080.0f);
     text->memory = sizeof(UiVertex) * 6 * text->text.get().size();
 
-    auto value = std::make_shared<UiTextBox>();
+    auto value = std::make_unique<UiTextBox>();
     value->position.set(Vector2(0.35f, 0.5f));
     value->size.set(Vector2(0.63f, 1.0f));
     value->anchorPoint.set(Vector2(0.0f, 0.5f));
@@ -179,21 +185,19 @@ inline std::shared_ptr<UiWidget> createColorProperty() {
     value->textObject->textSize.set(15.0f / 1080.0f);
     value->textObject->color.set(Colors::foreground);
     value->textObject->memory = sizeof(UiVertex) * 6 * 24;
-    value->updateCallback = [value] {
-        static unsigned int lastID = 0;
+    value->updateCallback = [value = value.get()] {
         unsigned int id = Engine::get().scene.getSelectedEntity();
-        if (id != lastID && id > 0 && !value->keyboardFocus) {
-            lastID = id;
+        if (id > 0 && !value->keyboardFocus) {
             Vector3 color = Engine::get().scene.meshes.at(id).color * 255;
             value->textObject->text.set(setPrecision(color, 0));
             value->dirty = true;
         }
     };
-    value->onKeyboardFocusCallback = [value] {
+    value->onKeyboardFocusCallback = [value = value.get()] {
         value->textObject->text.set("");
         value->dirty = true;
     };
-    value->onKeyboardFocusLostCallback = [value] {
+    value->onKeyboardFocusLostCallback = [value = value.get()] {
         value->dirty = true;
 
         std::string input = value->textObject->text.get();
@@ -217,14 +221,14 @@ inline std::shared_ptr<UiWidget> createColorProperty() {
         }
     };
 
-    container->addChild(text);
-    container->addChild(value);
+    container->addChild(std::move(text));
+    container->addChild(std::move(value));
 
     return container;
 }
 
-inline std::shared_ptr<UiWidget> createPositionProperty() {
-    auto container = std::make_shared<UiWidget>();
+inline std::unique_ptr<UiWidget> createPositionProperty() {
+    auto container = std::make_unique<UiWidget>();
     container->position.set(Vector2(0.5f, 0.112f));
     container->size.set(Vector2(0.96f, 0.045f));
     container->anchorPoint.set(Vector2(0.5f));
@@ -232,7 +236,7 @@ inline std::shared_ptr<UiWidget> createPositionProperty() {
     container->borderSize.set(3.0f / 1080.0f);
     container->borderColor.set(Vector4(Colors::accent_inactive, 1.0f));
     container->cornerRadius.set(20.0f / 1080.0f);
-    container->mouseEnterCallback = [container] {
+    container->mouseEnterCallback = [container = container.get()] {
         container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
             container->borderColor.get(),
             Vector4(Colors::accent_active, 1.0f),
@@ -243,7 +247,7 @@ inline std::shared_ptr<UiWidget> createPositionProperty() {
                 container->dirty = true;
             }));
     };
-    container->mouseLeaveCallback = [container] {
+    container->mouseLeaveCallback = [container = container.get()] {
         container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
             container->borderColor.get(),
             Vector4(Colors::accent_inactive, 1.0f),
@@ -255,7 +259,7 @@ inline std::shared_ptr<UiWidget> createPositionProperty() {
             }));
     };
 
-    auto text = std::make_shared<UiText>();
+    auto text = std::make_unique<UiText>();
     text->position.set(Vector2(0.0f, 0.5f));
     text->anchorPoint.set(Vector2(0.0f, 0.5f));
     text->color.set(Colors::foreground);
@@ -263,7 +267,7 @@ inline std::shared_ptr<UiWidget> createPositionProperty() {
     text->textSize.set(16.0f / 1080.0f);
     text->memory = sizeof(UiVertex) * 6 * text->text.get().size();
 
-    auto value = std::make_shared<UiTextBox>();
+    auto value = std::make_unique<UiTextBox>();
     value->position.set(Vector2(0.4f, 0.5f));
     value->size.set(Vector2(0.58f, 1.0f));
     value->anchorPoint.set(Vector2(0.0f, 0.5f));
@@ -272,21 +276,19 @@ inline std::shared_ptr<UiWidget> createPositionProperty() {
     value->textObject->textSize.set(15.0f / 1080.0f);
     value->textObject->color.set(Colors::foreground);
     value->textObject->memory = sizeof(UiVertex) * 6 * 24;
-    value->updateCallback = [value] {
-        static unsigned int lastID = 0;
+    value->updateCallback = [value = value.get()] {
         unsigned int id = Engine::get().scene.getSelectedEntity();
-        if (id != lastID && id > 0 && !value->keyboardFocus) {
-            lastID = id;
+        if (id > 0 && !value->keyboardFocus) {
             Vector3 position = Engine::get().scene.transforms.at(id).position;
             value->textObject->text.set(setPrecision(position, 2));
             value->dirty = true;
         }
     };
-    value->onKeyboardFocusCallback = [value] {
+    value->onKeyboardFocusCallback = [value = value.get()] {
         value->textObject->text.set("");
         value->dirty = true;
     };
-    value->onKeyboardFocusLostCallback = [value] {
+    value->onKeyboardFocusLostCallback = [value = value.get()] {
         value->dirty = true;
 
         std::string input = value->textObject->text.get();
@@ -310,19 +312,19 @@ inline std::shared_ptr<UiWidget> createPositionProperty() {
         }
     };
 
-    container->addChild(text);
-    container->addChild(value);
+    container->addChild(std::move(text));
+    container->addChild(std::move(value));
 
     return container;
 }
 
-inline std::shared_ptr<UiWidget> createInspectorHeader() {
-    auto container = std::make_shared<UiWidget>();
+inline std::unique_ptr<UiWidget> createInspectorHeader() {
+    auto container = std::make_unique<UiWidget>();
     container->position.set(Vector2(0.0f));
     container->size.set(Vector2(1.0f, 70.0f / 1080.0f));
     container->color.set(Colors::background_dark);
 
-    auto text = std::make_shared<UiText>();
+    auto text = std::make_unique<UiText>();
     text->position.set(Vector2(0.5f));
     text->anchorPoint.set(Vector2(0.5f));
     text->text.set("Properties");
@@ -330,7 +332,7 @@ inline std::shared_ptr<UiWidget> createInspectorHeader() {
     text->textSize.set(32.0f / 1080.0f);
     text->memory = sizeof(UiVertex) * 6 * text->text.get().size();
 
-    container->addChild(text);
+    container->addChild(std::move(text));
 
     return container;
 }
@@ -394,8 +396,8 @@ inline void createInspector(UiManager& manager) {
     container->addChild(createScaleProperty());
 }
 
-inline std::shared_ptr<UiWidget> createEntityEmblem(float offset, unsigned int entityID) {
-    auto container = std::make_shared<UiButton>();
+inline std::unique_ptr<UiWidget> createEntityEmblem(float offset, unsigned int entityID) {
+    auto container = std::make_unique<UiButton>();
     container->position.set(Vector2(0.5f, offset));
     container->size.set(Vector2(0.96f, 0.045f));
     container->anchorPoint.set(Vector2(0.5f));
@@ -403,7 +405,7 @@ inline std::shared_ptr<UiWidget> createEntityEmblem(float offset, unsigned int e
     container->borderSize.set(3.0f / 1080.0f);
     container->borderColor.set(Vector4(Colors::accent_inactive, 1.0f));
     container->cornerRadius.set(20.0f / 1080.0f);
-    container->mouseEnterCallback = [container] {
+    container->mouseEnterCallback = [container = container.get()] {
         container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
             container->borderColor.get(),
             Vector4(Colors::accent_active, 1.0f),
@@ -414,7 +416,7 @@ inline std::shared_ptr<UiWidget> createEntityEmblem(float offset, unsigned int e
                 container->dirty = true;
             }));
     };
-    container->mouseLeaveCallback = [container] {
+    container->mouseLeaveCallback = [container = container.get()] {
         container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
             container->borderColor.get(),
             Vector4(Colors::accent_inactive, 1.0f),
@@ -425,11 +427,11 @@ inline std::shared_ptr<UiWidget> createEntityEmblem(float offset, unsigned int e
                 container->dirty = true;
             }));
     };
-    container->onMouseButton1Click = [container, entityID] {
+    container->onMouseButton1Click = [entityID] {
         Engine::get().scene.setSelectedEntity(entityID);
     };
 
-    auto text = std::make_shared<UiText>();
+    auto text = std::make_unique<UiText>();
     text->position.set(Vector2(0.5f));
     text->anchorPoint.set(Vector2(0.5f));
     text->color.set(Colors::foreground);
@@ -437,7 +439,7 @@ inline std::shared_ptr<UiWidget> createEntityEmblem(float offset, unsigned int e
     text->textSize.set(16.0f / 1080.0f);
     text->memory = sizeof(UiVertex) * text->text.get().size() * 6;
 
-    container->addChild(text);
+    container->addChild(std::move(text));
 
     return container;
 }
@@ -473,25 +475,235 @@ inline void createSceneHierarchy(UiManager& manager) {
                 container->dirty = true;
             }));
     };
+
     container->updateCallback = [container] {
-        static size_t lastSize = 0;
         size_t newSize = Engine::get().scene.entities.size();
-        if (newSize != lastSize) {
-            lastSize = newSize;
+        if (newSize != UiState::lastEntitySize) {
+            UiState::lastEntitySize = newSize;
             container->children.clear();
+            container->dirty = true;
 
             int count = 0;
             for (auto [index, id] : Engine::get().scene.entities) {
                 float offset = count * 0.053f + 0.06f;
-                container->addChild(createEntityEmblem(offset, id));
+                auto emblem = createEntityEmblem(offset, id);
+                emblem->dirty = true;
+                container->addChild(std::move(emblem));
                 count++;
             }
         }
     };
 }
 
+inline std::unique_ptr<UiWidget> create3DImportButton() {
+    auto container = std::make_unique<UiButton>();
+    container->position.set(Vector2(0.05f, 0.5f));
+    container->anchorPoint.set(Vector2(0.5f));
+    container->size.set(Vector2(0.08f, 0.7f));
+    container->cornerRadius.set(60.0f / 1080.0f);
+    container->color.set(Colors::background_dark);
+    container->borderSize.set(4.0f / 1080.0f);
+    container->borderColor.set(Vector4(Colors::accent_inactive, 1));
+    container->mouseEnterCallback = [container = container.get()] {
+        container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
+            container->borderColor.get(),
+            Vector4(Colors::accent_active, 1.0f),
+            0.2f,
+            WidgetAnimationBase::COLOR,
+            [container](const Vector4& updatedColor) {
+                container->borderColor.set(updatedColor);
+                container->dirty = true;
+            }));
+    };
+    container->mouseLeaveCallback = [container = container.get()] {
+        container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
+            container->borderColor.get(),
+            Vector4(Colors::accent_inactive, 1.0f),
+            0.2f,
+            WidgetAnimationBase::COLOR,
+            [container](const Vector4& updatedColor) {
+                container->borderColor.set(updatedColor);
+                container->dirty = true;
+            }));
+    };
+    container->onMouseButton1Click = [] {
+        UiState::import3DVisible = !UiState::import3DVisible;
+    };
+
+    auto text = std::make_unique<UiText>();
+    text->position.set(Vector2(0.5f));
+    text->anchorPoint.set(Vector2(0.5f));
+    text->color.set(Colors::foreground);
+    text->textSize.set(16.0f / 1080.0f);
+    text->text.set("Import 3D");
+    text->memory = sizeof(UiVertex) * text->text.get().size() * 6;
+
+    container->addChild(std::move(text));
+
+    return container;
+}
+
+inline void createTopBar(UiManager& manager) {
+    auto container = manager.addUiWidget<UiWidget>();
+    container->position.set(Vector2(0.5f, 55.0f / 1080.0f));
+    container->anchorPoint.set(Vector2(0.5f));
+    container->size.set(Vector2(1860.0f / 1920.0f, 50.0f / 1080.0f));
+    container->cornerRadius.set(60.0f / 1080.0f);
+    container->color.set(Colors::background_main);
+    container->borderSize.set(4.0f / 1080.0f);
+    container->borderColor.set(Vector4(Colors::accent_inactive, 1));
+    container->mouseEnterCallback = [container] {
+        container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
+            container->borderColor.get(),
+            Vector4(Colors::accent_active, 1.0f),
+            0.2f,
+            WidgetAnimationBase::COLOR,
+            [container](const Vector4& updatedColor) {
+                container->borderColor.set(updatedColor);
+                container->dirty = true;
+            }));
+    };
+    container->mouseLeaveCallback = [container] {
+        container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
+            container->borderColor.get(),
+            Vector4(Colors::accent_inactive, 1.0f),
+            0.2f,
+            WidgetAnimationBase::COLOR,
+            [container](const Vector4& updatedColor) {
+                container->borderColor.set(updatedColor);
+                container->dirty = true;
+            }));
+    };
+
+    container->addChild(create3DImportButton());
+}
+
+inline std::unique_ptr<UiWidget> createFileEmblem(const float offset, const std::filesystem::path& filePath) {
+    auto container = std::make_unique<UiButton>();
+    container->position.set(Vector2(0.5f, offset + 0.1f));
+    container->anchorPoint.set(Vector2(0.5f));
+    container->size.set(Vector2(0.95f, 0.1f));
+    container->cornerRadius.set(60.0f / 1080.0f);
+    container->color.set(Colors::background_dark);
+    container->borderSize.set(4.0f / 1080.0f);
+    container->borderColor.set(Vector4(Colors::accent_inactive, 1));
+    container->mouseEnterCallback = [container = container.get()] {
+        container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
+            container->borderColor.get(),
+            Vector4(Colors::accent_active, 1.0f),
+            0.2f,
+            WidgetAnimationBase::COLOR,
+            [container](const Vector4& updatedColor) {
+                container->borderColor.set(updatedColor);
+                container->dirty = true;
+            }));
+    };
+    container->mouseLeaveCallback = [container = container.get()] {
+        container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
+            container->borderColor.get(),
+            Vector4(Colors::accent_inactive, 1.0f),
+            0.2f,
+            WidgetAnimationBase::COLOR,
+            [container](const Vector4& updatedColor) {
+                container->borderColor.set(updatedColor);
+                container->dirty = true;
+            }));
+    };
+    container->onMouseButton1Click = [filePath] {
+        Scene& scene = Engine::get().scene;
+        unsigned int entityID = scene.addEntity();
+        scene.addMeshComponent(entityID, Mesh(filePath));
+        scene.addTransformComponent(entityID, Transform{Vector3(), Vector3(1), Vector3()});
+    };
+
+    auto text = std::make_unique<UiText>();
+    text->position.set(Vector2(0.5f, 0.5f));
+    text->anchorPoint.set(Vector2(0.5f));
+    text->color.set(Colors::foreground);
+    text->text.set(filePath.filename().string());
+    text->textSize.set(16.0f / 1080.0f);
+    text->memory = sizeof(UiVertex) * text->text.get().size() * 6;
+
+    container->addChild(std::move(text));
+
+    return container;
+}
+
+inline void create3Dimport(UiManager& manager) {
+    auto container = manager.addUiWidget<UiWidget>();
+    container->position.set(Vector2(0.5f));
+    container->anchorPoint.set(Vector2(0.5f));
+    container->size.set(UiState::import3DVisible ? Vector2(0.25f, 0.3f) : Vector2());
+    container->cornerRadius.set(60.0f / 1080.0f);
+    container->color.set(Colors::background_main);
+    container->borderSize.set(4.0f / 1080.0f);
+    container->borderColor.set(Vector4(Colors::accent_inactive, 1));
+    container->visible = UiState::import3DVisible ? true : false;
+    container->updateCallback = [container] {
+        static bool lastState = UiState::import3DVisible;
+        bool newState = UiState::import3DVisible;
+
+        if (lastState != newState) {
+            lastState = newState;
+            Vector2 goal = newState ? Vector2(0.25f, 0.3f) : Vector2();
+            container->visible = true;
+
+            container->playAnimation(std::make_unique<WidgetAnimation<Vector2>>(
+                container->size.get(),
+                goal,
+                0.15f,
+                WidgetAnimationBase::SCALE,
+                [container](const Vector2& updatedSize) {
+                    container->size.set(updatedSize);
+                    container->dirty = true;
+                },
+                [container]() {
+                    if (!UiState::import3DVisible) {
+                        container->visible = false;
+                        container->dirty = true;
+                    }
+                }));
+        }
+    };
+    container->mouseEnterCallback = [container] {
+        container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
+            container->borderColor.get(),
+            Vector4(Colors::accent_active, 1.0f),
+            0.2f,
+            WidgetAnimationBase::COLOR,
+            [container](const Vector4& updatedColor) {
+                container->borderColor.set(updatedColor);
+                container->dirty = true;
+            }));
+    };
+    container->mouseLeaveCallback = [container] {
+        container->playAnimation(std::make_unique<WidgetAnimation<Vector4>>(
+            container->borderColor.get(),
+            Vector4(Colors::accent_inactive, 1.0f),
+            0.2f,
+            WidgetAnimationBase::COLOR,
+            [container](const Vector4& updatedColor) {
+                container->borderColor.set(updatedColor);
+                container->dirty = true;
+            }));
+    };
+
+    std::string homeDirectory = std::getenv("HOME");
+
+    size_t index = 0;
+    for (auto& entry : std::filesystem::directory_iterator(homeDirectory + "/Downloads")) {
+        if (entry.is_regular_file() && entry.path().extension() == ".obj") {
+            container->addChild(createFileEmblem(index * 0.12f, entry.path()));
+            index++;
+        }
+    }
+}
+
 inline void loadUi() {
     UiManager& manager = Engine::get().uiManager;
+    UiState::lastEntitySize = 0;
     createInspector(manager);
     createSceneHierarchy(manager);
+    createTopBar(manager);
+    create3Dimport(manager);
 }
