@@ -1,22 +1,21 @@
 #pragma once
 
+#include <string>
 #include <ui/uiStructs.hpp>
 #include <ui/uiWidget.hpp>
 
-#include <string>
-
 class UiText : public UiWidget {
-    public:
-        // Public Attributes
-        WidgetAttribute<std::string> text{""};
-        WidgetAttribute<float> textSize{0.029629f};
+  public:
+    // Public Attributes
+    WidgetAttribute<std::string> text{""};
+    WidgetAttribute<float> textSize{0.029629f};
 
-    public:
-        // Callbacks
-        Callback textCallback{[]() {}};
+  public:
+    // Callbacks
+    Callback textCallback{[]() {}};
 
-    public:
-        // Public Methods
-        void update() override;
-        void render() override;
+  public:
+    // Public Methods
+    void update() override;
+    void render(const bool parentVisible) override;
 };

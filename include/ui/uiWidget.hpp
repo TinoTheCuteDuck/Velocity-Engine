@@ -87,7 +87,7 @@ class UiWidget {
   public:
     // Public Methods
     virtual void update();
-    virtual void render();
+    virtual void render(const bool parentVisible);
 
   protected:
     // Private Methods

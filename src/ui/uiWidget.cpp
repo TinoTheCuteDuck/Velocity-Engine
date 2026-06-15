@@ -117,21 +117,21 @@ void UiWidget::update() {
 
     // Renders itself if dirty
     if (dirty) {
-        render();
+        render(visible);
     }
 }
-void UiWidget::render() {
+void UiWidget::render(const bool parentVisible) {
     // Reset vertexData
     vertexData.clear();
+    bool shouldRender = visible && parentVisible;
 
-    if (!visible || (parent && !parent->visible)) {
+    if (!shouldRender) {
         WidgetData data = {Vector4(), Vector4(), Vector4(), Vector4(), Vector4()};
         Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
 
         for (auto& child : children) {
-            child->render();
+            child->render(false);
         }
-
         return;
     }
 
@@ -192,6 +192,6 @@ void UiWidget::render() {
 
     // Render children recursively
     for (auto& child : children) {
-        child->render();
+        child->render(shouldRender);
     }
 }

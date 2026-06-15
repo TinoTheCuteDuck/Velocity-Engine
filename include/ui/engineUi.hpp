@@ -614,6 +614,7 @@ inline std::unique_ptr<UiWidget> createFileEmblem(const float offset, const std:
         unsigned int entityID = scene.addEntity();
         scene.addMeshComponent(entityID, Mesh(filePath));
         scene.addTransformComponent(entityID, Transform{Vector3(), Vector3(1), Vector3()});
+        UiState::import3DVisible = false;
     };
 
     auto text = std::make_unique<UiText>();
@@ -638,7 +639,7 @@ inline void create3Dimport(UiManager& manager) {
     container->color.set(Colors::background_main);
     container->borderSize.set(4.0f / 1080.0f);
     container->borderColor.set(Vector4(Colors::accent_inactive, 1));
-    container->visible = UiState::import3DVisible ? true : false;
+    container->visible = UiState::import3DVisible;
     container->updateCallback = [container] {
         static bool lastState = UiState::import3DVisible;
         bool newState = UiState::import3DVisible;

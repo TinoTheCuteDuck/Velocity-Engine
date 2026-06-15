@@ -17,16 +17,17 @@ void UiText::update() {
     // Update default UiWidget
     UiWidget::update();
 }
-void UiText::render() {
+void UiText::render(const bool parentVisible) {
     // clear VertexData
     vertexData.clear();
+    bool shouldRender = visible && parentVisible;
 
-    if (!visible || (parent && !parent->visible)) {
+    if (!shouldRender) {
         WidgetData data = {Vector4(), Vector4(), Vector4(), Vector4(), Vector4()};
         Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
 
         for (auto& child : children) {
-            child->render();
+            child->render(false);
         }
 
         return;
@@ -116,6 +117,6 @@ void UiText::render() {
     Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
     // Render children recursively
     for (auto& child : children) {
-        child->render();
+        child->render(shouldRender);
     }
 };

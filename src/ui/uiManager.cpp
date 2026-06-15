@@ -12,6 +12,7 @@ UiManager::UiManager() {
 }
 
 UiManager::~UiManager() {
+    uiWidgets.clear();
     Engine::get().renderer.deleteGPUMesh(meshID);
 }
 
