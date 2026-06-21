@@ -1,8 +1,7 @@
 #pragma once
 
-#include <string>
-#include <ui/uiStructs.hpp>
-#include <ui/uiWidget.hpp>
+#include "ui/core/uiStructs.hpp"
+#include "ui/widgets/uiWidget.hpp"
 
 class UiText : public UiWidget {
   public:

@@ -1,22 +1,11 @@
-#include <core/engine.hpp>
-#include <core/engineTime.hpp>
-#include <core/input.hpp>
-#include <core/ressources.hpp>
-#include <rendering/OpenGL/renderer.hpp>
-#include <rendering/camera.hpp>
-#include <ui/engineUi.hpp>
-#include <ui/uiManager.hpp>
+#include "core/engine.hpp"
 
-Engine::Engine() : window(), renderer(), input(), time(), uiManager(), scene(), camera() {
+Engine::Engine() : window(), renderer(), assetManager(), input(), time(), uiManager(), scene(), camera() {
     init();
 }
 
 void Engine::init() {
     Engine::setInstance(*this);
-
-    Ressources::pbrShader = renderer.addShader(ASSETS_PATH "shaders/scene/vertexShader.vert", ASSETS_PATH "shaders/scene/fragmentShader.frag");
-    Ressources::uiShader = renderer.addShader(ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag");
-    Ressources::uiTexture = renderer.addTexture(ASSETS_PATH "textures/JetBrainsMonoNerdFont-Regular-atlas.png", GL_REPEAT, GL_LINEAR, false);
 
     input.init();
     scene.load();
@@ -34,6 +23,7 @@ void Engine::run() {
 void Engine::update() {
     time.update();
     camera.update();
+    assetManager.update();
 
     uiManager.update();
     scene.update();

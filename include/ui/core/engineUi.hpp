@@ -1,23 +1,21 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-#include <core/engine.hpp>
+#include "core/engine.hpp"
+#include "math/vector/vector2.hpp"
+#include "ui/core/uiManager.hpp"
+#include "ui/core/uiStructs.hpp"
+#include "ui/widgets/uiButton.hpp"
+// #include "ui/widgets/uiSlider.hpp"
+#include "ui/widgets/uiText.hpp"
+#include "ui/widgets/uiTextBox.hpp"
+#include "ui/widgets/uiWidget.hpp"
+
 #include <cstdlib>
 #include <filesystem>
 #include <iomanip>
-#include <math/vector/vector2.hpp>
 #include <memory>
-#include <rendering/scene.hpp>
-#include <rendering/sceneECS.hpp>
 #include <sstream>
 #include <string>
-#include <ui/uiButton.hpp>
-#include <ui/uiManager.hpp>
-#include <ui/uiSlider.hpp>
-#include <ui/uiStructs.hpp>
-#include <ui/uiText.hpp>
-#include <ui/uiTextBox.hpp>
-#include <ui/uiWidget.hpp>
 
 namespace Colors {
 inline Vector3 background_dark(26.0f / 255.0f, 27.0f / 255.0f, 38.0f / 255.0f);
@@ -188,7 +186,7 @@ inline std::unique_ptr<UiWidget> createColorProperty() {
     value->updateCallback = [value = value.get()] {
         unsigned int id = Engine::get().scene.getSelectedEntity();
         if (id > 0 && !value->keyboardFocus) {
-            Vector3 color = Engine::get().scene.meshes.at(id).color * 255;
+            Vector3 color = Engine::get().scene.meshes.at(id).color.get() * 255;
             value->textObject->text.set(setPrecision(color, 0));
             value->dirty = true;
         }
@@ -214,9 +212,9 @@ inline std::unique_ptr<UiWidget> createColorProperty() {
         }
 
         if (ss >> x >> comma >> y >> comma >> z) {
-            scene.meshes.at(entityID).color = Vector3(x, y, z) / 255;
+            scene.meshes.at(entityID).color.set(Vector3(x, y, z) / 255);
         } else {
-            Vector3 color = scene.meshes.at(entityID).color * 255;
+            Vector3 color = scene.meshes.at(entityID).color.get() * 255;
             value->textObject->text.set(setPrecision(color, 0));
         }
     };
@@ -611,9 +609,8 @@ inline std::unique_ptr<UiWidget> createFileEmblem(const float offset, const std:
     };
     container->onMouseButton1Click = [filePath] {
         Scene& scene = Engine::get().scene;
-        unsigned int entityID = scene.addEntity();
-        scene.addMeshComponent(entityID, Mesh(filePath));
-        scene.addTransformComponent(entityID, Transform{Vector3(), Vector3(1), Vector3()});
+        unsigned int entityId = scene.addEntity();
+        scene.addMeshComponent(entityId, filePath.string());
         UiState::import3DVisible = false;
     };
 

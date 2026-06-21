@@ -1,12 +1,13 @@
 #pragma once
 
-#include "ui/uiStructs.hpp"
+#include "core/idAllocator.hpp"
+#include "rendering/material.hpp"
+#include "ui/core/uiStructs.hpp"
 
-#include <core/idAllocator.hpp>
 #include <memory>
-#include <rendering/material.hpp>
-#include <ui/uiWidget.hpp>
 #include <vector>
+
+class UiWidget;
 
 class UiManager {
   public:

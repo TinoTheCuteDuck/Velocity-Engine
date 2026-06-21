@@ -1,11 +1,11 @@
+#include "rendering/scene.hpp"
+
+#include "core/assetManager.hpp"
+#include "core/engine.hpp"
+#include "math/ray.hpp"
+#include "rendering/OpenGL/renderer.hpp"
+
 #include <cfloat>
-#include <core/engine.hpp>
-#include <physics/rigidBody.hpp>
-#include <rendering/OpenGL/renderer.hpp>
-#include <rendering/mesh.hpp>
-#include <rendering/scene.hpp>
-#include <rendering/sceneECS.hpp>
-#include <utility>
 
 void Scene::load() {
     // unsigned int bunnyId = addEntity();
@@ -19,18 +19,19 @@ void Scene::load() {
     // addRigidBodyComponent(bunnyId2, RigidBody());
 
     unsigned int planeId = addEntity();
-    addMeshComponent(planeId, Mesh(ASSETS_PATH "meshes/Plane.obj"));
-    addTransformComponent(planeId, Transform{Vector3(0), Vector3(1), Vector3()});
+    addMeshComponent(planeId, ASSETS_PATH "meshes/Plane.obj");
 }
 
 void Scene::update() {
+    AssetManager& assetManager = Engine::get().assetManager;
+
     // if (!Engine::get().uiManager.uiFocus) {
     //     pickObject(Engine::get().camera.screenPointToRay(Engine::get().input.getMousePos()));
     // }
 
     // Physics update
     for (auto& [id, component] : rigidBodys) {
-        if (transforms.count(id)) {
+        if (transforms.contains(id)) {
             component.update(transforms.at(id));
         }
     }
@@ -38,8 +39,12 @@ void Scene::update() {
     // Collision update
     for (auto& [id, component] : meshes) {
         if (transforms.count(id) && rigidBodys.count(id)) {
+            MeshData* meshData = assetManager.getMesh(component.filePath);
+            if (!meshData || meshData->meshId == 0)
+                continue;
+
             Transform& transform = transforms.at(id);
-            BoundingBox bounds = component.boundingBox;
+            BoundingBox bounds = meshData->boundingBox;
             Mat4 matrix = transform.getMatrice();
             Vector4 min = matrix * Vector4(bounds.min, 1);
             Vector4 max = matrix * Vector4(bounds.max, 1);
@@ -49,8 +54,13 @@ void Scene::update() {
             for (auto& [iterationID, iterationComponent] : meshes) {
                 if (id == iterationID)
                     continue;
+
+                MeshData* iterationMeshData = assetManager.getMesh(iterationComponent.filePath);
+                if (!iterationMeshData || iterationMeshData->meshId == 0)
+                    continue;
+
                 Transform& transform = transforms.at(iterationID);
-                BoundingBox iterationBounds = iterationComponent.boundingBox;
+                BoundingBox iterationBounds = iterationMeshData->boundingBox;
                 Mat4 matrix = transform.getMatrice();
                 Vector4 min = matrix * Vector4(iterationBounds.min, 1);
                 Vector4 max = matrix * Vector4(iterationBounds.max, 1);
@@ -76,21 +86,33 @@ void Scene::update() {
     }
 }
 
-void Scene::addTransformComponent(unsigned int entity, Transform&& transform) {
+void Scene::addTransformComponent(unsigned int entity, Vector3 position, Vector3 scale, Vector3 rotation) {
+    Transform transform(position, scale, rotation);
     transforms.emplace(entity, std::move(transform));
 }
 void Scene::removeTransformComponent(unsigned int entity) {
     transforms.erase(entity);
 }
 
-void Scene::addMeshComponent(unsigned int entity, Mesh&& mesh) {
+void Scene::addMeshComponent(unsigned int entity, const std::string& filePath) {
+    Engine::get().assetManager.loadMesh(filePath);
+    MeshInstance mesh(filePath);
+
     meshes.emplace(entity, std::move(mesh));
+
+    if (!transforms.contains(entity)) {
+        addTransformComponent(entity);
+    }
+    if (!materials.contains(entity)) {
+        Material material{ASSETS_PATH "shaders/scene/vertexShader.vert", ASSETS_PATH "shaders/scene/fragmentShader.frag", {}};
+        materials.emplace(std::make_pair(entity, std::move(material)));
+    }
 }
 void Scene::removeMeshComponent(unsigned int entity) {
     meshes.erase(entity);
 }
 
-void Scene::addRigidBodyComponent(unsigned int entity, RigidBody&& body) {
+void Scene::addRigidBodyComponent(unsigned int entity, const RigidBody&& body) {
     rigidBodys.emplace(entity, std::move(body));
 }
 void Scene::removeRigidBodyComponent(unsigned int entity) {
@@ -112,28 +134,43 @@ void Scene::removeEntity(unsigned int entity) {
 
 void Scene::submit() {
     Renderer& renderer = Engine::get().renderer;
+    AssetManager& assetManager = Engine::get().assetManager;
+
     for (auto& [id, component] : meshes) {
-        if (!transforms.count(id)) {
-            std::cout << "Mesh does not contain a transform!" << std::endl;
+        if (!transforms.contains(id) || !materials.contains(id)) {
+            std::cout << "Mesh does not contain a transform or material!" << std::endl;
             continue;
         }
 
+        MeshData* meshData = assetManager.getMesh(component.filePath);
+        if (!meshData || meshData->meshId == 0)
+            continue;
+
+        unsigned int meshId = meshData->meshId;
+        Material& material = materials.at(id);
+
         renderer.renderQueue(RenderCall{
-            component.meshID,
-            component.material,
+            meshId,
+            material,
             transforms.at(id).getMatrice(),
             true});
     }
 }
 
 void Scene::pickObject(const Ray ray) {
+    AssetManager& assetManager = Engine::get().assetManager;
+
     float closestT = FLT_MAX;
     unsigned int closestEntity = 0;
 
     for (auto& [id, component] : meshes) {
         float t0x, t1x, t0y, t1y, t0z, t1z;
 
-        BoundingBox bounds = component.boundingBox;
+        MeshData* meshData = assetManager.getMesh(component.filePath);
+        if (!meshData || meshData->meshId == 0)
+            continue;
+
+        BoundingBox bounds = meshData->boundingBox;
         if (!transforms.count(id)) {
             std::cout << "Mesh does not have a transform!" << std::endl;
             continue;

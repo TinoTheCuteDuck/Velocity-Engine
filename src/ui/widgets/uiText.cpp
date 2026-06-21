@@ -1,24 +1,15 @@
-// Includes
-#include <core/engine.hpp>
-#include <functional>
-#include <math/vector/vector2.hpp>
-#include <stdexcept>
-#include <string>
-#include <ui/uiText.hpp>
-#include <ui/uiWidget.hpp>
+#include "ui/widgets/uiText.hpp"
 
-// Public methods
+#include "core/engine.hpp"
+
 void UiText::update() {
-    // Update text
     if (textCallback) {
         textCallback();
     }
 
-    // Update default UiWidget
     UiWidget::update();
 }
 void UiText::render(const bool parentVisible) {
-    // clear VertexData
     vertexData.clear();
     bool shouldRender = visible && parentVisible;
 
@@ -33,7 +24,6 @@ void UiText::render(const bool parentVisible) {
         return;
     }
 
-    // Update constraints
     Vector2 windowSize = Engine::get().window.getWindowSize();
     float absoluteTextSize = textSize.get() * std::min(windowSize.x, windowSize.y);
     float characterSpacing = absoluteTextSize * 0.55f;
@@ -53,7 +43,6 @@ void UiText::render(const bool parentVisible) {
 
     applyConstraints();
 
-    // Generate text quads
     for (size_t i = 0; i < text.get().size(); i++) {
         // Convert pixel coordinates to NDC
         float x = absolutePosition.x + i * characterSpacing;
@@ -64,7 +53,6 @@ void UiText::render(const bool parentVisible) {
         float top = -((y / windowSize.y) * 2.0f - 1.0f);
         float bottom = -(((y + absoluteTextSize) / windowSize.y) * 2.0f - 1.0f);
 
-        // Generate UVs
         float cellSize = 72.0f;
         Vector2 texSize(1152.0f, 432.0f);
 
@@ -77,7 +65,6 @@ void UiText::render(const bool parentVisible) {
         float topUV = (row * cellSize) / texSize.y;
         float bottomUV = ((row + 1) * cellSize) / texSize.y;
 
-        // Generate VertexData
         Vector4 color4(color.get(), opacity.get());
         vertexData.push_back(UiVertex{Vector2(left, top), color4, Vector2(leftUV, topUV), elementID});
         vertexData.push_back(UiVertex{Vector2(left, bottom), color4, Vector2(leftUV, bottomUV), elementID});
@@ -88,7 +75,6 @@ void UiText::render(const bool parentVisible) {
         vertexData.push_back(UiVertex{Vector2(right, bottom), color4, Vector2(rightUV, bottomUV), elementID});
     }
 
-    // Reset and upload to the GPU
     vertexCount = memory / sizeof(UiVertex);
     if (vertexCount < vertexData.size())
         throw std::runtime_error("Not enough memory on the UiText");

@@ -1,8 +1,9 @@
 #pragma once
 
+#include "math/vector/vector2.hpp"
+#include "math/vector/vector4.hpp"
+
 #include <functional>
-#include <math/vector/vector2.hpp>
-#include <math/vector/vector4.hpp>
 
 struct UiVertex {
     Vector2 position;

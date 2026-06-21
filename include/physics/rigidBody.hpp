@@ -1,7 +1,8 @@
 #pragma once
 
-#include <math/vector/vector3.hpp>
-#include <rendering/sceneECS.hpp>
+#include "math/vector/vector3.hpp"
+
+struct Transform;
 
 class RigidBody {
   public:

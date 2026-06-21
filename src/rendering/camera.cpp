@@ -1,13 +1,10 @@
-#include <rendering/camera.hpp>
+#include "rendering/camera.hpp"
 
-#include <GLFW/glfw3.h>
-#include <core/engine.hpp>
-#include <core/input.hpp>
-
-#include <math/matrices/mat4.hpp>
-#include <math/ray.hpp>
-#include <math/vector/vector3.hpp>
-#include <math/vector/vector4.hpp>
+#include "GLFW/glfw3.h"
+#include "core/engine.hpp"
+#include "core/input.hpp"
+#include "math/matrices/mat4.hpp"
+#include "math/ray.hpp"
 
 Camera::Camera() {
     computeVectors();

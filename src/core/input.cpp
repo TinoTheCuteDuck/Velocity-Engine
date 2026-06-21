@@ -1,7 +1,7 @@
-#include <core/input.hpp>
+#include "core/input.hpp"
 
-#include <GLFW/glfw3.h>
-#include <core/engine.hpp>
+#include "GLFW/glfw3.h"
+#include "core/engine.hpp"
 
 #include <cstring>
 
@@ -25,7 +25,7 @@ void Input::init() {
 
     glfwSetCharCallback(window, []([[maybe_unused]] GLFWwindow* window, unsigned int codepoint) {
         Input& input = Engine::get().input;
-        input.currentCharacters.push_back((char)codepoint);
+        input.currentCharacters.push_back((char) codepoint);
     });
 
     glfwSetMouseButtonCallback(window, []([[maybe_unused]] GLFWwindow* window, int button, int action, [[maybe_unused]] int mods) {

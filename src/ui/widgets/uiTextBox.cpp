@@ -1,10 +1,8 @@
-#include <GLFW/glfw3.h>
-#include <core/engine.hpp>
-#include <ui/uiManager.hpp>
-#include <ui/uiStructs.hpp>
-#include <ui/uiText.hpp>
-#include <ui/uiTextBox.hpp>
-#include <ui/uiWidget.hpp>
+#include "ui/widgets/uiTextBox.hpp"
+
+#include "GLFW/glfw3.h"
+#include "core/engine.hpp"
+#include "core/input.hpp"
 
 UiTextBox::UiTextBox() {
     auto text = std::make_unique<UiText>();

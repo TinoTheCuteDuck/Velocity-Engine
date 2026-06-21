@@ -18,7 +18,7 @@ class IDAllocator {
                 return i + 1;
             }
         }
-        throw std::runtime_error("Tried to allocate too many IDs");
+        throw std::runtime_error("Attempted to allocate too many IDs");
     }
 
     void free(const unsigned int id) {

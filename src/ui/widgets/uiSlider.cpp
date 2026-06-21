@@ -1,6 +1,8 @@
-#include <core/engine.hpp>
-#include <ui/uiSlider.hpp>
-#include <ui/uiWidget.hpp>
+#include "ui/widgets/uiSlider.hpp"
+
+#include "core/engine.hpp"
+#include "core/input.hpp"
+#include "ui/widgets/uiWidget.hpp"
 
 void UiSlider::update() {
     Input& input = Engine::get().input;

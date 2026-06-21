@@ -1,10 +1,7 @@
 // Includes
-#include <core/engine.hpp>
-#include <math/vector/vector2.hpp>
-#include <math/vector/vector4.hpp>
-#include <memory>
-#include <ui/uiStructs.hpp>
-#include <ui/uiWidget.hpp>
+#include "ui/widgets/uiWidget.hpp"
+
+#include "core/engine.hpp"
 
 // Public Methods
 UiWidget::UiWidget() {
@@ -63,7 +60,6 @@ void UiWidget::hitDetection() {
     wasFocused = focused;
 }
 void UiWidget::applyConstraints() {
-    // Enforce aspect ratio
     float aspectRatio = aspect.get();
     if (aspectRatio > 0.0f) {
         float currentAspect = absoluteSize.x / absoluteSize.y;
@@ -74,7 +70,6 @@ void UiWidget::applyConstraints() {
         }
     }
 
-    // Apply size constraint
     Vector2 constraint = sizeConstraint.get();
     if (absoluteSize.x > constraint.x && constraint.x != 0) {
         absoluteSize.x = constraint.x;
@@ -83,12 +78,10 @@ void UiWidget::applyConstraints() {
         absoluteSize.y = constraint.y;
     }
 
-    // Apply anchorPoint
     absolutePosition -= absoluteSize * anchorPoint.get();
 }
 
 void UiWidget::update() {
-    // Allocate memory
     if (!allocated) {
         Engine::get().uiManager.allocateMemory(this);
         allocated = true;
@@ -97,12 +90,10 @@ void UiWidget::update() {
     float dt = Engine::get().time.getDt();
     hitDetection();
 
-    // Update
     if (updateCallback) {
         updateCallback();
     }
 
-    // Animate
     for (int i = (int) activeAnimations.size() - 1; i >= 0; i--) {
         bool finished = activeAnimations.at(i)->update(dt);
         if (finished) {
@@ -110,18 +101,15 @@ void UiWidget::update() {
         }
     }
 
-    // Update children
     for (auto& child : children) {
         child->update();
     }
 
-    // Renders itself if dirty
     if (dirty) {
         render(visible);
     }
 }
 void UiWidget::render(const bool parentVisible) {
-    // Reset vertexData
     vertexData.clear();
     bool shouldRender = visible && parentVisible;
 
@@ -135,7 +123,6 @@ void UiWidget::render(const bool parentVisible) {
         return;
     }
 
-    // Update constraints
     Vector2 windowSize = Engine::get().window.getWindowSize();
     if (parent) {
         absolutePosition = parent->getAbsolutePosition() + position.get() * parent->getAbsoluteSize();
@@ -149,13 +136,11 @@ void UiWidget::render(const bool parentVisible) {
 
     applyConstraints();
 
-    // Convert pixel coordinates to NDC
     float left = absolutePosition.x / windowSize.x * 2.0f - 1.0f;
     float right = (absolutePosition.x + absoluteSize.x) / windowSize.x * 2.0f - 1.0f;
     float top = -(absolutePosition.y / windowSize.y * 2.0f - 1.0f);
     float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f);
 
-    // Generate vertex data with position, color with transparency and solid Color UVs
     vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
     vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.9375f, 0.96875f), elementID});
     vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
@@ -164,7 +149,6 @@ void UiWidget::render(const bool parentVisible) {
     vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
     vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
 
-    // Reset and upload to the GPU
     vertexCount = memory / sizeof(UiVertex);
     dirty = false;
 
@@ -190,7 +174,6 @@ void UiWidget::render(const bool parentVisible) {
 
     Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
 
-    // Render children recursively
     for (auto& child : children) {
         child->render(shouldRender);
     }

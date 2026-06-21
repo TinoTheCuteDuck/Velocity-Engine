@@ -1,40 +1,40 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-#include <math/vector/vector2.hpp>
+#include "GLFW/glfw3.h"
+#include "math/vector/vector2.hpp"
 
 #include <vector>
 
 class Input {
-    private:
-        bool currentKeys[GLFW_KEY_LAST + 1];
-        bool previousKeys[GLFW_KEY_LAST + 1];
-        bool currentMouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
-        bool previousMouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
+  public:
+    void init();
+    void update();
 
-        Vector2 mousePosition;
-        Vector2 previousMousePosition;
-        Vector2 mouseDelta;
-        Vector2 scrollOffset;
+    bool isKeyHeld(int key);
+    bool isKeyPressed(int key);
+    bool isKeyReleased(int key);
+    bool isButtonHeld(int button);
+    bool isButtonPressed(int button);
+    bool isButtonReleased(int button);
 
-        std::vector<char> currentCharacters;
+    const std::vector<char>& getCurrentCharacter();
 
-    public:
-        void init();
-        void update();
+    Vector2 getMouseDelta();
+    Vector2 getMousePos();
+    Vector2 getScrollOffset();
 
-        bool isKeyHeld(int key);
-        bool isKeyPressed(int key);
-        bool isKeyReleased(int key);
-        bool isButtonHeld(int button);
-        bool isButtonPressed(int button);
-        bool isButtonReleased(int button);
+    void setInputMode(int mode, int value);
 
-        const std::vector<char>& getCurrentCharacter();
+  private:
+    bool currentKeys[GLFW_KEY_LAST + 1];
+    bool previousKeys[GLFW_KEY_LAST + 1];
+    bool currentMouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
+    bool previousMouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
 
-        Vector2 getMouseDelta();
-        Vector2 getMousePos();
-        Vector2 getScrollOffset();
+    Vector2 mousePosition;
+    Vector2 previousMousePosition;
+    Vector2 mouseDelta;
+    Vector2 scrollOffset;
 
-        void setInputMode(int mode, int value);
+    std::vector<char> currentCharacters;
 };

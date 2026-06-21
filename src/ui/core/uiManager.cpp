@@ -1,10 +1,9 @@
-#include <core/engine.hpp>
-#include <core/ressources.hpp>
-#include <rendering/material.hpp>
-#include <ui/engineUi.hpp>
-#include <ui/uiManager.hpp>
-#include <ui/uiStructs.hpp>
-#include <ui/uiWidget.hpp>
+#include "ui/core/uiManager.hpp"
+
+#include "core/engine.hpp"
+#include "rendering/textureData.hpp"
+#include "ui/core/engineUi.hpp"
+#include "ui/widgets/uiWidget.hpp"
 
 UiManager::UiManager() {
     uiWidgets.reserve(1024);
@@ -17,6 +16,8 @@ UiManager::~UiManager() {
 }
 
 void UiManager::load() {
+    AssetManager& assetManager = Engine::get().assetManager;
+
     Engine::get().renderer.deleteGPUMesh(meshID);
     uiWidgets.clear();
     allocatedMemory.clear();
@@ -25,8 +26,11 @@ void UiManager::load() {
 
     meshID = Engine::get().renderer.addGPUUiMesh(totalMemory);
 
-    material = Material{Ressources::uiShader};
-    material.textures["uiTexture"] = Ressources::uiTexture;
+    assetManager.loadShader(ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag");
+    assetManager.loadTexture(ASSETS_PATH "textures/JetBrainsMonoNerdFont-Regular-atlas.png", TextureWrapMode::ClampToEdge, TextureWrapMode::ClampToEdge, TextureWrapMode::ClampToEdge, TextureFilter::Linear, TextureFilter::Linear, false);
+
+    material = Material{ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag", {}};
+    material.textures.emplace(std::make_pair("uiTexture", ASSETS_PATH "textures/JetBrainsMonoNerdFont-Regular-atlas.png"));
 }
 
 void UiManager::update() {

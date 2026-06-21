@@ -1,7 +1,8 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-#include <math/vector/vector2.hpp>
+#include "GLFW/glfw3.h"
+#include "math/vector/vector2.hpp"
+
 #include <string>
 
 class Window {

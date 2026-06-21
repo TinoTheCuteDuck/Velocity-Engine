@@ -1,9 +1,9 @@
-#include <core/window.hpp>
+#include "core/window.hpp"
 
-#include <GLFW/glfw3.h>
-#include <core/engine.hpp>
-#include <glad/glad.h>
-#include <math/vector/vector2.hpp>
+#include "GLFW/glfw3.h"
+#include "core/engine.hpp"
+#include "glad/glad.h"
+#include "math/vector/vector2.hpp"
 
 #include <stdexcept>
 

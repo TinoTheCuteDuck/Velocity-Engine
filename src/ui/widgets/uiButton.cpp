@@ -1,7 +1,8 @@
-#include <GLFW/glfw3.h>
-#include <core/engine.hpp>
-#include <core/input.hpp>
-#include <ui/uiButton.hpp>
+#include "ui/widgets/uiButton.hpp"
+
+#include "GLFW/glfw3.h"
+#include "core/engine.hpp"
+#include "core/input.hpp"
 
 // Update override
 void UiButton::update() {

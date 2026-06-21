@@ -1,13 +1,14 @@
 #pragma once
 
-#include <core/idAllocator.hpp>
-#include <core/input.hpp>
-#include <math/ray.hpp>
-#include <physics/rigidBody.hpp>
-#include <rendering/camera.hpp>
-#include <rendering/mesh.hpp>
-#include <rendering/sceneECS.hpp>
+#include "core/idAllocator.hpp"
+#include "physics/rigidBody.hpp"
+#include "rendering/material.hpp"
+#include "rendering/meshInstance.hpp"
+#include "rendering/sceneECS.hpp"
+
 #include <unordered_map>
+
+struct Ray;
 
 class Scene {
   public:
@@ -15,13 +16,13 @@ class Scene {
     void update();
     void submit();
 
-    void addTransformComponent(unsigned int entity, Transform&& transform);
+    void addTransformComponent(unsigned int entity, Vector3 position = Vector3(), Vector3 scale = Vector3(1), Vector3 rotation = Vector3(0));
     void removeTransformComponent(const unsigned int entity);
 
-    void addMeshComponent(unsigned int entity, Mesh&& mesh);
+    void addMeshComponent(unsigned int entity, const std::string& filePath);
     void removeMeshComponent(unsigned int entity);
 
-    void addRigidBodyComponent(unsigned int entity, RigidBody&& body);
+    void addRigidBodyComponent(unsigned int entity, const RigidBody&& body);
     void removeRigidBodyComponent(unsigned int entity);
 
     unsigned int addEntity();
@@ -31,11 +32,11 @@ class Scene {
     unsigned int getSelectedEntity();
 
   public:
-    // Components
     std::unordered_map<unsigned int, unsigned int> entities;
     std::unordered_map<unsigned int, Transform> transforms;
-    std::unordered_map<unsigned int, Mesh> meshes;
+    std::unordered_map<unsigned int, MeshInstance> meshes;
     std::unordered_map<unsigned int, RigidBody> rigidBodys;
+    std::unordered_map<unsigned int, Material> materials;
 
   private:
     IDAllocator entityIDAllocator = IDAllocator(1024);

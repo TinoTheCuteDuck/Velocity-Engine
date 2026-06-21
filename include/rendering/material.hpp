@@ -4,6 +4,8 @@
 #include <unordered_map>
 
 struct Material {
-        unsigned int shaderID;
-        std::unordered_map<std::string, unsigned int> textures{};
+    std::string vertexPath;
+    std::string fragmentPath;
+
+    std::unordered_map<std::string, std::string> textures;
 };

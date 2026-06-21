@@ -4,7 +4,6 @@ out vec4 FragColor;
 in vec2 UV;
 in vec3 FragPos;
 in vec3 Normal;
-in vec3 Color;
 
 void main() {
     float ambientStrength = 0.3;
@@ -20,5 +19,5 @@ void main() {
     vec3 diffuse = diff * lightColor;
 
     vec3 result = (ambient + diffuse) * vec3(1.0, 1.0, 1.0);
-    FragColor = vec4(result * Color, 1.0);
+    FragColor = vec4(result * vec3(1), 1.0);
 }

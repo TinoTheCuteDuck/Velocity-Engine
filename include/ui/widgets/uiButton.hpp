@@ -1,7 +1,8 @@
 #pragma once
 
+#include "ui/widgets/uiWidget.hpp"
+
 #include <functional>
-#include <ui/uiWidget.hpp>
 
 using Callback = std::function<void()>;
 

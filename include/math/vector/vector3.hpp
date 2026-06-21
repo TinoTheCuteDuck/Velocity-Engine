@@ -1,176 +1,176 @@
 #pragma once
 
-#include <math/vector/vector2.hpp>
+#include "math/vector/vector2.hpp"
 
 #include <assert.h>
 #include <cmath>
 #include <iostream>
 
 class Vector3 {
-    public:
-        float x, y, z;
+  public:
+    float x, y, z;
 
-        constexpr Vector3() : x(0.0f), y(0.0f), z(0.0f) {};
-        constexpr Vector3(const float xyz) : x(xyz), y(xyz), z(xyz) {};
-        constexpr Vector3(const float x, const float y, const float z) : x(x), y(y), z(z) {};
-        constexpr Vector3(const Vector2& vec, const float z) : x(vec.x), y(vec.y), z(z) {};
+    constexpr Vector3() : x(0.0f), y(0.0f), z(0.0f) {};
+    constexpr Vector3(const float xyz) : x(xyz), y(xyz), z(xyz) {};
+    constexpr Vector3(const float x, const float y, const float z) : x(x), y(y), z(z) {};
+    constexpr Vector3(const Vector2& vec, const float z) : x(vec.x), y(vec.y), z(z) {};
 
-        static const Vector3 zero;
-        static const Vector3 one;
-        static const Vector3 up;
-        static const Vector3 right;
-        static const Vector3 forward;
+    static const Vector3 zero;
+    static const Vector3 one;
+    static const Vector3 up;
+    static const Vector3 right;
+    static const Vector3 forward;
 
-        inline constexpr Vector3& operator+=(const Vector3& other) {
-            x += other.x;
-            y += other.y;
-            z += other.z;
-            return *this;
-        }
-        inline constexpr Vector3& operator-=(const Vector3& other) {
-            x -= other.x;
-            y -= other.y;
-            z -= other.z;
-            return *this;
-        }
+    inline constexpr Vector3& operator+=(const Vector3& other) {
+        x += other.x;
+        y += other.y;
+        z += other.z;
+        return *this;
+    }
+    inline constexpr Vector3& operator-=(const Vector3& other) {
+        x -= other.x;
+        y -= other.y;
+        z -= other.z;
+        return *this;
+    }
 
-        inline constexpr Vector3& operator+=(const float scalar) {
-            x += scalar;
-            y += scalar;
-            z += scalar;
-            return *this;
-        }
-        inline constexpr Vector3& operator-=(const float scalar) {
-            x -= scalar;
-            y -= scalar;
-            z -= scalar;
-            return *this;
-        }
-        inline constexpr Vector3& operator*=(const float scalar) {
-            x *= scalar;
-            y *= scalar;
-            z *= scalar;
-            return *this;
-        }
-        inline constexpr Vector3& operator/=(const float scalar) {
-            assert(scalar != 0);
-            x /= scalar;
-            y /= scalar;
-            z /= scalar;
-            return *this;
-        }
+    inline constexpr Vector3& operator+=(const float scalar) {
+        x += scalar;
+        y += scalar;
+        z += scalar;
+        return *this;
+    }
+    inline constexpr Vector3& operator-=(const float scalar) {
+        x -= scalar;
+        y -= scalar;
+        z -= scalar;
+        return *this;
+    }
+    inline constexpr Vector3& operator*=(const float scalar) {
+        x *= scalar;
+        y *= scalar;
+        z *= scalar;
+        return *this;
+    }
+    inline constexpr Vector3& operator/=(const float scalar) {
+        assert(scalar != 0);
+        x /= scalar;
+        y /= scalar;
+        z /= scalar;
+        return *this;
+    }
 
-        inline constexpr Vector3 operator+(const Vector3& other) const {
-            return Vector3(
-                x + other.x,
-                y + other.y,
-                z + other.z);
-        }
-        inline constexpr Vector3 operator-(const Vector3& other) const {
-            return Vector3(
-                x - other.x,
-                y - other.y,
-                z - other.z);
-        }
-        inline constexpr Vector3 operator*(const Vector3& other) const {
-            return Vector3(
-                x * other.x,
-                y * other.y,
-                z * other.z);
-        }
+    inline constexpr Vector3 operator+(const Vector3& other) const {
+        return Vector3(
+            x + other.x,
+            y + other.y,
+            z + other.z);
+    }
+    inline constexpr Vector3 operator-(const Vector3& other) const {
+        return Vector3(
+            x - other.x,
+            y - other.y,
+            z - other.z);
+    }
+    inline constexpr Vector3 operator*(const Vector3& other) const {
+        return Vector3(
+            x * other.x,
+            y * other.y,
+            z * other.z);
+    }
 
-        inline constexpr Vector3 operator+(const float scalar) const {
-            return Vector3(
-                x + scalar,
-                y + scalar,
-                z + scalar);
-        }
-        inline constexpr Vector3 operator-(const float scalar) const {
-            return Vector3(
-                x - scalar,
-                y - scalar,
-                z - scalar);
-        }
-        inline constexpr Vector3 operator*(const float scalar) const {
-            return Vector3(
-                x * scalar,
-                y * scalar,
-                z * scalar);
-        }
-        inline constexpr Vector3 operator/(const float scalar) const {
-            assert(scalar != 0);
-            return Vector3(
-                x / scalar,
-                y / scalar,
-                z / scalar);
-        }
+    inline constexpr Vector3 operator+(const float scalar) const {
+        return Vector3(
+            x + scalar,
+            y + scalar,
+            z + scalar);
+    }
+    inline constexpr Vector3 operator-(const float scalar) const {
+        return Vector3(
+            x - scalar,
+            y - scalar,
+            z - scalar);
+    }
+    inline constexpr Vector3 operator*(const float scalar) const {
+        return Vector3(
+            x * scalar,
+            y * scalar,
+            z * scalar);
+    }
+    inline constexpr Vector3 operator/(const float scalar) const {
+        assert(scalar != 0);
+        return Vector3(
+            x / scalar,
+            y / scalar,
+            z / scalar);
+    }
 
-        inline friend constexpr Vector3 operator+(const float scalar, const Vector3& vec) {
-            return Vector3(
-                vec.x + scalar,
-                vec.y + scalar,
-                vec.z + scalar);
-        }
-        inline friend constexpr Vector3 operator-(const float scalar, const Vector3& vec) {
-            return Vector3(
-                vec.x - scalar,
-                vec.y - scalar,
-                vec.z - scalar);
-        }
-        inline friend constexpr Vector3 operator*(const float scalar, const Vector3& vec) {
-            return Vector3(
-                vec.x * scalar,
-                vec.y * scalar,
-                vec.z * scalar);
-        }
+    inline friend constexpr Vector3 operator+(const float scalar, const Vector3& vec) {
+        return Vector3(
+            vec.x + scalar,
+            vec.y + scalar,
+            vec.z + scalar);
+    }
+    inline friend constexpr Vector3 operator-(const float scalar, const Vector3& vec) {
+        return Vector3(
+            vec.x - scalar,
+            vec.y - scalar,
+            vec.z - scalar);
+    }
+    inline friend constexpr Vector3 operator*(const float scalar, const Vector3& vec) {
+        return Vector3(
+            vec.x * scalar,
+            vec.y * scalar,
+            vec.z * scalar);
+    }
 
-        inline constexpr Vector3 operator-() const {
-            return Vector3(-x, -y, -z);
-        }
-        inline friend std::ostream& operator<<(std::ostream& os, const Vector3& vec) {
-            os << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
-            return os;
-        }
+    inline constexpr Vector3 operator-() const {
+        return Vector3(-x, -y, -z);
+    }
+    inline friend std::ostream& operator<<(std::ostream& os, const Vector3& vec) {
+        os << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
+        return os;
+    }
 
-        inline constexpr bool operator==(const Vector3& other) const {
-            return std::abs(x - other.x) < 1e-6f && std::abs(y - other.y) < 1e-6f && std::abs(z - other.z) < 1e-6f;
-        }
-        inline constexpr bool operator!=(const Vector3& other) const {
-            return !(*this == other);
-        }
+    inline constexpr bool operator==(const Vector3& other) const {
+        return std::abs(x - other.x) < 1e-6f && std::abs(y - other.y) < 1e-6f && std::abs(z - other.z) < 1e-6f;
+    }
+    inline constexpr bool operator!=(const Vector3& other) const {
+        return !(*this == other);
+    }
 
-        inline constexpr float length() const {
-            return std::sqrt(x * x + y * y + z * z);
-        }
-        inline constexpr float lengthSqr() const {
-            return x * x + y * y + z * z;
-        }
-        inline constexpr float dot(const Vector3& other) const {
-            return x * other.x + y * other.y + z * other.z;
-        }
-        inline constexpr float distance(const Vector3& other) const {
-            return (*this - other).length();
-        }
-        inline constexpr float distanceSqr(const Vector3& other) const {
-            return (*this - other).lengthSqr();
-        }
-        inline constexpr Vector3 normalize() const {
-            float len = length();
-            assert(len != 0);
-            return Vector3(
-                x / len,
-                y / len,
-                z / len);
-        }
-        inline constexpr Vector3 cross(const Vector3& other) const {
-            return Vector3(
-                y * other.z - z * other.y,
-                z * other.x - x * other.z,
-                x * other.y - y * other.x);
-        }
-        inline static constexpr Vector3 lerp(const Vector3& a, const Vector3& b, const float t) {
-            return (1.0f - t) * a + t * b;
-        }
+    inline constexpr float length() const {
+        return std::sqrt(x * x + y * y + z * z);
+    }
+    inline constexpr float lengthSqr() const {
+        return x * x + y * y + z * z;
+    }
+    inline constexpr float dot(const Vector3& other) const {
+        return x * other.x + y * other.y + z * other.z;
+    }
+    inline constexpr float distance(const Vector3& other) const {
+        return (*this - other).length();
+    }
+    inline constexpr float distanceSqr(const Vector3& other) const {
+        return (*this - other).lengthSqr();
+    }
+    inline constexpr Vector3 normalize() const {
+        float len = length();
+        assert(len != 0);
+        return Vector3(
+            x / len,
+            y / len,
+            z / len);
+    }
+    inline constexpr Vector3 cross(const Vector3& other) const {
+        return Vector3(
+            y * other.z - z * other.y,
+            z * other.x - x * other.z,
+            x * other.y - y * other.x);
+    }
+    inline static constexpr Vector3 lerp(const Vector3& a, const Vector3& b, const float t) {
+        return (1.0f - t) * a + t * b;
+    }
 };
 
 inline constexpr Vector3 Vector3::zero = Vector3();
