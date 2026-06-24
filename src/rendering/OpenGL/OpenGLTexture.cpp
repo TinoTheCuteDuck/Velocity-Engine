@@ -30,7 +30,7 @@ GLenum filterToGL(TextureFilter mode, bool mipmaps) {
 GLenum modeToGL(RGBMode mode) {
     switch (mode) {
     case RGBMode::NONE:
-        return GL_NONE;
+        return GL_RGBA;
     case RGBMode::RED:
         return GL_RED;
     case RGBMode::RG:
@@ -63,9 +63,10 @@ OpenGLTexture::OpenGLTexture(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, wrapToGL(wrapW));
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterToGL(minFilter, mipmaps));
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterToGL(magFilter, mipmaps));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterToGL(magFilter, false));
 
     glTexImage2D(GL_TEXTURE_2D, 0, modeToGL(rgbMode), width, height, 0, modeToGL(rgbMode), GL_UNSIGNED_BYTE, data);
+
     if (mipmaps)
         glGenerateMipmap(GL_TEXTURE_2D);
 }

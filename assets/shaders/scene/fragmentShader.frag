@@ -5,6 +5,8 @@ in vec2 UV;
 in vec3 FragPos;
 in vec3 Normal;
 
+uniform sampler2D albedo;
+
 void main() {
     float ambientStrength = 0.3;
     vec3 lightColor = vec3(0.8, 0.8, 0.8);
@@ -19,5 +21,6 @@ void main() {
     vec3 diffuse = diff * lightColor;
 
     vec3 result = (ambient + diffuse) * vec3(1.0, 1.0, 1.0);
-    FragColor = vec4(result * vec3(1), 1.0);
+    vec4 texColor = texture(albedo, UV);
+    FragColor = vec4(result * texColor.rgb, 1.0);
 }

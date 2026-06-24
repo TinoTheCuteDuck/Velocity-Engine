@@ -141,13 +141,13 @@ void UiWidget::render(const bool parentVisible) {
     float top = -(absolutePosition.y / windowSize.y * 2.0f - 1.0f);
     float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f);
 
-    vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
-    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.9375f, 0.96875f), elementID});
-    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.03125), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.9375f, 0.03125), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.03125), elementID});
 
-    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
-    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
-    vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.96875f), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.03125), elementID});
+    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.03125), elementID});
+    vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.03125), elementID});
 
     vertexCount = memory / sizeof(UiVertex);
     dirty = false;

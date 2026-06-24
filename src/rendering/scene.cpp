@@ -8,18 +8,13 @@
 #include <cfloat>
 
 void Scene::load() {
-    // unsigned int bunnyId = addEntity();
-    // addMeshComponent(bunnyId, Mesh(ASSETS_PATH "meshes/stanford-bunny.obj"));
-    // addTransformComponent(bunnyId, Transform{Vector3(0, 50, 0), Vector3(20), Vector3()});
-    // addRigidBodyComponent(bunnyId, RigidBody());
+    unsigned int sponzaId = addEntity();
+    addMeshComponent(sponzaId, ASSETS_PATH "meshes/Sponza.obj");
 
-    // unsigned int bunnyId2 = addEntity();
-    // addMeshComponent(bunnyId2, Mesh(ASSETS_PATH "meshes/stanford-bunny.obj"));
-    // addTransformComponent(bunnyId2, Transform{Vector3(0, 100, 0), Vector3(20), Vector3()});
-    // addRigidBodyComponent(bunnyId2, RigidBody());
-
-    unsigned int planeId = addEntity();
-    addMeshComponent(planeId, ASSETS_PATH "meshes/Plane.obj");
+    unsigned int backpackId = addEntity();
+    addMaterialComponent(backpackId, ASSETS_PATH "shaders/scene/vertexShader.vert", ASSETS_PATH "shaders/scene/fragmentShader.frag", ASSETS_PATH "textures/backpackAlbedo.png");
+    addTransformComponent(backpackId, Vector3(0, 1, 0), Vector3(0.5f), Vector3());
+    addMeshComponent(backpackId, ASSETS_PATH "meshes/backpack.obj");
 }
 
 void Scene::update() {
@@ -104,8 +99,7 @@ void Scene::addMeshComponent(unsigned int entity, const std::string& filePath) {
         addTransformComponent(entity);
     }
     if (!materials.contains(entity)) {
-        Material material{ASSETS_PATH "shaders/scene/vertexShader.vert", ASSETS_PATH "shaders/scene/fragmentShader.frag", {}};
-        materials.emplace(std::make_pair(entity, std::move(material)));
+        addMaterialComponent(entity);
     }
 }
 void Scene::removeMeshComponent(unsigned int entity) {
@@ -119,6 +113,20 @@ void Scene::removeRigidBodyComponent(unsigned int entity) {
     rigidBodys.erase(entity);
 }
 
+void Scene::addMaterialComponent(unsigned int entity, const std::string& vertexPath, const std::string& fragmentPath, const std::string& albedo) {
+    std::string vertexShader = vertexPath != "" ? vertexPath : defaultVertexShader;
+    std::string fragmentShader = fragmentPath != "" ? fragmentPath : defaultFragmentShader;
+    std::string albedoMap = albedo != "" ? albedo : defaultAlbedo;
+
+    Engine::get().assetManager.loadTexture(albedoMap);
+
+    Material material = {vertexShader, fragmentShader, albedoMap};
+    materials.emplace(std::make_pair(entity, std::move(material)));
+}
+void Scene::removeMaterialComponent(unsigned int entity) {
+    materials.erase(entity);
+}
+
 unsigned int Scene::addEntity() {
     unsigned int entityID = entityIDAllocator.allocate();
     entities.emplace(entityID, entityID);
@@ -130,6 +138,7 @@ void Scene::removeEntity(unsigned int entity) {
     removeTransformComponent(entity);
     removeMeshComponent(entity);
     removeRigidBodyComponent(entity);
+    removeMaterialComponent(entity);
 }
 
 void Scene::submit() {

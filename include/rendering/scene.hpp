@@ -25,6 +25,9 @@ class Scene {
     void addRigidBodyComponent(unsigned int entity, const RigidBody&& body);
     void removeRigidBodyComponent(unsigned int entity);
 
+    void addMaterialComponent(unsigned int entity, const std::string& vertexPath = "", const std::string& fragmentPath = "", const std::string& albedo = "");
+    void removeMaterialComponent(unsigned int entity);
+
     unsigned int addEntity();
     void removeEntity(unsigned int entity);
 
@@ -43,4 +46,8 @@ class Scene {
 
     void pickObject(const Ray ray);
     unsigned int selectedEntity = 0;
+
+    std::string defaultAlbedo = ASSETS_PATH "textures/Albedo-Default.png";
+    std::string defaultVertexShader = ASSETS_PATH "shaders/scene/vertexShader.vert";
+    std::string defaultFragmentShader = ASSETS_PATH "shaders/scene/fragmentShader.frag";
 };

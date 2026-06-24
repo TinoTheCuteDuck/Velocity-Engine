@@ -32,8 +32,7 @@ void UiManager::load() {
     assetManager.loadShader(ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag");
     assetManager.loadTexture(ASSETS_PATH "textures/JetBrainsMonoNerdFont-Regular-atlas.png", TextureWrapMode::ClampToEdge, TextureWrapMode::ClampToEdge, TextureWrapMode::ClampToEdge, TextureFilter::Linear, TextureFilter::Linear, false);
 
-    material = Material{ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag", {}};
-    material.textures.emplace(std::make_pair("uiTexture", ASSETS_PATH "textures/JetBrainsMonoNerdFont-Regular-atlas.png"));
+    material = Material{ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag", ASSETS_PATH "textures/JetBrainsMonoNerdFont-Regular-atlas.png"};
 }
 
 void UiManager::update() {

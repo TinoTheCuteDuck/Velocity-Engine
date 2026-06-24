@@ -211,15 +211,11 @@ void Renderer::endFrame() {
         glBindVertexArray(mesh.VAO);
         cmd.depthTest == true ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
 
-        int texCount = 0;
-        for (auto& [name, texturePath] : cmd.material.textures) {
-            unsigned int textureId = assetManager.loadTexture(texturePath);
-
-            if (textureId != 0) {
-                OpenGLTexture& tex = textures.at(textureId);
-                shader.setInt(name, texCount);
-                tex.bind(texCount++);
-            }
+        unsigned int albedoId = assetManager.loadTexture(cmd.material.albedo);
+        if (albedoId != 0) {
+            OpenGLTexture& tex = textures.at(albedoId);
+            shader.setInt("albedo", 0);
+            tex.bind(0);
         }
 
         if (mesh.EBO) {

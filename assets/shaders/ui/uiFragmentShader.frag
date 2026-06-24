@@ -5,14 +5,14 @@ in vec2 UV;
 in vec4 Color;
 flat in uint WidgetID;
 
-uniform sampler2D uiTexture;
+uniform sampler2D albedo;
 
 struct WidgetData {
-        vec4 rect; // x,y = Position; z,w = Size;
-        vec4 borderColor;
-        vec4 params;     // x = cornerRadius; y = borderSize; z,w = unused
-        vec4 clipRect;   // x,y = Position; z,w = size;
-        vec4 clipParams; // x = clipCornerRadius; y = clipBorderSize; z,w = unused
+    vec4 rect;  // x,y = Position; z,w = Size;
+    vec4 borderColor;
+    vec4 params;      // x = cornerRadius; y = borderSize; z,w = unused
+    vec4 clipRect;    // x,y = Position; z,w = size;
+    vec4 clipParams;  // x = clipCornerRadius; y = clipBorderSize; z,w = unused
 };
 
 layout(std140, binding = 2) uniform WidgetProperties {
@@ -55,7 +55,7 @@ void main() {
         clipAlpha = 1.0 - smoothstep(-antiAliasing, antiAliasing, clipDistance);
     }
 
-    vec4 texColor = texture(uiTexture, UV);
+    vec4 texColor = texture(albedo, UV);
     vec4 finalColor = mix(Color, data.borderColor, borderAlpha);
     finalColor.a *= clipAlpha;
     finalColor.a *= smoothedAlpha;

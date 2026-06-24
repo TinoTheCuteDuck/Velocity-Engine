@@ -34,15 +34,15 @@ class Camera {
 
   private:
     float FOV = 70.0f;
-    float flySpeed = 50.0f;
+    float flySpeed = 5.0f;
     float cursorSensitivity = 0.1f;
     float nearPlane = 0.1f;
     float farPlane = 5000.0f;
 
-    float yaw = -90.0f;
-    float pitch = 0.0f;
+    float yaw = 180.0f;
+    float pitch = 10.0f;
     Vector3 up;
     Vector3 right;
     Vector3 forward;
-    Vector3 position = Vector3(0, 3, 8);
+    Vector3 position = Vector3(7.5, 1, -0.45);
 };

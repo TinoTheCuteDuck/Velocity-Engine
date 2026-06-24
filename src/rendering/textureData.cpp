@@ -9,6 +9,7 @@ TextureData::TextureData(std::string filePath, TextureWrapMode wrapU, TextureWra
     : filePath(filePath), wrapU(wrapU), wrapV(wrapV), wrapW(wrapW), minFilter(minFilter), magFilter(magFilter), mipmaps(mipmaps) {
     RGBMode format[5] = {RGBMode::NONE, RGBMode::RED, RGBMode::RG, RGBMode::RGB, RGBMode::RGBA};
 
+    stbi_set_flip_vertically_on_load(true);
     data = stbi_load(filePath.c_str(), &width, &height, &nrChannels, 0);
     rgbMode = format[nrChannels];
 }

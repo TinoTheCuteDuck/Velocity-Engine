@@ -62,8 +62,8 @@ void UiText::render(const bool parentVisible) {
 
         float leftUV = (col * cellSize) / texSize.x;
         float rightUV = ((col + 1) * cellSize) / texSize.x;
-        float topUV = (row * cellSize) / texSize.y;
-        float bottomUV = ((row + 1) * cellSize) / texSize.y;
+        float topUV = 1.0f - (row * cellSize) / texSize.y;
+        float bottomUV = 1.0f - ((row + 1) * cellSize) / texSize.y;
 
         Vector4 color4(color.get(), opacity.get());
         vertexData.push_back(UiVertex{Vector2(left, top), color4, Vector2(leftUV, topUV), elementID});
