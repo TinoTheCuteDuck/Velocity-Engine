@@ -51,7 +51,7 @@ unsigned int Renderer::addGPUMesh(std::vector<Vertex>& vertexData, std::vector<u
     glBindVertexArray(0);
 
     unsigned int meshId = meshIdAllocator.allocate();
-    OpenGLMesh mesh(VAO, VBO, EBO, 0, vertexData.size());
+    OpenGLMesh mesh(VAO, VBO, EBO, 0, indices.size());
 
     meshes.emplace(std::make_pair(meshId, std::move(mesh)));
     return meshId;

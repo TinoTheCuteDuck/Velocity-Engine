@@ -12,13 +12,16 @@ UiManager::UiManager() {
 
 UiManager::~UiManager() {
     uiWidgets.clear();
-    Engine::get().renderer.deleteGPUMesh(meshID);
+    if (meshID)
+        Engine::get().renderer.deleteGPUMesh(meshID);
 }
 
 void UiManager::load() {
     AssetManager& assetManager = Engine::get().assetManager;
 
-    Engine::get().renderer.deleteGPUMesh(meshID);
+    if (meshID)
+        Engine::get().renderer.deleteGPUMesh(meshID);
+
     uiWidgets.clear();
     allocatedMemory.clear();
     allocatedMemory.resize(totalMemory, false);

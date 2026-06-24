@@ -5,6 +5,7 @@
 #include <cfloat>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 
 MeshData::MeshData(const std::string filePath) {
     this->filePath = filePath;
@@ -50,48 +51,118 @@ MeshData& MeshData::operator=(MeshData&& other) noexcept {
 void MeshData::parseOBJ(const std::string& filePath) {
     std::ifstream file(filePath);
     if (!file.is_open()) {
-        throw std::runtime_error("Failed to open mesh filepath: " + filePath);
+        throw std::runtime_error("Error reading mesh filepath: " + filePath);
     }
+
     std::string data;
+
     std::vector<Vector3> vertices;
     std::vector<Vector3> normals;
     std::vector<Vector2> UVs;
 
-    int vertexCount = 0;
+    std::unordered_map<VertexKey, unsigned int> map;
 
+    size_t vertexCount = 0;
     while (std::getline(file, data)) {
+        float x, y, z;
+
         if (data.starts_with("v ")) {
-            std::istringstream string(data.substr(2));
-            float x, y, z;
-            string >> x >> y >> z;
+            std::istringstream stream(data.substr(2));
+
+            stream >> x >> y >> z;
             vertices.push_back(Vector3(x, y, z));
-        } else if (data.starts_with("vn")) {
-            std::istringstream string(data.substr(2));
-            float x, y, z;
-            string >> x >> y >> z;
+
+        } else if (data.starts_with("vn ")) {
+            std::istringstream stream(data.substr(3));
+
+            stream >> x >> y >> z;
             normals.push_back(Vector3(x, y, z));
-        } else if (data.starts_with("vt")) {
-            std::istringstream string(data.substr(2));
-            float x, y;
-            string >> x >> y;
+
+        } else if (data.starts_with("vt ")) {
+            std::istringstream stream(data.substr(3));
+
+            stream >> x >> y;
             UVs.push_back(Vector2(x, y));
+
         } else if (data.starts_with("f ")) {
-            std::istringstream string(data.substr(2));
-            std::string entry;
-            while (string >> entry) {
-                std::istringstream indicesF(entry);
-                std::string token;
-                std::vector<int> idx;
-                while (std::getline(indicesF, token, '/')) {
-                    idx.push_back(std::stoi(token) - 1);
+            std::string string = data.substr(2);
+
+            size_t tokenPos;
+            while ((tokenPos = string.find(' ')) != std::string::npos) {
+                std::string token = string.substr(0, tokenPos);
+                std::vector<std::string> parts;
+
+                parseFace(parts, token);
+
+                Vector3 position = parts[0] != "" ? vertices.at(std::stoi(parts[0]) - 1) : Vector3();
+                Vector2 uv = parts[1] != "" ? UVs.at(std::stoi(parts[1]) - 1) : Vector2();
+                Vector3 normal = parts[2] != "" ? normals.at(std::stoi(parts[2]) - 1) : Vector3();
+
+                Vertex vertex{position, uv, normal};
+                VertexKey key{
+                    parts[0] != "" ? std::stoi(parts[0]) : -1,
+                    parts[1] != "" ? std::stoi(parts[1]) : -1,
+                    parts[2] != "" ? std::stoi(parts[2]) : -1,
+                };
+
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    indices.push_back(it->second);
+                } else {
+                    indices.push_back(vertexCount);
+                    map.emplace(std::make_pair(key, vertexCount));
+                    vertexData.push_back(vertex);
+                    vertexCount++;
                 }
-                vertexData.push_back(Vertex{vertices[idx[0]], UVs[idx[1]], normals[idx[2]]});
-                indices.push_back(vertexCount);
-                vertexCount += 1;
+
+                string = string.substr(tokenPos + 1);
+            }
+
+            if (!string.empty()) {
+                std::vector<std::string> parts;
+                parseFace(parts, string);
+
+                Vector3 position = parts[0] != "" ? vertices.at(std::stoi(parts[0]) - 1) : Vector3();
+                Vector2 uv = parts[1] != "" ? UVs.at(std::stoi(parts[1]) - 1) : Vector2();
+                Vector3 normal = parts[2] != "" ? normals.at(std::stoi(parts[2]) - 1) : Vector3();
+
+                Vertex vertex{position, uv, normal};
+                VertexKey key{
+                    parts[0] != "" ? std::stoi(parts[0]) : -1,
+                    parts[1] != "" ? std::stoi(parts[1]) : -1,
+                    parts[2] != "" ? std::stoi(parts[2]) : -1,
+                };
+
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    indices.push_back(it->second);
+                } else {
+                    indices.push_back(vertexCount);
+                    map.emplace(std::make_pair(key, vertexCount));
+                    vertexData.push_back(vertex);
+                    vertexCount++;
+                }
             }
         }
     }
+
     file.close();
+}
+
+void MeshData::parseFace(std::vector<std::string>& parts, std::string& token) {
+    size_t slashPos;
+    while ((slashPos = token.find("/")) != std::string::npos) {
+        parts.push_back(token.substr(0, slashPos));
+        token = token.substr(slashPos + 1);
+    }
+
+    if (!token.empty()) {
+        parts.push_back(token);
+    }
+
+    for (size_t i = parts.size(); i < 3; i++) {
+        parts.push_back("");
+    }
 }
 
 void MeshData::generateBoundingBox() {

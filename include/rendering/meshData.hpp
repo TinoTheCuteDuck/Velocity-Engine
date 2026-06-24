@@ -12,6 +12,27 @@ struct Vertex {
     Vector3 normal;
 };
 
+struct VertexKey {
+    int v;
+    int vt;
+    int vn;
+
+    bool operator==(const VertexKey& other) const {
+        return v == other.v &&
+               vt == other.vt &&
+               vn == other.vn;
+    }
+};
+
+namespace std {
+template <>
+struct hash<VertexKey> {
+    size_t operator()(const VertexKey& k) const {
+        return (k.v * 73856093) ^ (k.vt * 19349663) ^ (k.vn * 83492791);
+    }
+};
+}  // namespace std
+
 struct BoundingBox {
     Vector3 min;
     Vector3 max;
@@ -43,5 +64,6 @@ class MeshData {
 
   private:
     void parseOBJ(const std::string& filePath);
+    void parseFace(std::vector<std::string>& parts, std::string& token);
     void generateBoundingBox();
 };

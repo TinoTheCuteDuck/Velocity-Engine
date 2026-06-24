@@ -11,7 +11,7 @@ class UiWidget;
 
 class UiManager {
   public:
-    unsigned int meshID;
+    unsigned int meshID = 0;
     Material material;
 
     UiManager();
