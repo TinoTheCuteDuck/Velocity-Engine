@@ -3,7 +3,7 @@
 #include "math/vector/vector2.hpp"
 #include "math/vector/vector3.hpp"
 #include "math/vector/vector4.hpp"
-#include "ui/core/uiStructs.hpp"
+#include "ui/core/uiTypes.hpp"
 
 #include <functional>
 #include <memory>

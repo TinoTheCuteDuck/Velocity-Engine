@@ -3,7 +3,7 @@
 #include "core/engine.hpp"
 #include "math/vector/vector2.hpp"
 #include "ui/core/uiManager.hpp"
-#include "ui/core/uiStructs.hpp"
+#include "ui/core/uiTypes.hpp"
 #include "ui/widgets/uiButton.hpp"
 // #include "ui/widgets/uiSlider.hpp"
 #include "ui/widgets/uiText.hpp"
@@ -212,9 +212,10 @@ inline std::unique_ptr<UiWidget> createColorProperty() {
         }
 
         if (ss >> x >> comma >> y >> comma >> z) {
-            scene.meshes.at(entityID).color.set(Vector3(x, y, z) / 255);
+            scene.meshes.at(entityID).color.set(Vector3(x, y, z) / 255.0f);
+
         } else {
-            Vector3 color = scene.meshes.at(entityID).color.get() * 255;
+            Vector3 color = scene.meshes.at(entityID).color.get() * 255.0f;
             value->textObject->text.set(setPrecision(color, 0));
         }
     };

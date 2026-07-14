@@ -45,6 +45,7 @@ MeshData& MeshData::operator=(MeshData&& other) noexcept {
 
         other.meshId = 0;
     }
+
     return *this;
 }
 

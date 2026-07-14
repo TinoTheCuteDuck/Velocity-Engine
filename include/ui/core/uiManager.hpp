@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/idAllocator.hpp"
-#include "rendering/material.hpp"
-#include "ui/core/uiStructs.hpp"
+#include "rendering/renderingTypes.hpp"
+#include "ui/core/uiTypes.hpp"
 
 #include <memory>
 #include <vector>
@@ -36,8 +36,11 @@ class UiManager {
     bool uiFocus = false;
 
   private:
-    size_t totalMemory = 256 * sizeof(UiVertex) * 6;
     bool reloadUi = false;
+
+    size_t totalMemory = 3600;
+    size_t lastFreeMemory = 0;
+
     std::vector<bool> allocatedMemory;
     std::vector<std::unique_ptr<UiWidget>> uiWidgets;
     IDAllocator elementIDAllocator = IDAllocator(1024);

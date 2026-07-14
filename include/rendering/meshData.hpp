@@ -1,46 +1,9 @@
 #pragma once
 
-#include "math/vector/vector2.hpp"
-#include "math/vector/vector3.hpp"
+#include "rendering/renderingTypes.hpp"
 
 #include <string>
 #include <vector>
-
-struct Vertex {
-    Vector3 position;
-    Vector2 UV;
-    Vector3 normal;
-};
-
-struct VertexKey {
-    int v;
-    int vt;
-    int vn;
-
-    bool operator==(const VertexKey& other) const {
-        return v == other.v &&
-               vt == other.vt &&
-               vn == other.vn;
-    }
-};
-
-namespace std {
-template <>
-struct hash<VertexKey> {
-    size_t operator()(const VertexKey& k) const {
-        return (k.v * 73856093) ^ (k.vt * 19349663) ^ (k.vn * 83492791);
-    }
-};
-}  // namespace std
-
-struct BoundingBox {
-    Vector3 min;
-    Vector3 max;
-
-    Vector3& operator[](int index) {
-        return (index == 0) ? min : max;
-    }
-};
 
 class MeshData {
   public:

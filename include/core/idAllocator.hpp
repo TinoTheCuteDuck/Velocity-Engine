@@ -6,15 +6,17 @@
 class IDAllocator {
   private:
     size_t idAmount;
+    size_t lastFreeId = 0;
     std::vector<bool> ids;
 
   public:
     IDAllocator(const size_t amount) : idAmount(amount), ids(amount, false) {}
 
     unsigned int allocate() {
-        for (size_t i = 0; i < idAmount; i++) {
+        for (size_t i = lastFreeId; i < idAmount; i++) {
             if (!ids.at(i)) {
                 ids.at(i) = true;
+                lastFreeId = i + 1;
                 return i + 1;
             }
         }
@@ -22,9 +24,10 @@ class IDAllocator {
     }
 
     void free(const unsigned int id) {
-        unsigned int allocatedID = id - 1;
-        if (allocatedID < ids.size() && allocatedID >= 0) {
-            ids.at(allocatedID) = false;
+        unsigned int allocatedId = id - 1;
+        if (allocatedId < ids.size() && allocatedId >= 0) {
+            ids.at(allocatedId) = false;
+            lastFreeId = allocatedId;
         }
     }
 };

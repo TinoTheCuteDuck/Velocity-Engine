@@ -3,6 +3,7 @@
 #include "core/engine.hpp"
 #include "rendering/textureData.hpp"
 #include "ui/core/engineUi.hpp"
+#include "ui/core/uiTypes.hpp"
 #include "ui/widgets/uiWidget.hpp"
 
 UiManager::UiManager() {
@@ -27,7 +28,7 @@ void UiManager::load() {
     allocatedMemory.resize(totalMemory, false);
     loadUi();
 
-    meshID = Engine::get().renderer.addGPUUiMesh(totalMemory);
+    meshID = Engine::get().renderer.addGPUUiMesh(totalMemory * sizeof(UiVertex));
 
     assetManager.loadShader(ASSETS_PATH "shaders/ui/uiVertexShader.vert", ASSETS_PATH "shaders/ui/uiFragmentShader.frag");
     assetManager.loadTexture(ASSETS_PATH "textures/JetBrainsMonoNerdFont-Regular-atlas.png", TextureWrapMode::ClampToEdge, TextureWrapMode::ClampToEdge, TextureWrapMode::ClampToEdge, TextureFilter::Linear, TextureFilter::Linear, false);
@@ -49,6 +50,7 @@ void UiManager::update() {
 void UiManager::submit() {
     Engine::get().renderer.renderQueue(RenderCall{
         meshID,
+        0,
         material,
         std::nullopt,
         false});
@@ -61,27 +63,50 @@ void UiManager::reRender() {
 }
 
 void UiManager::freeMemory(const unsigned int elementID, const size_t offset, const size_t memory) {
+    if (reloadUi)
+        return;
+
     elementIDAllocator.free(elementID);
-    for (size_t i = offset; i < offset + memory; i++) {
+    size_t vertexOffset = offset / sizeof(UiVertex);
+    size_t vertexMemory = memory / sizeof(UiVertex);
+
+    for (size_t i = vertexOffset; i < vertexOffset + vertexMemory; i++) {
         allocatedMemory.at(i) = false;
     }
+
+    lastFreeMemory = vertexOffset;
 }
 
 void UiManager::allocateMemory(UiWidget* widget) {
+    if (reloadUi) {
+        widget->elementID = 0;
+        return;
+    }
+
     unsigned int elementID = elementIDAllocator.allocate();
     widget->elementID = elementID;
-    size_t offset = getLowestMemoryRegion(widget->memory);
-    widget->offset = offset;
-    for (size_t i = offset; i < offset + widget->memory; i++) {
+
+    size_t verticesOffset = getLowestMemoryRegion(widget->memory);
+    size_t vertexMemory = widget->memory / sizeof(UiVertex);
+    widget->offset = verticesOffset * sizeof(UiVertex);
+
+    for (size_t i = verticesOffset; i < verticesOffset + vertexMemory; i++) {
         allocatedMemory.at(i) = true;
     }
+
+    lastFreeMemory = verticesOffset + vertexMemory;
 }
 
 size_t UiManager::getLowestMemoryRegion(const size_t requiredMemory) {
-    for (size_t i = 0; i < allocatedMemory.size(); i++) {
+    if (reloadUi)
+        return 0;
+
+    size_t requiredVerticesMemory = requiredMemory / sizeof(UiVertex);
+
+    for (size_t i = lastFreeMemory; i < allocatedMemory.size(); i++) {
         if (allocatedMemory.at(i) == false) {
             bool freeRange = true;
-            for (size_t j = i; j < i + requiredMemory; j++) {
+            for (size_t j = i; j < i + requiredVerticesMemory; j++) {
                 if (j >= allocatedMemory.size()) {
                     freeRange = false;
                     break;
@@ -96,7 +121,7 @@ size_t UiManager::getLowestMemoryRegion(const size_t requiredMemory) {
             }
         }
     }
-    totalMemory *= 2.0f;
+    totalMemory *= 2;
     reloadUi = true;
     return 0;
 }

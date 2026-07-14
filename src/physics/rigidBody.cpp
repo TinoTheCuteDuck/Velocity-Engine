@@ -1,7 +1,7 @@
 #include "physics/rigidBody.hpp"
 
 #include "core/engine.hpp"
-#include "rendering/sceneECS.hpp"
+#include "rendering/sceneTypes.hpp"
 
 #include <assert.h>
 

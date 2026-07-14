@@ -1,51 +1,69 @@
 #pragma once
 
 #include "core/idAllocator.hpp"
-#include "math/matrices/mat4.hpp"
 #include "rendering/OpenGL/OpenGLMesh.hpp"
 #include "rendering/OpenGL/OpenGLShader.hpp"
 #include "rendering/OpenGL/OpenGLTexture.hpp"
-#include "rendering/material.hpp"
+#include "rendering/renderingTypes.hpp"
 #include "rendering/textureData.hpp"
 
-#include <optional>
 #include <unordered_map>
 #include <vector>
 
 struct UiVertex;
 struct WidgetData;
 struct Vertex;
-
-struct RenderCall {
-    unsigned int meshID;
-    Material material;
-    std::optional<Mat4> transform = std::nullopt;
-    std::optional<bool> depthTest = true;
-};
+struct RenderCall;
 
 class Renderer {
   public:
     Renderer();
+    ~Renderer();
+
+  public:
+    LightRenderCall lightCall;
+
     void renderQueue(RenderCall cmd);
     void startFrame();
     void endFrame();
 
     unsigned int addGPUMesh(std::vector<Vertex>& vertexData, std::vector<unsigned int>& indices);
-    void deleteGPUMesh(const unsigned int meshID);
+    void deleteGPUMesh(const unsigned int meshId);
 
     unsigned int addGPUUiMesh(const size_t memory);
-    void changeGPUUiMeshData(const unsigned int meshID, const unsigned int elementID, const size_t offset, const size_t memory, std::vector<UiVertex>& vertexData, WidgetData& widgetData);
+    void changeGPUUiMeshData(const unsigned int meshId, const unsigned int elementID, const size_t offset, const size_t memory, std::vector<UiVertex>& vertexData, WidgetData& widgetData);
 
     unsigned int addShader(std::string vShaderSource, std::string fShaderSource);
-    void deleteShader(const unsigned int shaderID);
+    void deleteShader(const unsigned int shaderId);
 
     unsigned int addTexture(unsigned char* data, unsigned int width, unsigned int height, TextureWrapMode wrapU, TextureWrapMode wrapV, TextureWrapMode wrapW, TextureFilter minFilter, TextureFilter magFilter, RGBMode rgbMode, bool mipmaps);
-    void deleteTexture(const unsigned int textureID);
+    void deleteTexture(const unsigned int textureId);
+
+    void changeMeshUBO(const unsigned int componentId, MeshInstanceData& data);
+    void changeUiUBO(const unsigned int elementId, WidgetData& widgetData);
+    void changeCameraMatrixUBO(CameraMatrices& data);
+
+    void changeDirectionalLightUBO(const unsigned int componentId, GPUDirectionalLight& light);
+    void changePointLightUBO(const unsigned int componentId, GPUPointLight& light);
+    void changeSpotLightUBO(const unsigned int componentId, GPUSpotLight& light);
 
     void enableWireframe(bool state);
     bool getWireframeEnabled();
 
+    void generateShadowMap();
+
   private:
+    const int SHADOW_WIDTH = 4096;
+    const int SHADOW_HEIGHT = 4096;
+
+    GLuint meshUBO;
+    GLuint lightsUBO;
+    GLuint uiUBO;
+    GLuint cameraMatrixUBO;
+
+    GLuint shadowFBO;
+    GLuint shadowMap;
+
     bool wireframeEnabled = false;
 
     std::vector<RenderCall> commands;
@@ -53,7 +71,7 @@ class Renderer {
     std::unordered_map<unsigned int, OpenGLShader> shaders;
     std::unordered_map<unsigned int, OpenGLTexture> textures;
 
-    IDAllocator meshIdAllocator = IDAllocator(1024);
+    IDAllocator meshIDAllocator = IDAllocator(1024);
     IDAllocator shaderIDAllocator = IDAllocator(1024);
     IDAllocator textureIDAllocator = IDAllocator(1024);
 };

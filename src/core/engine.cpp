@@ -25,6 +25,8 @@ void Engine::update() {
     camera.update();
     assetManager.update();
 
+    std::cout << "FPS: " << time.getFPS() << std::endl;
+
     uiManager.update();
     scene.update();
     input.update();

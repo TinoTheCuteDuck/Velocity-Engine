@@ -58,7 +58,8 @@ void OpenGLShader::use() {
 void OpenGLShader::setBool(const std::string& name, const bool value) const {
     int loc = glGetUniformLocation(shaderProgram, name.c_str());
     if (loc == -1) {
-        throw std::runtime_error("Uniform not found: " + name);
+        // std::cout << "Uniform bool not found: " + name << std::endl;
+        return;
     }
     glUniform1i(loc, value);
 }
@@ -66,7 +67,8 @@ void OpenGLShader::setBool(const std::string& name, const bool value) const {
 void OpenGLShader::setInt(const std::string& name, const int value) const {
     int loc = glGetUniformLocation(shaderProgram, name.c_str());
     if (loc == -1) {
-        throw std::runtime_error("Uniform not found: " + name);
+        // std::cout << "Uniform int not found: " + name << std::endl;
+        return;
     }
     glUniform1i(loc, value);
 }
@@ -74,7 +76,8 @@ void OpenGLShader::setInt(const std::string& name, const int value) const {
 void OpenGLShader::setMat4(const std::string& name, const Mat4& mat) const {
     int loc = glGetUniformLocation(shaderProgram, name.c_str());
     if (loc == -1) {
-        throw std::runtime_error("Uniform not found: " + name);
+        // std::cout << "Uniform mat4 not found: " + name << std::endl;
+        return;
     }
     glUniformMatrix4fv(loc, 1, GL_FALSE, &mat.m[0]);
 }

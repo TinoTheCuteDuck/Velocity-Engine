@@ -196,6 +196,30 @@ class Mat4 {
         mat.m[14] = -2 * far * near / (far - near);
         return mat;
     }
+    static constexpr Mat4 orthographic(const float left, const float right, const float bottom, const float top, const float near, const float far) {
+        Mat4 mat;
+        mat.m[0] = 2 / (right - left);
+        mat.m[5] = 2 / (top - bottom);
+        mat.m[10] = -2 / (far - near);
+        mat.m[15] = 1;
+
+        mat.m[12] = -((right + left) / (right - left));
+        mat.m[13] = -((top + bottom) / (top - bottom));
+        mat.m[14] = -((far + near) / (far - near));
+
+        return mat;
+    }
+    static constexpr Mat4 lookAt(const Vector3& eye, const Vector3& target, const Vector3& up) {
+        Vector3 forward = (target - eye).normalize();
+        Vector3 right = forward.cross(up).normalize();
+        Vector3 correctedUp = right.cross(forward).normalize();
+
+        return Mat4(
+            Vector4(right.x, correctedUp.x, -forward.x, 0),
+            Vector4(right.y, correctedUp.y, -forward.y, 0),
+            Vector4(right.z, correctedUp.z, -forward.z, 0),
+            Vector4(-right.dot(eye), -correctedUp.dot(eye), forward.dot(eye), 1));
+    }
 
     static constexpr Mat4 inverse(Mat4 a) {
         Mat4 i(1.0f);

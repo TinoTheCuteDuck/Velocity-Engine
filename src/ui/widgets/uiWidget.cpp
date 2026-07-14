@@ -9,10 +9,12 @@ UiWidget::UiWidget() {
 }
 
 UiWidget::~UiWidget() {
-    Engine::get().uiManager.freeMemory(elementID, offset, memory);
-    vertexData.clear();
-    WidgetData data{Vector4(), Vector4(), Vector4(), Vector4(), Vector4()};
-    Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
+    if (elementID != 0) {
+        Engine::get().uiManager.freeMemory(elementID, offset, memory);
+        vertexData.clear();
+        WidgetData data{Vector4(), Vector4(), Vector4(), Vector4(), Vector4()};
+        Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
+    }
 }
 
 float UiWidget::getAbsoluteRadius() const {
@@ -105,7 +107,7 @@ void UiWidget::update() {
         child->update();
     }
 
-    if (dirty) {
+    if (dirty && elementID != 0) {
         render(visible);
     }
 }

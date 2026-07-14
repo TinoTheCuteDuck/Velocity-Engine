@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ui/core/uiStructs.hpp"
+#include "ui/core/uiTypes.hpp"
 #include "ui/widgets/uiWidget.hpp"
 
 class UiSlider : public UiWidget {
