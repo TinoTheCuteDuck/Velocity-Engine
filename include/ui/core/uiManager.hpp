@@ -19,16 +19,16 @@ class UiManager {
 
     void load();
     void update();
-    void submit();
-    void reRender();
-    void freeMemory(const unsigned int elementID, const size_t offset, const size_t allocatedMemory);
-    void allocateMemory(UiWidget* widget);
-    size_t getLowestMemoryRegion(const size_t requiredMemory);
+    void submit() const;
+    void reRender() const;
+    void freeMemory(unsigned int elementID, size_t offset, size_t allocatedMemory);
+    void allocateMemory(UiWidget *widget);
+    size_t getLowestMemoryRegion(size_t requiredMemory);
 
     template <typename T>
-    T* addUiWidget() {
+    T *addUiWidget() {
         auto ptr = std::make_unique<T>();
-        T* raw = ptr.get();
+        T *raw = ptr.get();
         uiWidgets.push_back(std::move(ptr));
         return raw;
     }
@@ -38,7 +38,7 @@ class UiManager {
   private:
     bool reloadUi = false;
 
-    size_t totalMemory = 3600;
+    size_t totalMemory = 7200;
     size_t lastFreeMemory = 0;
 
     std::vector<bool> allocatedMemory;

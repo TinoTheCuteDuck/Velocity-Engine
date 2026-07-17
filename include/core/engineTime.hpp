@@ -10,9 +10,9 @@ class EngineTime {
   public:
     void update();
 
-    int getFPS();
-    float getDt();
-    float getTotal();
+    int getFPS() const;
+    float getDt() const;
+    float getTotal() const;
 
   private:
     int fps = 0;

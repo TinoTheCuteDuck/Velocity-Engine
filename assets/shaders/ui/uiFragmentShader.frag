@@ -5,7 +5,7 @@ in vec2 UV;
 in vec4 Color;
 flat in uint WidgetID;
 
-uniform sampler2D albedo;
+uniform sampler2D albedoMap;
 
 struct WidgetData {
     vec4 rect;  // x,y = Position; z,w = Size;
@@ -55,7 +55,7 @@ void main() {
         clipAlpha = 1.0 - smoothstep(-antiAliasing, antiAliasing, clipDistance);
     }
 
-    vec4 texColor = texture(albedo, UV);
+    vec4 texColor = texture(albedoMap, UV);
     vec4 finalColor = mix(Color, data.borderColor, borderAlpha);
     finalColor.a *= clipAlpha;
     finalColor.a *= smoothedAlpha;

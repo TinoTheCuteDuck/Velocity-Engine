@@ -7,10 +7,10 @@
 #include <sstream>
 #include <stdexcept>
 
-MeshData::MeshData(const std::string filePath) {
+MeshData::MeshData(const std::string& filePath) {
     this->filePath = filePath;
 
-    parseOBJ(filePath);
+    parseOBJ();
     generateBoundingBox();
 }
 
@@ -26,7 +26,7 @@ MeshData::MeshData(MeshData&& other) noexcept {
     vertexData = std::move(other.vertexData);
     indices = std::move(other.indices);
 
-    boundingBox = std::move(other.boundingBox);
+    boundingBox = other.boundingBox;
 
     other.meshId = 0;
 }
@@ -41,7 +41,7 @@ MeshData& MeshData::operator=(MeshData&& other) noexcept {
         vertexData = std::move(other.vertexData);
         indices = std::move(other.indices);
 
-        boundingBox = std::move(other.boundingBox);
+        boundingBox = other.boundingBox;
 
         other.meshId = 0;
     }
@@ -49,7 +49,7 @@ MeshData& MeshData::operator=(MeshData&& other) noexcept {
     return *this;
 }
 
-void MeshData::parseOBJ(const std::string& filePath) {
+void MeshData::parseOBJ() {
     std::ifstream file(filePath);
     if (!file.is_open()) {
         throw std::runtime_error("Error reading mesh filepath: " + filePath);
@@ -71,19 +71,19 @@ void MeshData::parseOBJ(const std::string& filePath) {
             std::istringstream stream(data.substr(2));
 
             stream >> x >> y >> z;
-            vertices.push_back(Vector3(x, y, z));
+            vertices.emplace_back(x, y, z);
 
         } else if (data.starts_with("vn ")) {
             std::istringstream stream(data.substr(3));
 
             stream >> x >> y >> z;
-            normals.push_back(Vector3(x, y, z));
+            normals.emplace_back(x, y, z);
 
         } else if (data.starts_with("vt ")) {
             std::istringstream stream(data.substr(3));
 
             stream >> x >> y;
-            UVs.push_back(Vector2(x, y));
+            UVs.emplace_back(x, y);
 
         } else if (data.starts_with("f ")) {
             std::string string = data.substr(2);
@@ -95,15 +95,15 @@ void MeshData::parseOBJ(const std::string& filePath) {
 
                 parseFace(parts, token);
 
-                Vector3 position = parts[0] != "" ? vertices.at(std::stoi(parts[0]) - 1) : Vector3();
-                Vector2 uv = parts[1] != "" ? UVs.at(std::stoi(parts[1]) - 1) : Vector2();
-                Vector3 normal = parts[2] != "" ? normals.at(std::stoi(parts[2]) - 1) : Vector3();
+                Vector3 position = !parts[0].empty() ? vertices.at(std::stoi(parts[0]) - 1) : Vector3();
+                Vector2 uv = !parts[1].empty() ? UVs.at(std::stoi(parts[1]) - 1) : Vector2();
+                Vector3 normal = !parts[2].empty() ? normals.at(std::stoi(parts[2]) - 1) : Vector3();
 
-                Vertex vertex{position, uv, normal};
+                Vertex vertex{.position = position, .UV = uv, .normal = normal, .tangent = Vector3()};
                 VertexKey key{
-                    parts[0] != "" ? std::stoi(parts[0]) : -1,
-                    parts[1] != "" ? std::stoi(parts[1]) : -1,
-                    parts[2] != "" ? std::stoi(parts[2]) : -1,
+                    .v = !parts[0].empty() ? std::stoi(parts[0]) : -1,
+                    .vt = !parts[1].empty() ? std::stoi(parts[1]) : -1,
+                    .vn = !parts[2].empty() ? std::stoi(parts[2]) : -1,
                 };
 
                 auto it = map.find(key);
@@ -111,7 +111,7 @@ void MeshData::parseOBJ(const std::string& filePath) {
                     indices.push_back(it->second);
                 } else {
                     indices.push_back(vertexCount);
-                    map.emplace(std::make_pair(key, vertexCount));
+                    map.emplace(key, vertexCount);
                     vertexData.push_back(vertex);
                     vertexCount++;
                 }
@@ -123,23 +123,22 @@ void MeshData::parseOBJ(const std::string& filePath) {
                 std::vector<std::string> parts;
                 parseFace(parts, string);
 
-                Vector3 position = parts[0] != "" ? vertices.at(std::stoi(parts[0]) - 1) : Vector3();
-                Vector2 uv = parts[1] != "" ? UVs.at(std::stoi(parts[1]) - 1) : Vector2();
-                Vector3 normal = parts[2] != "" ? normals.at(std::stoi(parts[2]) - 1) : Vector3();
+                Vector3 position = !parts[0].empty() ? vertices.at(std::stoi(parts[0]) - 1) : Vector3();
+                Vector2 uv = !parts[1].empty() ? UVs.at(std::stoi(parts[1]) - 1) : Vector2();
+                Vector3 normal = !parts[2].empty() ? normals.at(std::stoi(parts[2]) - 1) : Vector3();
 
-                Vertex vertex{position, uv, normal};
+                Vertex vertex{.position = position, .UV = uv, .normal = normal, .tangent = Vector3()};
                 VertexKey key{
-                    parts[0] != "" ? std::stoi(parts[0]) : -1,
-                    parts[1] != "" ? std::stoi(parts[1]) : -1,
-                    parts[2] != "" ? std::stoi(parts[2]) : -1,
+                    .v = !parts[0].empty() ? std::stoi(parts[0]) : -1,
+                    .vt = !parts[1].empty() ? std::stoi(parts[1]) : -1,
+                    .vn = !parts[2].empty() ? std::stoi(parts[2]) : -1,
                 };
 
-                auto it = map.find(key);
-                if (it != map.end()) {
+                if (auto it = map.find(key); it != map.end()) {
                     indices.push_back(it->second);
                 } else {
                     indices.push_back(vertexCount);
-                    map.emplace(std::make_pair(key, vertexCount));
+                    map.emplace(key, vertexCount);
                     vertexData.push_back(vertex);
                     vertexCount++;
                 }
@@ -147,12 +146,38 @@ void MeshData::parseOBJ(const std::string& filePath) {
         }
     }
 
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        Vertex& v1 = vertexData.at(indices[i]);
+        Vertex& v2 = vertexData.at(indices[i + 1]);
+        Vertex& v3 = vertexData.at(indices[i + 2]);
+
+        Vector3 edge1 = v2.position - v1.position;
+        Vector3 edge2 = v3.position - v1.position;
+        Vector2 deltaUV1 = v2.UV - v1.UV;
+        Vector2 deltaUV2 = v3.UV - v1.UV;
+
+        float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+        Vector3 tangent;
+        tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+        tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+        tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+
+        v1.tangent += tangent;
+        v2.tangent += tangent;
+        v3.tangent += tangent;
+    };
+
+    for (Vertex& vertex : vertexData) {
+        vertex.tangent = vertex.tangent.normalize();
+    }
+
     file.close();
 }
 
 void MeshData::parseFace(std::vector<std::string>& parts, std::string& token) {
     size_t slashPos;
-    while ((slashPos = token.find("/")) != std::string::npos) {
+    while ((slashPos = token.find('/')) != std::string::npos) {
         parts.push_back(token.substr(0, slashPos));
         token = token.substr(slashPos + 1);
     }
@@ -162,9 +187,31 @@ void MeshData::parseFace(std::vector<std::string>& parts, std::string& token) {
     }
 
     for (size_t i = parts.size(); i < 3; i++) {
-        parts.push_back("");
+        parts.emplace_back("");
     }
 }
+
+void MeshData::parseGLTF() {
+    struct Accessor {
+        std::string type;
+        int componentType;
+        int count;
+        int bufferView;
+        int byteOffset;
+    };
+
+    std::fstream file(filePath);
+    if (!file.is_open()) {
+        std::cout << "Error opening glTF file at: " + filePath;
+    }
+
+    std::string data;
+
+    while (std::getline(file, data)) {
+        if (data.find("asset")) {
+        }
+    }
+};
 
 void MeshData::generateBoundingBox() {
     Vector3 min(FLT_MAX);
@@ -181,9 +228,9 @@ void MeshData::generateBoundingBox() {
     }
 
     if (vertexData.empty()) {
-        boundingBox = BoundingBox{Vector3(), Vector3()};
+        boundingBox = BoundingBox{.min = Vector3(), .max = Vector3()};
         return;
     }
 
-    boundingBox = BoundingBox{min, max};
+    boundingBox = BoundingBox{.min = min, .max = max};
 }

@@ -81,12 +81,15 @@ unsigned int Renderer::addGPUMesh(std::vector<Vertex>& vertexData, std::vector<u
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
     glEnableVertexAttribArray(2);
 
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, tangent));
+    glEnableVertexAttribArray(3);
+
     glBindVertexArray(0);
 
     unsigned int meshID = meshIDAllocator.allocate();
     OpenGLMesh mesh(VAO, VBO, EBO, indices.size());
 
-    meshes.emplace(std::make_pair(meshID, std::move(mesh)));
+    meshes.emplace(meshID, std::move(mesh));
     return meshID;
 }
 
@@ -125,7 +128,7 @@ unsigned int Renderer::addGPUUiMesh(const size_t memory) {
     unsigned int meshID = meshIDAllocator.allocate();
     OpenGLMesh mesh(VAO, VBO, 0, memory / sizeof(UiVertex));
 
-    meshes.emplace(std::make_pair(meshID, std::move(mesh)));
+    meshes.emplace(meshID, std::move(mesh));
     return meshID;
 }
 
@@ -152,38 +155,38 @@ void Renderer::changeGPUUiMeshData(const unsigned int meshID, const unsigned int
     glBindVertexArray(0);
 }
 
-unsigned int Renderer::addShader(std::string vShaderSource, std::string fShaderSource) {
+unsigned int Renderer::addShader(const std::string& vShaderSource, const std::string& fShaderSource) {
     unsigned int shaderID = shaderIDAllocator.allocate();
     OpenGLShader shader(vShaderSource.c_str(), fShaderSource.c_str());
 
-    shaders.emplace(std::make_pair(shaderID, std::move(shader)));
+    shaders.emplace(shaderID, std::move(shader));
     return shaderID;
 }
 
-void Renderer::deleteShader(const unsigned int shaderID) {
-    if (shaderID == 0)
+void Renderer::deleteShader(const unsigned int shaderId) {
+    if (shaderId == 0)
         return;
 
-    shaderIDAllocator.free(shaderID);
-    shaders.erase(shaderID);
+    shaderIDAllocator.free(shaderId);
+    shaders.erase(shaderId);
 }
 
 unsigned int Renderer::addTexture(
-    unsigned char* data,
-    unsigned int width,
-    unsigned int height,
-    TextureWrapMode wrapU,
-    TextureWrapMode wrapV,
-    TextureWrapMode wrapW,
-    TextureFilter minFilter,
-    TextureFilter magFilter,
-    RGBMode rgbMode,
-    bool mipmaps) {
+    const unsigned char* data,
+    const unsigned int width,
+    const unsigned int height,
+    const TextureWrapMode wrapU,
+    const TextureWrapMode wrapV,
+    const TextureWrapMode wrapW,
+    const TextureFilter minFilter,
+    const TextureFilter magFilter,
+    const RGBMode rgbMode,
+    const bool mipmaps) {
 
     unsigned int textureID = textureIDAllocator.allocate();
     OpenGLTexture texture(data, width, height, wrapU, wrapV, wrapW, minFilter, magFilter, rgbMode, mipmaps);
 
-    textures.emplace(std::make_pair(textureID, std::move(texture)));
+    textures.emplace(textureID, std::move(texture));
     return textureID;
 }
 
@@ -199,32 +202,32 @@ void Renderer::renderQueue(RenderCall cmd) {
     commands.emplace_back(std::move(cmd));
 }
 
-void Renderer::changeMeshUBO(const unsigned int componentID, MeshInstanceData& data) {
+void Renderer::changeMeshUBO(const unsigned int componentId, const MeshInstanceData& data) const {
     glBindBuffer(GL_UNIFORM_BUFFER, meshUBO);
-    glBufferSubData(GL_UNIFORM_BUFFER, componentID * sizeof(MeshInstanceData), sizeof(MeshInstanceData), &data);
+    glBufferSubData(GL_UNIFORM_BUFFER, componentId * sizeof(MeshInstanceData), sizeof(MeshInstanceData), &data);
 }
 
-void Renderer::changeUiUBO(const unsigned int elementID, WidgetData& widgetData) {
+void Renderer::changeUiUBO(const unsigned int elementId, const WidgetData& widgetData) const {
     glBindBuffer(GL_UNIFORM_BUFFER, uiUBO);
-    glBufferSubData(GL_UNIFORM_BUFFER, elementID * sizeof(WidgetData), sizeof(WidgetData), &widgetData);
+    glBufferSubData(GL_UNIFORM_BUFFER, elementId * sizeof(WidgetData), sizeof(WidgetData), &widgetData);
 }
 
-void Renderer::changeCameraMatrixUBO(CameraMatrices& data) {
+void Renderer::changeCameraMatrixUBO(const CameraMatrices& data) const {
     glBindBuffer(GL_UNIFORM_BUFFER, cameraMatrixUBO);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraMatrices), &data);
 }
 
-void Renderer::changeDirectionalLightUBO(const unsigned int componentId, GPUDirectionalLight& light) {
+void Renderer::changeDirectionalLightUBO(const unsigned int componentId, const GPUDirectionalLight& light) const {
     glBindBuffer(GL_UNIFORM_BUFFER, lightsUBO);
     glBufferSubData(GL_UNIFORM_BUFFER, componentId * sizeof(GPUDirectionalLight), sizeof(GPUDirectionalLight), &light);
 }
 
-void Renderer::changePointLightUBO(const unsigned int componentId, GPUPointLight& light) {
+void Renderer::changePointLightUBO(const unsigned int componentId, const GPUPointLight& light) const {
     glBindBuffer(GL_UNIFORM_BUFFER, lightsUBO);
     glBufferSubData(GL_UNIFORM_BUFFER, 512 * sizeof(GPUDirectionalLight) + componentId * sizeof(GPUPointLight), sizeof(GPUPointLight), &light);
 }
 
-void Renderer::changeSpotLightUBO(const unsigned int componentId, GPUSpotLight& light) {
+void Renderer::changeSpotLightUBO(const unsigned int componentId, const GPUSpotLight& light) const {
     glBindBuffer(GL_UNIFORM_BUFFER, lightsUBO);
     glBufferSubData(GL_UNIFORM_BUFFER, 512 * sizeof(GPUDirectionalLight) + 512 * sizeof(GPUPointLight) + componentId * sizeof(GPUSpotLight), sizeof(GPUSpotLight), &light);
 }
@@ -240,7 +243,7 @@ void Renderer::generateShadowMap() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    float clampColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    constexpr float clampColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, clampColor);
     glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
@@ -250,21 +253,21 @@ void Renderer::generateShadowMap() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::startFrame() {
+void Renderer::startFrame() const {
     Camera& camera = Engine::get().camera;
-    Window& window = Engine::get().window;
+    const Window& window = Engine::get().window;
 
-    Mat4 view = camera.getViewMatrix();
-    Mat4 projection = Mat4::projection(camera.getFOV(), (float) window.getWindowSize().x / (float) window.getWindowSize().y, camera.getNearPlane(), camera.getFarPlane());
-    Mat4 viewProjection = projection * view;
+    const Mat4 view = camera.getViewMatrix();
+    const Mat4 projection = Mat4::projection(camera.getFOV(), (float) window.getWindowSize().x / (float) window.getWindowSize().y, camera.getNearPlane(), camera.getFarPlane());
+    const Mat4 viewProjection = projection * view;
 
-    CameraMatrices matrices{viewProjection, Vector4(camera.getPosition(), 0)};
+    const CameraMatrices matrices{.viewProjection = viewProjection, .viewPos = Vector4(camera.getPosition(), 0)};
     changeCameraMatrixUBO(matrices);
 }
 
 void Renderer::endFrame() {
     AssetManager& assetManager = Engine::get().assetManager;
-    Window& window = Engine::get().window;
+    const Window& window = Engine::get().window;
 
     glEnable(GL_DEPTH_TEST);
     glCullFace(GL_FRONT);
@@ -272,15 +275,15 @@ void Renderer::endFrame() {
     glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    Mat4 orthographicProjection = Mat4::orthographic(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 35.0f);
-    Mat4 lightView = Mat4::lookAt(20.0f * -lightCall.lightDirection.normalize(), Vector3::zero, Vector3::up);
-    Mat4 lightProjection = orthographicProjection * lightView;
+    constexpr Mat4 orthographicProjection = Mat4::orthographic(-22.5f, 22.5f, -22.5f, 22.5f, 0.1f, 30.0f);
+    const Mat4 lightView = Mat4::lookAt(20.0f * -lightCall.lightDirection.normalize(), Vector3::zero, Vector3::up);
+    const Mat4 lightProjection = orthographicProjection * lightView;
 
-    unsigned int shadowShaderId = assetManager.loadShader(lightCall.vertexPath, lightCall.fragmentPath);
+    const unsigned int shadowShaderId = assetManager.loadShader(lightCall.vertexPath, lightCall.fragmentPath);
     if (shadowShaderId == 0)
         return;
 
-    OpenGLShader& shadowShader = shaders.at(shadowShaderId);
+    const OpenGLShader& shadowShader = shaders.at(shadowShaderId);
     shadowShader.use();
     shadowShader.setMat4("lightProjection", lightProjection);
 
@@ -288,7 +291,7 @@ void Renderer::endFrame() {
         if (cmd.meshID == 0 || !cmd.transform)
             continue;
 
-        OpenGLMesh& mesh = meshes.at(cmd.meshID);
+        const OpenGLMesh& mesh = meshes.at(cmd.meshID);
         shadowShader.setMat4("model", *cmd.transform);
         glBindVertexArray(mesh.VAO);
 
@@ -305,7 +308,7 @@ void Renderer::endFrame() {
         if (cmd.meshID == 0 || shaderId == 0)
             continue;
 
-        OpenGLMesh& mesh = meshes.at(cmd.meshID);
+        const OpenGLMesh& mesh = meshes.at(cmd.meshID);
         OpenGLShader& shader = shaders.at(shaderId);
         shader.use();
 
@@ -328,8 +331,40 @@ void Renderer::endFrame() {
         unsigned int albedoID = assetManager.loadTexture(cmd.material.albedo);
         if (albedoID != 0) {
             OpenGLTexture& tex = textures.at(albedoID);
-            shader.setInt("albedo", 1);
+            shader.setInt("albedoMap", 1);
             tex.bind(1);
+        }
+
+        if (!cmd.material.normal.empty()) {
+            if (unsigned int normalId = assetManager.loadTexture(cmd.material.normal); normalId != 0) {
+                OpenGLTexture& tex = textures.at(normalId);
+                shader.setInt("normalMap", 2);
+                tex.bind(2);
+            }
+        }
+
+        if (!cmd.material.metallic.empty()) {
+            if (unsigned int metallicId = assetManager.loadTexture(cmd.material.metallic); metallicId != 0) {
+                OpenGLTexture& tex = textures.at(metallicId);
+                shader.setInt("metallicMap", 3);
+                tex.bind(3);
+            }
+        }
+
+        if (!cmd.material.roughness.empty()) {
+            if (unsigned int roughnessId = assetManager.loadTexture(cmd.material.roughness); roughnessId != 0) {
+                OpenGLTexture& tex = textures.at(roughnessId);
+                shader.setInt("roughnessMap", 4);
+                tex.bind(4);
+            }
+        }
+
+        if (!cmd.material.ao.empty()) {
+            if (unsigned int aoId = assetManager.loadTexture(cmd.material.ao); aoId != 0) {
+                OpenGLTexture& tex = textures.at(aoId);
+                shader.setInt("aoMap", 5);
+                tex.bind(5);
+            }
         }
 
         if (mesh.EBO) {
@@ -351,6 +386,6 @@ void Renderer::enableWireframe(bool state) {
     wireframeEnabled = state;
 }
 
-bool Renderer::getWireframeEnabled() {
+bool Renderer::getWireframeEnabled() const {
     return wireframeEnabled;
 }

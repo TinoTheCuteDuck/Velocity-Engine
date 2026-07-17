@@ -24,37 +24,37 @@ class Renderer {
     LightRenderCall lightCall;
 
     void renderQueue(RenderCall cmd);
-    void startFrame();
+    void startFrame() const;
     void endFrame();
 
     unsigned int addGPUMesh(std::vector<Vertex>& vertexData, std::vector<unsigned int>& indices);
-    void deleteGPUMesh(const unsigned int meshId);
+    void deleteGPUMesh(unsigned int meshId);
 
-    unsigned int addGPUUiMesh(const size_t memory);
-    void changeGPUUiMeshData(const unsigned int meshId, const unsigned int elementID, const size_t offset, const size_t memory, std::vector<UiVertex>& vertexData, WidgetData& widgetData);
+    unsigned int addGPUUiMesh(size_t memory);
+    void changeGPUUiMeshData(unsigned int meshId, unsigned int elementID, size_t offset, size_t memory, std::vector<UiVertex>& vertexData, WidgetData& widgetData);
 
-    unsigned int addShader(std::string vShaderSource, std::string fShaderSource);
-    void deleteShader(const unsigned int shaderId);
+    unsigned int addShader(const std::string& vShaderSource, const std::string& fShaderSource);
+    void deleteShader(unsigned int shaderId);
 
-    unsigned int addTexture(unsigned char* data, unsigned int width, unsigned int height, TextureWrapMode wrapU, TextureWrapMode wrapV, TextureWrapMode wrapW, TextureFilter minFilter, TextureFilter magFilter, RGBMode rgbMode, bool mipmaps);
-    void deleteTexture(const unsigned int textureId);
+    unsigned int addTexture(const unsigned char* data, unsigned int width, unsigned int height, TextureWrapMode wrapU, TextureWrapMode wrapV, TextureWrapMode wrapW, TextureFilter minFilter, TextureFilter magFilter, RGBMode rgbMode, bool mipmaps);
+    void deleteTexture(unsigned int textureId);
 
-    void changeMeshUBO(const unsigned int componentId, MeshInstanceData& data);
-    void changeUiUBO(const unsigned int elementId, WidgetData& widgetData);
-    void changeCameraMatrixUBO(CameraMatrices& data);
+    void changeMeshUBO(unsigned int componentId, const MeshInstanceData& data) const;
+    void changeUiUBO(unsigned int elementId, const WidgetData& widgetData) const;
+    void changeCameraMatrixUBO(const CameraMatrices& data) const;
 
-    void changeDirectionalLightUBO(const unsigned int componentId, GPUDirectionalLight& light);
-    void changePointLightUBO(const unsigned int componentId, GPUPointLight& light);
-    void changeSpotLightUBO(const unsigned int componentId, GPUSpotLight& light);
+    void changeDirectionalLightUBO(unsigned int componentId, const GPUDirectionalLight& light) const;
+    void changePointLightUBO(unsigned int componentId, const GPUPointLight& light) const;
+    void changeSpotLightUBO(unsigned int componentId, const GPUSpotLight& light) const;
 
     void enableWireframe(bool state);
-    bool getWireframeEnabled();
+    bool getWireframeEnabled() const;
 
     void generateShadowMap();
 
   private:
-    const int SHADOW_WIDTH = 4096;
-    const int SHADOW_HEIGHT = 4096;
+    const int SHADOW_WIDTH = 16384;
+    const int SHADOW_HEIGHT = 16384;
 
     GLuint meshUBO;
     GLuint lightsUBO;

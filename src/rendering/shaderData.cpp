@@ -6,7 +6,7 @@
 #include <sstream>
 #include <stdexcept>
 
-ShaderData::ShaderData(std::string vertexShaderPath, std::string fragmentShaderPath) : vertexShaderPath(vertexShaderPath), fragmentShaderPath(fragmentShaderPath) {
+ShaderData::ShaderData(const std::string& vertexShaderPath, const std::string& fragmentShaderPath) : vertexShaderPath(vertexShaderPath), fragmentShaderPath(fragmentShaderPath) {
     vShaderSource = parseShader(vertexShaderPath);
     fShaderSource = parseShader(fragmentShaderPath);
 }
@@ -45,7 +45,7 @@ ShaderData& ShaderData::operator=(ShaderData&& other) noexcept {
     return *this;
 }
 
-std::string ShaderData::parseShader(std::string& filePath) {
+std::string ShaderData::parseShader(const std::string& filePath) {
     std::fstream file(filePath);
     if (!file.is_open())
         throw std::runtime_error("Error parsing shader");

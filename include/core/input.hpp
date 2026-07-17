@@ -10,18 +10,18 @@ class Input {
     void init();
     void update();
 
-    bool isKeyHeld(int key);
-    bool isKeyPressed(int key);
-    bool isKeyReleased(int key);
-    bool isButtonHeld(int button);
-    bool isButtonPressed(int button);
-    bool isButtonReleased(int button);
+    bool isKeyHeld(int key) const;
+    bool isKeyPressed(int key) const;
+    bool isKeyReleased(int key) const;
+    bool isButtonHeld(int button) const;
+    bool isButtonPressed(int button) const;
+    bool isButtonReleased(int button) const;
 
     const std::vector<char>& getCurrentCharacter();
 
-    Vector2 getMouseDelta();
-    Vector2 getMousePos();
-    Vector2 getScrollOffset();
+    Vector2 getMouseDelta() const;
+    Vector2 getMousePos() const;
+    Vector2 getScrollOffset() const;
 
     void setInputMode(int mode, int value);
 

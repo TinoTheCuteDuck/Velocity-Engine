@@ -20,14 +20,14 @@ void EngineTime::update() {
     }
 }
 
-float EngineTime::getDt() {
+float EngineTime::getDt() const {
     return dt;
 }
 
-int EngineTime::getFPS() {
+int EngineTime::getFPS() const {
     return fps;
 }
 
-float EngineTime::getTotal() {
+float EngineTime::getTotal() const {
     return totalTime;
 }

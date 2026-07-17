@@ -13,11 +13,15 @@ struct Material {
     std::string fragmentPath;
 
     std::string albedo;
+    std::string normal;
+    std::string metallic;
+    std::string roughness;
+    std::string ao;
 };
 
 struct RenderCall {
-    unsigned int meshID;
-    unsigned int meshComponentID;
+    unsigned int meshID{};
+    unsigned int meshComponentID{};
     Material material;
     std::optional<Mat4> transform = std::nullopt;
     std::optional<bool> depthTest = true;
@@ -43,6 +47,7 @@ struct Vertex {
     Vector3 position;
     Vector2 UV;
     Vector3 normal;
+    Vector3 tangent;
 };
 
 struct VertexKey {
@@ -57,14 +62,12 @@ struct VertexKey {
     }
 };
 
-namespace std {
 template <>
-struct hash<VertexKey> {
-    size_t operator()(const VertexKey& k) const {
+struct std::hash<VertexKey> {
+    size_t operator()(const VertexKey& k) const noexcept {
         return (k.v * 73856093) ^ (k.vt * 19349663) ^ (k.vn * 83492791);
     }
 };
-}  // namespace std
 
 template <typename T>
 class MeshAttribute {
@@ -72,7 +75,7 @@ class MeshAttribute {
     using Callback = std::function<void(const T&)>;
 
     MeshAttribute() = default;
-    MeshAttribute(T initialValue) : value(initialValue) {}
+    explicit MeshAttribute(T initialValue) : value(initialValue) {}
 
     void set(T newValue) {
         if (value == newValue)

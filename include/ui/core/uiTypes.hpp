@@ -4,12 +4,13 @@
 #include "math/vector/vector4.hpp"
 
 #include <functional>
+#include <utility>
 
 struct UiVertex {
     Vector2 position;
     Vector4 color;
     Vector2 UV;
-    unsigned int widgetID;
+    unsigned int widgetID{};
 };
 
 struct WidgetData {
@@ -26,12 +27,12 @@ class WidgetAttribute {
     T value{};
 
   public:
-    using Callback = std::function<void(const T&)>;
+    using Callback = std::function<void(const T &)>;
 
     WidgetAttribute() = default;
-    WidgetAttribute(const T& initial) : value(initial) {}
+    WidgetAttribute(const T &initial) : value(initial) {}
 
-    void set(const T& newValue) {
+    void set(const T &newValue) {
         if (value == newValue)
             return;
 
@@ -40,7 +41,7 @@ class WidgetAttribute {
             onChanged(value);
     }
 
-    const T& get() const { return value; }
+    const T &get() const { return value; }
     Callback onChanged;
 };
 
@@ -51,7 +52,7 @@ class WidgetAnimationBase {
                    SCALE,
                    OPACITY,
                    ALL };
-    virtual Channel getChannel() const = 0;
+    [[nodiscard]] virtual Channel getChannel() const = 0;
     virtual ~WidgetAnimationBase() = default;
     virtual bool update(float dt) = 0;
 };
@@ -64,14 +65,14 @@ class WidgetAnimation : public WidgetAnimationBase {
     float elapsed = 0.0f;
     Channel channel;
 
-    std::function<void(const T&)> onChange = []() {};
+    std::function<void(const T &)> onChange = []() {};
     std::function<void()> onFinish = []() {};
 
   public:
-    WidgetAnimation(const T& startValue, const T& endValue, float duration, Channel channel, std::function<void(const T&)> onChange) : startValue(startValue), endValue(endValue), duration(duration), channel(channel), onChange(onChange) {};
-    WidgetAnimation(const T& startValue, const T& endValue, float duration, Channel channel, std::function<void(const T&)> onChange, std::function<void()> onFinish) : startValue(startValue), endValue(endValue), duration(duration), channel(channel), onChange(onChange), onFinish(onFinish) {};
+    WidgetAnimation(const T &startValue, const T &endValue, float duration, Channel channel, std::function<void(const T &)> onChange) : startValue(startValue), endValue(endValue), duration(duration), channel(channel), onChange(onChange) {};
+    WidgetAnimation(const T &startValue, const T &endValue, float duration, Channel channel, std::function<void(const T &)> onChange, std::function<void()> onFinish) : startValue(startValue), endValue(endValue), duration(duration), channel(channel), onChange(onChange), onFinish(std::move(onFinish)) {};
 
-    bool update(float dt) override {
+    bool update(const float dt) override {
         elapsed += dt;
         float alpha = std::min(elapsed / duration, 1.0f);
         T finalValue = T::lerp(startValue, endValue, alpha);
@@ -84,5 +85,5 @@ class WidgetAnimation : public WidgetAnimationBase {
         return alpha >= 1.0f;
     }
 
-    Channel getChannel() const override { return channel; }
+    [[nodiscard]] Channel getChannel() const override { return channel; }
 };

@@ -10,15 +10,16 @@ class Window {
     Window();
     ~Window();
 
-    void pollEvents();
-    bool shouldClose();
+    void pollEvents() const;
+    [[nodiscard]] bool shouldClose() const;
 
     bool getVsync();
-    Vector2 getWindowSize();
-    GLFWwindow* getWindow();
+    [[nodiscard]] Vector2 getWindowSize() const;
+    [[nodiscard]] GLFWwindow* getWindow() const;
+    [[nodiscard]] bool getVsync() const;
     std::string& getTitle();
 
-    void setVsync(bool enabled);
+    static void setVsync(bool enabled);
     void setWindowSize(int width, int height);
 
   private:

@@ -28,16 +28,16 @@ class AssetManager {
 
   public:
     void update();
-    unsigned int loadMesh(std::string filePath);
-    unsigned int loadShader(std::string vShaderPath, std::string fShaderPath);
-    unsigned int loadTexture(std::string filePath, TextureWrapMode wrapU = TextureWrapMode::Repeat, TextureWrapMode wrapV = TextureWrapMode::Repeat, TextureWrapMode wrapW = TextureWrapMode::Repeat, TextureFilter minFilter = TextureFilter::Linear, TextureFilter magFilter = TextureFilter::Linear, bool mipmaps = true);
+    unsigned int loadMesh(const std::string& filePath);
+    unsigned int loadShader(const std::string& vShaderPath, const std::string& fShaderPath);
+    unsigned int loadTexture(const std::string& filePath, TextureWrapMode wrapU = TextureWrapMode::Repeat, TextureWrapMode wrapV = TextureWrapMode::Repeat, TextureWrapMode wrapW = TextureWrapMode::Repeat, TextureFilter minFilter = TextureFilter::Linear, TextureFilter magFilter = TextureFilter::Linear, bool mipmaps = true);
 
-    MeshData* getMesh(std::string filePath);
-    ShaderData* getShader(std::string vShaderPath, std::string fShaderPath);
-    TextureData* getTexture(std::string filePath);
+    MeshData* getMesh(const std::string& filePath) const;
+    ShaderData* getShader(const std::string& vShaderPath, const std::string& fShaderPath) const;
+    TextureData* getTexture(const std::string& filePath) const;
 
   private:
-    void loadThreadedMesh(std::string filePath);
+    void loadThreadedMesh(const std::string& filePath);
     void loadThreadedShader(std::string vShaderPath, std::string fShaderPath);
     void loadThreadedTexture(std::string filePath, TextureWrapMode wrapU, TextureWrapMode wrapV, TextureWrapMode wrapW, TextureFilter minFilter, TextureFilter magFilter, bool mipmaps);
 

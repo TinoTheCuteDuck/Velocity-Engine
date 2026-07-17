@@ -39,7 +39,7 @@ void UiTextBox::update() {
 
         // Get characters
         if (keyboardFocus) {
-            for (char character : input.getCurrentCharacter()) {
+            for (const char character : input.getCurrentCharacter()) {
                 if ((textObject->memory - (sizeof(UiVertex) * 6 * (textObject->text.get().size() + 1))) <= 0) {
                     break;
                 }
@@ -47,8 +47,7 @@ void UiTextBox::update() {
                 textObject->dirty = true;
             }
             if (input.isKeyPressed(GLFW_KEY_BACKSPACE)) {
-                auto text = textObject->text.get();
-                if (text.size() >= 1) {
+                if (auto text = textObject->text.get(); !text.empty()) {
                     text.pop_back();
                     textObject->text.set(text);
                     textObject->dirty = true;

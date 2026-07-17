@@ -1,120 +1,191 @@
-# Version declarations
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
+
+project(
+		VelocityEngine
+		VERSION 0.1
+		LANGUAGES CXX
+)
+
+# ----------------------------
+# C++ configuration
+# ----------------------------
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Set to ON to ship the engine
-set(PRODUCTION_BUILD OFF CACHE BOOL "Make this a production build" FORCE)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
-# Link time optimizations (might cause issues on linux)
-if(PRODUCTION_BUILD)
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-else()
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+# MSVC runtime
+if(MSVC)
+	set(CMAKE_MSVC_RUNTIME_LIBRARY
+			"MultiThreaded$<$<CONFIG:Debug>:Debug>"
+	)
 endif()
 
-# Idk what this does, something with SIMD
-if (MSVC)
-    add_compile_options(/arch:AVX2)
-    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-else()
 
-endif()
+# ----------------------------
+# Build options
+# ----------------------------
 
-# Project naming
-project(VelocityEngine)
-
-#compiler optimizations
-set(RELEASE_FLAGS
-    -O3
-    -DNDEBUG
-    -march=native
-    -flto
+option(
+		PRODUCTION_BUILD
+		"Build production version"
+		OFF
 )
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 
-# Disable some things we don't need
+
+# ----------------------------
+# Dependencies
+# ----------------------------
+
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
-# Add thirdParty software here
-add_subdirectory("thirdParty/glfw-3.4") # GLFW
-add_subdirectory("thirdParty/glad") # GLAD 
+add_subdirectory(thirdParty/glfw-3.4)
+add_subdirectory(thirdParty/glad)
 
-# Make source files via macro
-file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
-# Add the executable
-add_executable("${CMAKE_PROJECT_NAME}")
+# ----------------------------
+# Sources
+# ----------------------------
 
-# C++ standard
-set_property(TARGET "${CMAKE_PROJECT_NAME}" PROPERTY CXX_STANDARD 20)
+file(GLOB_RECURSE ENGINE_SOURCES
+		CONFIGURE_DEPENDS
+		"${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
 
-# Make GLFW include nothing
-target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC GLFW_INCLUDE_NONE=1)
+
+add_executable(
+		VelocityEngine
+		${ENGINE_SOURCES}
+)
+
+
+# ----------------------------
+# Include paths
+# ----------------------------
+
+target_include_directories(
+		VelocityEngine
+		PRIVATE
+		include
+		thirdParty
+		thirdParty/stb_image
+)
+
+
+# ----------------------------
+# Defines
+# ----------------------------
+
+target_compile_definitions(
+		VelocityEngine
+		PRIVATE
+		GLFW_INCLUDE_NONE
+		_CRT_SECURE_NO_WARNINGS
+)
+
 
 if(PRODUCTION_BUILD)
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC ASSETS_PATH="./assets/") 
 
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC PRODUCTION_BUILD=1) 
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC DEVELOPMENT_BUILD=0) 
+	target_compile_definitions(
+			VelocityEngine
+			PRIVATE
+			PRODUCTION_BUILD=1
+			DEVELOPMENT_BUILD=0
+			ASSETS_PATH="./assets/"
+	)
 
 else()
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/")
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC PRODUCTION_BUILD=0) 
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC DEVELOPMENT_BUILD=1) 
-endif()
 
-target_sources("${CMAKE_PROJECT_NAME}" PRIVATE ${MY_SOURCES} )
-
-if(MSVC) # If using the VS compiler...
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC _CRT_SECURE_NO_WARNINGS)
-
-	set_target_properties("${CMAKE_PROJECT_NAME}" PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup") #no console
-	
-	# set_property(TARGET "${CMAKE_PROJECT_NAME}" PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDebug<$<CONFIG:Debug>:Debug>")
-	# set_property(TARGET "${CMAKE_PROJECT_NAME}" PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
+	target_compile_definitions(
+			VelocityEngine
+			PRIVATE
+			PRODUCTION_BUILD=0
+			DEVELOPMENT_BUILD=1
+			ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/"
+	)
 
 endif()
 
-# Force remove unicode
-if (WIN32)
-	target_compile_options("${CMAKE_PROJECT_NAME}" PRIVATE /UNICODE /U_UNICODE)
+
+
+# ----------------------------
+# Compiler warnings
+# ----------------------------
+
+if(MSVC)
+
+	target_compile_options(
+			VelocityEngine
+			PRIVATE
+			/W4
+	)
+
+else()
+
+	target_compile_options(
+			VelocityEngine
+			PRIVATE
+			-Wall
+			-Wextra
+			-Wpedantic
+	)
+
 endif()
 
-# Include directories
-target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/thirdParty
-    ${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/stb_image
+
+
+# ----------------------------
+# Optimizations
+# ----------------------------
+
+if(PRODUCTION_BUILD)
+
+	include(CheckIPOSupported)
+
+	check_ipo_supported(
+			RESULT ipo_supported
+	)
+
+	if(ipo_supported)
+		set_target_properties(
+				VelocityEngine
+				PROPERTIES
+				INTERPROCEDURAL_OPTIMIZATION TRUE
+		)
+	endif()
+
+endif()
+
+
+
+# ----------------------------
+# Windows executable
+# ----------------------------
+
+if(WIN32)
+
+	set_target_properties(
+			VelocityEngine
+			PROPERTIES
+			WIN32_EXECUTABLE TRUE
+	)
+
+endif()
+
+
+
+# ----------------------------
+# Linking
+# ----------------------------
+
+target_link_libraries(
+		VelocityEngine
+		PRIVATE
+		glfw
+		glad
 )
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-target_compile_options(${PROJECT_NAME} PRIVATE
-    $<$<CONFIG:Release>:-O3 -DNDEBUG -march=native -flto>
-)
-target_compile_options(${PROJECT_NAME} PRIVATE
-    $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Werror>
-)
-
-# Link the libraries (just add their name to the list)
-target_link_libraries(VelocityEngine PRIVATE glfw glad)
-
-if (WIN32)
-    target_compile_options(${PROJECT_NAME} PRIVATE /UNICODE /U_UNICODE)
-endif()
-
-if (MSVC)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
-    )
-endif()

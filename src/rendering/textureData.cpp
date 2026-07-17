@@ -5,9 +5,9 @@
 #include "core/engine.hpp"
 #include "stb_image.h"
 
-TextureData::TextureData(std::string filePath, TextureWrapMode wrapU, TextureWrapMode wrapV, TextureWrapMode wrapW, TextureFilter minFilter, TextureFilter magFilter, bool mipmaps)
+TextureData::TextureData(const std::string& filePath, const TextureWrapMode wrapU, const TextureWrapMode wrapV, const TextureWrapMode wrapW, const TextureFilter minFilter, const TextureFilter magFilter, const bool mipmaps)
     : filePath(filePath), wrapU(wrapU), wrapV(wrapV), wrapW(wrapW), minFilter(minFilter), magFilter(magFilter), mipmaps(mipmaps) {
-    RGBMode format[5] = {RGBMode::NONE, RGBMode::RED, RGBMode::RG, RGBMode::RGB, RGBMode::RGBA};
+    constexpr RGBMode format[5] = {RGBMode::NONE, RGBMode::RED, RGBMode::RG, RGBMode::RGB, RGBMode::RGBA};
 
     stbi_set_flip_vertically_on_load(true);
     data = stbi_load(filePath.c_str(), &width, &height, &nrChannels, 0);

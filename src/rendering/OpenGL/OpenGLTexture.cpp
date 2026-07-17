@@ -3,7 +3,7 @@
 #include "glad/glad.h"
 #include "rendering/textureData.hpp"
 
-GLenum wrapToGL(TextureWrapMode mode) {
+static GLenum wrapToGL(const TextureWrapMode mode) {
     switch (mode) {
     case TextureWrapMode::Repeat:
         return GL_REPEAT;
@@ -17,7 +17,7 @@ GLenum wrapToGL(TextureWrapMode mode) {
     return GL_REPEAT;
 };
 
-GLenum filterToGL(TextureFilter mode, bool mipmaps) {
+static GLenum filterToGL(const TextureFilter mode, const bool mipmaps) {
     switch (mode) {
     case TextureFilter::Linear:
         return mipmaps ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
@@ -27,7 +27,7 @@ GLenum filterToGL(TextureFilter mode, bool mipmaps) {
     return GL_LINEAR;
 }
 
-GLenum modeToGL(RGBMode mode) {
+static GLenum modeToGL(const RGBMode mode) {
     switch (mode) {
     case RGBMode::NONE:
         return GL_RGBA;
@@ -44,16 +44,16 @@ GLenum modeToGL(RGBMode mode) {
 }
 
 OpenGLTexture::OpenGLTexture(
-    unsigned char* data,
-    unsigned int width,
-    unsigned int height,
-    TextureWrapMode wrapU,
-    TextureWrapMode wrapV,
-    TextureWrapMode wrapW,
-    TextureFilter minFilter,
-    TextureFilter magFilter,
-    RGBMode rgbMode,
-    bool mipmaps) {
+    const unsigned char* data,
+    const unsigned int width,
+    const unsigned int height,
+    const TextureWrapMode wrapU,
+    const TextureWrapMode wrapV,
+    const TextureWrapMode wrapW,
+    const TextureFilter minFilter,
+    const TextureFilter magFilter,
+    const RGBMode rgbMode,
+    const bool mipmaps) {
 
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -80,7 +80,7 @@ OpenGLTexture::OpenGLTexture(OpenGLTexture&& other) noexcept {
     other.texture = 0;
 }
 
-void OpenGLTexture::bind(unsigned int slot) {
+void OpenGLTexture::bind(const unsigned int slot) const {
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, texture);
 }

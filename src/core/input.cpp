@@ -47,37 +47,37 @@ void Input::init() {
     });
 }
 
-bool Input::isKeyHeld(int key) {
+bool Input::isKeyHeld(const int key) const {
     if (key < 0 || key > GLFW_KEY_LAST)
         return false;
     return currentKeys[key] && previousKeys[key];
 }
 
-bool Input::isKeyPressed(int key) {
+bool Input::isKeyPressed(const int key) const {
     if (key < 0 || key > GLFW_KEY_LAST)
         return false;
     return currentKeys[key] && !previousKeys[key];
 }
 
-bool Input::isKeyReleased(int key) {
+bool Input::isKeyReleased(const int key) const {
     if (key < 0 || key > GLFW_KEY_LAST)
         return false;
     return !currentKeys[key] && previousKeys[key];
 }
 
-bool Input::isButtonHeld(int button) {
+bool Input::isButtonHeld(const int button) const {
     if (button < 0 || button > GLFW_MOUSE_BUTTON_LAST)
         return false;
     return currentMouseButtons[button] && previousMouseButtons[button];
 }
 
-bool Input::isButtonPressed(int button) {
+bool Input::isButtonPressed(const int button) const {
     if (button < 0 || button > GLFW_MOUSE_BUTTON_LAST)
         return false;
     return currentMouseButtons[button] && !previousMouseButtons[button];
 }
 
-bool Input::isButtonReleased(int button) {
+bool Input::isButtonReleased(const int button) const {
     if (button < 0 || button > GLFW_MOUSE_BUTTON_LAST)
         return false;
     return !currentMouseButtons[button] && previousMouseButtons[button];
@@ -87,15 +87,15 @@ const std::vector<char>& Input::getCurrentCharacter() {
     return currentCharacters;
 }
 
-Vector2 Input::getMouseDelta() {
+Vector2 Input::getMouseDelta() const {
     return mousePosition - previousMousePosition;
 }
 
-Vector2 Input::getMousePos() {
+Vector2 Input::getMousePos() const {
     return mousePosition;
 }
 
-Vector2 Input::getScrollOffset() {
+Vector2 Input::getScrollOffset() const {
     return scrollOffset;
 }
 

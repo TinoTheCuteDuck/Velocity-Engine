@@ -16,5 +16,5 @@ class UiText : public UiWidget {
   public:
     // Public Methods
     void update() override;
-    void render(const bool parentVisible) override;
+    void render(bool parentVisible) override;
 };

@@ -32,7 +32,7 @@ void AssetManager::update() {
 
                 loadingMeshData.erase(loadingMeshData.find(mesh.filePath));
                 auto ptr = std::make_unique<MeshData>(std::move(mesh));
-                meshData.emplace(std::make_pair(ptr->filePath, std::move(ptr)));
+                meshData.emplace(ptr->filePath, std::move(ptr));
             }
 
         } else if (item->type == TEXTURE) {
@@ -43,7 +43,7 @@ void AssetManager::update() {
 
                 loadingTextureData.erase(loadingTextureData.find(texture.filePath));
                 auto ptr = std::make_unique<TextureData>(std::move(texture));
-                textureData.emplace(std::make_pair(ptr->filePath, std::move(ptr)));
+                textureData.emplace(ptr->filePath, std::move(ptr));
             }
 
         } else if (item->type == SHADER) {
@@ -56,13 +56,13 @@ void AssetManager::update() {
 
                 loadingShaderData.erase(loadingShaderData.find(shaderKey));
                 auto ptr = std::make_unique<ShaderData>(std::move(shader));
-                shaderData.emplace(std::make_pair(shaderKey, std::move(ptr)));
+                shaderData.emplace(shaderKey, std::move(ptr));
             }
         }
     }
 }
 
-unsigned int AssetManager::loadMesh(std::string filePath) {
+unsigned int AssetManager::loadMesh(const std::string& filePath) {
     if (meshData.contains(filePath)) {
         return meshData.at(filePath)->meshId;
     }
@@ -80,8 +80,8 @@ unsigned int AssetManager::loadMesh(std::string filePath) {
     return 0;
 }
 
-unsigned int AssetManager::loadShader(std::string vShaderPath, std::string fShaderPath) {
-    std::string shaderKey = vShaderPath + " | " + fShaderPath;
+unsigned int AssetManager::loadShader(const std::string& vShaderPath, const std::string& fShaderPath) {
+    const std::string shaderKey = vShaderPath + " | " + fShaderPath;
     if (shaderData.contains(shaderKey)) {
         return shaderData.at(shaderKey)->shaderId;
     }
@@ -99,7 +99,7 @@ unsigned int AssetManager::loadShader(std::string vShaderPath, std::string fShad
     return 0;
 }
 
-unsigned int AssetManager::loadTexture(std::string filePath, TextureWrapMode wrapU, TextureWrapMode wrapV, TextureWrapMode wrapW, TextureFilter minFilter, TextureFilter magFilter, bool mipmaps) {
+unsigned int AssetManager::loadTexture(const std::string& filePath, TextureWrapMode wrapU, TextureWrapMode wrapV, TextureWrapMode wrapW, TextureFilter minFilter, TextureFilter magFilter, bool mipmaps) {
     if (textureData.contains(filePath)) {
         return textureData.at(filePath)->textureId;
     }
@@ -116,38 +116,37 @@ unsigned int AssetManager::loadTexture(std::string filePath, TextureWrapMode wra
     return 0;
 }
 
-MeshData* AssetManager::getMesh(std::string filePath) {
+MeshData* AssetManager::getMesh(const std::string& filePath) const {
     if (meshData.contains(filePath)) {
         return meshData.at(filePath).get();
     }
     return nullptr;
 }
 
-ShaderData* AssetManager::getShader(std::string vShaderPath, std::string fShaderPath) {
-    std::string key = vShaderPath + " | " + fShaderPath;
-    if (shaderData.contains(key)) {
+ShaderData* AssetManager::getShader(const std::string& vShaderPath, const std::string& fShaderPath) const {
+    if (const std::string key = vShaderPath + " | " + fShaderPath; shaderData.contains(key)) {
         return shaderData.at(key).get();
     }
     return nullptr;
 }
-TextureData* AssetManager::getTexture(std::string filePath) {
+TextureData* AssetManager::getTexture(const std::string& filePath) const {
     if (textureData.contains(filePath)) {
         return textureData.at(filePath).get();
     }
     return nullptr;
 }
 
-void AssetManager::loadThreadedMesh(std::string filePath) {
+void AssetManager::loadThreadedMesh(const std::string& filePath) {
     MeshData mesh(filePath);
-    queue.push_back(LoadRequest{std::move(mesh), MESH});
+    queue.push_back(LoadRequest{.data = std::move(mesh), .type = MESH});
 }
 
 void AssetManager::loadThreadedShader(std::string vShaderPath, std::string fShaderPath) {
-    ShaderData shader(vShaderPath, fShaderPath);
-    queue.push_back(LoadRequest{std::move(shader), SHADER});
+    ShaderData shader(std::move(vShaderPath), std::move(fShaderPath));
+    queue.push_back(LoadRequest{.data = std::move(shader), .type = SHADER});
 }
 
-void AssetManager::loadThreadedTexture(std::string filePath, TextureWrapMode wrapU, TextureWrapMode wrapV, TextureWrapMode wrapW, TextureFilter minFilter, TextureFilter magFilter, bool mipmaps) {
-    TextureData texture(filePath, wrapU, wrapV, wrapW, minFilter, magFilter, mipmaps);
-    queue.push_back(LoadRequest{std::move(texture), TEXTURE});
+void AssetManager::loadThreadedTexture(std::string filePath, const TextureWrapMode wrapU, const TextureWrapMode wrapV, const TextureWrapMode wrapW, const TextureFilter minFilter, const TextureFilter magFilter, const bool mipmaps) {
+    TextureData texture(std::move(filePath), wrapU, wrapV, wrapW, minFilter, magFilter, mipmaps);
+    queue.push_back(LoadRequest{.data = std::move(texture), .type = TEXTURE});
 }

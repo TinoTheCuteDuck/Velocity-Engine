@@ -37,20 +37,20 @@ Window::~Window() {
     glfwTerminate();
 }
 
-void Window::pollEvents() {
+void Window::pollEvents() const {
     glfwSwapBuffers(window);
     glfwPollEvents();
 }
 
-bool Window::shouldClose() {
+bool Window::shouldClose() const {
     return glfwWindowShouldClose(window);
 }
 
-GLFWwindow* Window::getWindow() {
+GLFWwindow* Window::getWindow() const {
     return window;
 }
 
-bool Window::getVsync() {
+bool Window::getVsync() const {
     return vsync;
 }
 
@@ -58,11 +58,11 @@ std::string& Window::getTitle() {
     return title;
 }
 
-Vector2 Window::getWindowSize() {
+Vector2 Window::getWindowSize() const {
     return windowSize;
 }
 
-void Window::setVsync(bool enabled) {
+void Window::setVsync(const bool enabled) {
     glfwSwapInterval(enabled ? 1 : 0);
 }
 

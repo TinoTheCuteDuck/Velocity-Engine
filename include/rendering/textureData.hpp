@@ -24,13 +24,14 @@ enum class RGBMode {
 
 class TextureData {
   public:
-    TextureData(const std::string filePath,
+    TextureData(std::string& filePath,
                 TextureWrapMode wrapU = TextureWrapMode::Repeat,
                 TextureWrapMode wrapV = TextureWrapMode::Repeat,
                 TextureWrapMode wrapW = TextureWrapMode::Repeat,
                 TextureFilter minFilter = TextureFilter::Linear,
                 TextureFilter magFilter = TextureFilter::Linear,
                 bool mipmaps = true);
+    TextureData(const std::string& filePath, TextureWrapMode wrapU, TextureWrapMode wrapV, TextureWrapMode wrapW, TextureFilter minFilter, TextureFilter magFilter, bool mipmaps);
     ~TextureData();
 
     TextureData(const TextureData&) = delete;
@@ -54,6 +55,6 @@ class TextureData {
     bool mipmaps;
 
     unsigned char* data;
-    int width, height;
-    int nrChannels;
+    int width{}, height{};
+    int nrChannels{};
 };

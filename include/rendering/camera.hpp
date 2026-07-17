@@ -11,20 +11,20 @@ class Camera {
     void update();
     Ray screenPointToRay(Vector2 screenPos);
 
-    Mat4 getViewMatrix();
-    Vector3 getUp();
-    Vector3 getRight();
-    Vector3 getForward();
-    Vector3 getPosition();
+    Mat4 getViewMatrix() const;
+    Vector3 getUp() const;
+    Vector3 getRight() const;
+    Vector3 getForward() const;
+    Vector3 getPosition() const;
 
-    float getYaw();
-    float getPitch();
+    float getYaw() const;
+    float getPitch() const;
 
-    float getFOV();
-    float getFlySpeed();
-    float getCursorSens();
+    float getFOV() const;
+    float getFlySpeed() const;
+    float getCursorSens() const;
 
-    float getNearPlane();
+    float getNearPlane() const;
     float getFarPlane();
 
     bool movementBlocked = false;

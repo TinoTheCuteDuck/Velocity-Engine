@@ -4,7 +4,7 @@
 
 class ShaderData {
   public:
-    ShaderData(const std::string vertexShaderPath, const std::string fragmentShaderPath);
+    ShaderData(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
     ~ShaderData();
 
     ShaderData(const ShaderData&) = delete;
@@ -23,5 +23,5 @@ class ShaderData {
     std::string fShaderSource;
 
   private:
-    std::string parseShader(std::string& filePath);
+    static std::string parseShader(const std::string& filePath);
 };

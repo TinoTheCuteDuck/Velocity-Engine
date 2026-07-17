@@ -2,6 +2,7 @@ out/
 bin/
 build/
 .vscode/
+cmake-build-debug/
 .idea/
 .cache
 .clang-format

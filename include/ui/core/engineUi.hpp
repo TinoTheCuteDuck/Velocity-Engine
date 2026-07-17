@@ -31,13 +31,13 @@ inline bool import3DVisible = false;
 inline size_t lastEntitySize = 0;
 }  // namespace UiState
 
-inline std::string setPrecision(float number, int precision) {
+inline std::string setPrecision(const float number, const int precision) {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(precision) << number;
     return ss.str();
 };
 
-inline std::string setPrecision(Vector3& vector, int precision) {
+inline std::string setPrecision(const Vector3& vector, const int precision) {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(precision) << vector.x << ", " << vector.y << ", " << vector.z;
     return ss.str();

@@ -14,7 +14,7 @@ void UiText::render(const bool parentVisible) {
     bool shouldRender = visible && parentVisible;
 
     if (!shouldRender) {
-        WidgetData data = {Vector4(), Vector4(), Vector4(), Vector4(), Vector4()};
+        WidgetData data = {.rect = Vector4(), .borderColor = Vector4(), .params = Vector4(), .clipRect = Vector4(), .clipParams = Vector4()};
         Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
 
         for (auto& child : children) {

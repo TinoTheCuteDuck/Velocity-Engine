@@ -46,8 +46,8 @@ void UiWidget::hitDetection() {
     if (!enabled)
         return;
 
-    Input& input = Engine::get().input;
-    Vector2 mousePos = input.getMousePos();
+    const Input& input = Engine::get().input;
+    const Vector2 mousePos = input.getMousePos();
 
     // Mouse hit detection
     if (mousePos.x >= absolutePosition.x && mousePos.x <= (absolutePosition.x + absoluteSize.x) &&
@@ -62,17 +62,15 @@ void UiWidget::hitDetection() {
     wasFocused = focused;
 }
 void UiWidget::applyConstraints() {
-    float aspectRatio = aspect.get();
-    if (aspectRatio > 0.0f) {
-        float currentAspect = absoluteSize.x / absoluteSize.y;
-        if (currentAspect > aspectRatio) {
+    if (const float aspectRatio = aspect.get(); aspectRatio > 0.0f) {
+        if (const float currentAspect = absoluteSize.x / absoluteSize.y; currentAspect > aspectRatio) {
             absoluteSize.x = absoluteSize.y * aspectRatio;
         } else {
             absoluteSize.y = absoluteSize.x / aspectRatio;
         }
     }
 
-    Vector2 constraint = sizeConstraint.get();
+    const Vector2 constraint = sizeConstraint.get();
     if (absoluteSize.x > constraint.x && constraint.x != 0) {
         absoluteSize.x = constraint.x;
     }
@@ -97,8 +95,7 @@ void UiWidget::update() {
     }
 
     for (int i = (int) activeAnimations.size() - 1; i >= 0; i--) {
-        bool finished = activeAnimations.at(i)->update(dt);
-        if (finished) {
+        if (activeAnimations.at(i)->update(dt)) {
             activeAnimations.erase(activeAnimations.begin() + i);
         }
     }
@@ -113,19 +110,19 @@ void UiWidget::update() {
 }
 void UiWidget::render(const bool parentVisible) {
     vertexData.clear();
-    bool shouldRender = visible && parentVisible;
+    const bool shouldRender = visible && parentVisible;
 
     if (!shouldRender) {
         WidgetData data = {Vector4(), Vector4(), Vector4(), Vector4(), Vector4()};
         Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);
 
-        for (auto& child : children) {
+        for (const auto& child : children) {
             child->render(false);
         }
         return;
     }
 
-    Vector2 windowSize = Engine::get().window.getWindowSize();
+    const Vector2 windowSize = Engine::get().window.getWindowSize();
     if (parent) {
         absolutePosition = parent->getAbsolutePosition() + position.get() * parent->getAbsoluteSize();
         absoluteSize = size.get() * parent->getAbsoluteSize();
@@ -138,40 +135,40 @@ void UiWidget::render(const bool parentVisible) {
 
     applyConstraints();
 
-    float left = absolutePosition.x / windowSize.x * 2.0f - 1.0f;
-    float right = (absolutePosition.x + absoluteSize.x) / windowSize.x * 2.0f - 1.0f;
-    float top = -(absolutePosition.y / windowSize.y * 2.0f - 1.0f);
-    float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f);
+    const float left = absolutePosition.x / windowSize.x * 2.0f - 1.0f;
+    const float right = (absolutePosition.x + absoluteSize.x) / windowSize.x * 2.0f - 1.0f;
+    const float top = -(absolutePosition.y / windowSize.y * 2.0f - 1.0f);
+    const float bottom = -((absolutePosition.y + absoluteSize.y) / windowSize.y * 2.0f - 1.0f);
 
-    vertexData.push_back(UiVertex{Vector2(left, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.03125), elementID});
-    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.9375f, 0.03125), elementID});
-    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.03125), elementID});
+    vertexData.push_back(UiVertex{.position = Vector2(left, top), .color = Vector4(color.get(), opacity.get()), .UV = Vector2(0.96875f, 0.03125), .widgetID = elementID});
+    vertexData.push_back(UiVertex{.position = Vector2(left, bottom), .color = Vector4(color.get(), opacity.get()), .UV = Vector2(0.9375f, 0.03125), .widgetID = elementID});
+    vertexData.push_back(UiVertex{.position = Vector2(right, top), .color = Vector4(color.get(), opacity.get()), .UV = Vector2(0.96875f, 0.03125), .widgetID = elementID});
 
-    vertexData.push_back(UiVertex{Vector2(right, top), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.03125), elementID});
-    vertexData.push_back(UiVertex{Vector2(left, bottom), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.03125), elementID});
-    vertexData.push_back(UiVertex{Vector2(right, bottom), Vector4(color.get(), opacity.get()), Vector2(0.96875f, 0.03125), elementID});
+    vertexData.push_back(UiVertex{.position = Vector2(right, top), .color = Vector4(color.get(), opacity.get()), .UV = Vector2(0.96875f, 0.03125), .widgetID = elementID});
+    vertexData.push_back(UiVertex{.position = Vector2(left, bottom), .color = Vector4(color.get(), opacity.get()), .UV = Vector2(0.96875f, 0.03125), .widgetID = elementID});
+    vertexData.push_back(UiVertex{.position = Vector2(right, bottom), .color = Vector4(color.get(), opacity.get()), .UV = Vector2(0.96875f, 0.03125), .widgetID = elementID});
 
     vertexCount = memory / sizeof(UiVertex);
     dirty = false;
 
-    Vector2 flippedPos(absolutePosition.x, windowSize.y - absolutePosition.y - absoluteSize.y);
+    const Vector2 flippedPos(absolutePosition.x, windowSize.y - absolutePosition.y - absoluteSize.y);
     WidgetData data = {
-        Vector4(flippedPos, absoluteSize),
-        borderColor.get(),
-        Vector4(absoluteRadius, absoluteBorderSize, 0, 0),
-        Vector4(0.0f),
-        Vector4(0.0f)};
+        .rect = Vector4(flippedPos, absoluteSize),
+        .borderColor = borderColor.get(),
+        .params = Vector4(absoluteRadius, absoluteBorderSize, 0, 0),
+        .clipRect = Vector4(0.0f),
+        .clipParams = Vector4(0.0f)};
 
     if (parent && clipDescendants.get()) {
-        Vector2 absoluteParentSize = parent->getAbsoluteSize();
-        Vector2 absoluteParentPosition = parent->getAbsolutePosition();
-        Vector2 flippedParentPos(absoluteParentPosition.x, windowSize.y - absoluteParentPosition.y - absoluteParentSize.y);
+        const Vector2 absoluteParentSize = parent->getAbsoluteSize();
+        const Vector2 absoluteParentPosition = parent->getAbsolutePosition();
+        const Vector2 flippedParentPos(absoluteParentPosition.x, windowSize.y - absoluteParentPosition.y - absoluteParentSize.y);
         data = {
-            Vector4(flippedPos, absoluteSize),
-            borderColor.get(),
-            Vector4(absoluteRadius, absoluteBorderSize, 0, 0),
-            Vector4(flippedParentPos, absoluteParentSize),
-            Vector4(parent->getAbsoluteRadius(), parent->getAbsoluteBorderSize(), 0, 0)};
+            .rect = Vector4(flippedPos, absoluteSize),
+            .borderColor = borderColor.get(),
+            .params = Vector4(absoluteRadius, absoluteBorderSize, 0, 0),
+            .clipRect = Vector4(flippedParentPos, absoluteParentSize),
+            .clipParams = Vector4(parent->getAbsoluteRadius(), parent->getAbsoluteBorderSize(), 0, 0)};
     }
 
     Engine::get().renderer.changeGPUUiMeshData(Engine::get().uiManager.meshID, elementID, offset, memory, vertexData, data);

@@ -1,11 +1,11 @@
 #include "core/engine.hpp"
 
-Engine::Engine() : window(), renderer(), assetManager(), input(), time(), uiManager(), scene(), camera() {
+Engine::Engine() : input() {
     init();
 }
 
 void Engine::init() {
-    Engine::setInstance(*this);
+    setInstance(*this);
 
     input.init();
     scene.load();
@@ -25,7 +25,7 @@ void Engine::update() {
     camera.update();
     assetManager.update();
 
-    std::cout << "FPS: " << time.getFPS() << std::endl;
+    //std::cout << "FPS: " << time.getFPS() << std::endl;
 
     uiManager.update();
     scene.update();

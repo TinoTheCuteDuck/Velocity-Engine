@@ -19,10 +19,10 @@ class UiWidget {
     virtual ~UiWidget();
 
     // Read-only getters
-    float getAbsoluteRadius() const;
-    float getAbsoluteBorderSize() const;
-    Vector2 getAbsoluteSize() const;
-    Vector2 getAbsolutePosition() const;
+    [[nodiscard]] float getAbsoluteRadius() const;
+    [[nodiscard]] float getAbsoluteBorderSize() const;
+    [[nodiscard]] Vector2 getAbsoluteSize() const;
+    [[nodiscard]] Vector2 getAbsolutePosition() const;
 
     template <typename T>
     void addChild(std::unique_ptr<T> child) {
@@ -48,12 +48,12 @@ class UiWidget {
 
   public:
     // Attributes
-    WidgetAttribute<Vector2> size{0.1f};
-    WidgetAttribute<Vector3> color{1.0f};
-    WidgetAttribute<Vector2> position{0.0f};
-    WidgetAttribute<Vector2> anchorPoint{0.0f};
-    WidgetAttribute<Vector4> borderColor{0.0f};
-    WidgetAttribute<Vector2> sizeConstraint{0.0f};
+    WidgetAttribute<Vector2> size{Vector2(0.1f)};
+    WidgetAttribute<Vector3> color{Vector3(1.0f)};
+    WidgetAttribute<Vector2> position{Vector2(0.0f)};
+    WidgetAttribute<Vector2> anchorPoint{Vector2(0.0f)};
+    WidgetAttribute<Vector4> borderColor{Vector4(0.0f)};
+    WidgetAttribute<Vector2> sizeConstraint{Vector2(0.0f)};
 
     WidgetAttribute<float> aspect{0.0f};
     WidgetAttribute<float> opacity{1.0f};
@@ -87,7 +87,7 @@ class UiWidget {
   public:
     // Public Methods
     virtual void update();
-    virtual void render(const bool parentVisible);
+    virtual void render(bool parentVisible);
 
   protected:
     // Private Methods

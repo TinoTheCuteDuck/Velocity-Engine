@@ -25,7 +25,7 @@ class IDAllocator {
 
     void free(const unsigned int id) {
         unsigned int allocatedId = id - 1;
-        if (allocatedId < ids.size() && allocatedId >= 0) {
+        if (allocatedId < ids.size()) {
             ids.at(allocatedId) = false;
             lastFreeId = allocatedId;
         }

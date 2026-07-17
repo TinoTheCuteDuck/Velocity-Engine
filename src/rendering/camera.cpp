@@ -15,8 +15,8 @@ void Camera::update() {
         return;
 
     Input& input = Engine::get().input;
-    float dt = Engine::get().time.getDt();
-    float flightSpeed = flySpeed * dt;
+    const float dt = Engine::get().time.getDt();
+    const float flightSpeed = flySpeed * dt;
 
     if (input.isKeyHeld(GLFW_KEY_W))
         position += forward * flightSpeed;
@@ -40,7 +40,7 @@ void Camera::update() {
     }
 
     if (input.isButtonHeld(GLFW_MOUSE_BUTTON_RIGHT)) {
-        Vector2 mouseDelta = input.getMouseDelta();
+        const Vector2 mouseDelta = input.getMouseDelta();
 
         yaw += mouseDelta.x * cursorSensitivity;
         pitch -= mouseDelta.y * cursorSensitivity;
@@ -55,68 +55,68 @@ void Camera::update() {
 }
 
 Ray Camera::screenPointToRay(Vector2 screenPos) {
-    Vector2 windowSize = Engine::get().window.getWindowSize();
-    float x = (screenPos.x / windowSize.x) * 2 - 1;
-    float y = -((screenPos.y / windowSize.y) * 2 - 1);
+    const Vector2 windowSize = Engine::get().window.getWindowSize();
+    const float x = (screenPos.x / windowSize.x) * 2 - 1;
+    const float y = -((screenPos.y / windowSize.y) * 2 - 1);
 
-    Vector4 clipCoords(x, y, -1.0f, 1.0f);
-    Vector4 eyeCoords = Mat4::inverse(Mat4::projection(FOV, windowSize.x / windowSize.y, nearPlane, farPlane)) * clipCoords;
+    const Vector4 clipCoords(x, y, -1.0f, 1.0f);
+    const Vector4 eyeCoords = Mat4::inverse(Mat4::projection(FOV, windowSize.x / windowSize.y, nearPlane, farPlane)) * clipCoords;
 
-    Vector4 worldDir = Mat4::inverse(getViewMatrix()) * Vector4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
-    Vector3 dir = Vector3(worldDir.x, worldDir.y, worldDir.z).normalize();
+    const Vector4 worldDir = Mat4::inverse(getViewMatrix()) * Vector4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
+    const Vector3 dir = Vector3(worldDir.x, worldDir.y, worldDir.z).normalize();
 
     return Ray(position, dir);
 }
 
 void Camera::computeVectors() {
-    float yawRad = yaw * (std::numbers::pi / 180);
-    float pitchRad = pitch * (std::numbers::pi / 180);
+    const float yawRad = yaw * (std::numbers::pi / 180);
+    const float pitchRad = pitch * (std::numbers::pi / 180);
     forward = Vector3(std::cos(yawRad) * std::cos(pitchRad), std::sin(pitchRad), std::sin(yawRad) * std::cos(pitchRad));
     right = forward.cross(Vector3::up).normalize();
     up = right.cross(forward);
 }
 
-Mat4 Camera::getViewMatrix() {
+Mat4 Camera::getViewMatrix() const {
     return Mat4::lookAt(position, position + forward, up);
 }
 
-Vector3 Camera::getUp() {
+Vector3 Camera::getUp() const {
     return up;
 }
 
-Vector3 Camera::getRight() {
+Vector3 Camera::getRight() const {
     return right;
 }
 
-Vector3 Camera::getForward() {
+Vector3 Camera::getForward() const {
     return forward;
 }
 
-Vector3 Camera::getPosition() {
+Vector3 Camera::getPosition() const {
     return position;
 }
 
-float Camera::getYaw() {
+float Camera::getYaw() const {
     return yaw;
 }
 
-float Camera::getPitch() {
+float Camera::getPitch() const {
     return pitch;
 }
 
-float Camera::getFOV() {
+float Camera::getFOV() const {
     return FOV;
 }
 
-float Camera::getFlySpeed() {
+float Camera::getFlySpeed() const {
     return flySpeed;
 }
 
-float Camera::getCursorSens() {
+float Camera::getCursorSens() const {
     return cursorSensitivity;
 }
 
-float Camera::getNearPlane() {
+float Camera::getNearPlane() const {
     return nearPlane;
 }
 

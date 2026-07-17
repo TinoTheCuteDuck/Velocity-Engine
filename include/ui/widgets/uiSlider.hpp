@@ -5,7 +5,7 @@
 
 class UiSlider : public UiWidget {
   public:
-    WidgetAttribute<Vector2> dragOffset{0.0f};
+    WidgetAttribute<Vector2> dragOffset{Vector2(0.0f)};
 
   public:
     Callback onDrag{[]() {}};

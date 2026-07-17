@@ -42,13 +42,13 @@ DirectionalLight::DirectionalLight(DirectionalLight&& other) noexcept {
 }
 DirectionalLight::~DirectionalLight() {
     if (componentId != 0) {
-        GPUDirectionalLight light{Vector4(), Vector4()};
+        constexpr GPUDirectionalLight light{.direction = Vector4(), .color = Vector4()};
         Engine::get().renderer.changeDirectionalLightUBO(componentId, light);
     }
 }
 
-void DirectionalLight::changeGPUData() {
-    GPUDirectionalLight light{Vector4(direction.get(), 0), Vector4(color.get(), intensity.get())};
+void DirectionalLight::changeGPUData() const {
+    const GPUDirectionalLight light{.direction = Vector4(direction.get(), 0), .color = Vector4(color.get(), intensity.get())};
     Engine::get().renderer.changeDirectionalLightUBO(componentId, light);
 }
 
@@ -118,13 +118,13 @@ PointLight::PointLight(PointLight&& other) noexcept {
 
 PointLight::~PointLight() {
     if (componentId != 0) {
-        GPUPointLight light{Vector4(), Vector4(), Vector4()};
+        constexpr GPUPointLight light{.position = Vector4(), .color = Vector4(), .params = Vector4()};
         Engine::get().renderer.changePointLightUBO(componentId, light);
     }
 }
 
-void PointLight::changeGPUData() {
-    GPUPointLight light{Vector4(position.get(), 0), Vector4(color.get(), 0), Vector4(intensity.get(), constant.get(), linear.get(), quadratic.get())};
+void PointLight::changeGPUData() const {
+    const GPUPointLight light{.position = Vector4(position.get(), 0), .color = Vector4(color.get(), 0), .params = Vector4(intensity.get(), constant.get(), linear.get(), quadratic.get())};
     Engine::get().renderer.changePointLightUBO(componentId, light);
 }
 
@@ -221,11 +221,11 @@ SpotLight::SpotLight(SpotLight&& other) noexcept {
 }
 
 SpotLight::~SpotLight() {
-    GPUSpotLight light{Vector4(), Vector4(), Vector4(), Vector4(), Vector4()};
+    constexpr GPUSpotLight light{.position = Vector4(), .direction = Vector4(), .color = Vector4(), .params = Vector4(), .attenuationParams = Vector4()};
     Engine::get().renderer.changeSpotLightUBO(componentId, light);
 }
 
-void SpotLight::changeGPUData() {
-    GPUSpotLight light{Vector4(position.get(), 0), Vector4(direction.get(), 0), Vector4(color.get(), 0), Vector4(intensity.get(), outerAngle.get(), innerAngle.get(), 0), Vector4(constant.get(), linear.get(), quadratic.get(), 0)};
+void SpotLight::changeGPUData() const {
+    const GPUSpotLight light{.position = Vector4(position.get(), 0), .direction = Vector4(direction.get(), 0), .color = Vector4(color.get(), 0), .params = Vector4(intensity.get(), outerAngle.get(), innerAngle.get(), 0), .attenuationParams = Vector4(constant.get(), linear.get(), quadratic.get(), 0)};
     Engine::get().renderer.changeSpotLightUBO(componentId, light);
 }

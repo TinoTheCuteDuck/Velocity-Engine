@@ -3,39 +3,38 @@
 #include "math/vector/vector3.hpp"
 #include "math/vector/vector4.hpp"
 
-#include <assert.h>
 #include <cmath>
 #include <iostream>
 #include <ostream>
 
 class Mat4 {
   public:
-    float m[16];
+    float m[16]{};
 
     constexpr Mat4() {
-        for (int i = 0; i < 16; i++) {
-            m[i] = 0.0f;
+        for (float &i : m) {
+            i = 0.0f;
         }
         m[0] = 1.0f;
         m[5] = 1.0f;
         m[10] = 1.0f;
         m[15] = 1.0f;
     }
-    constexpr Mat4(const float scalar) {
-        for (int i = 0; i < 16; i++) {
-            m[i] = 0.0f;
+    explicit constexpr Mat4(const float scalar) {
+        for (float &i : m) {
+            i = 0.0f;
         }
         m[0] = scalar;
         m[5] = scalar;
         m[10] = scalar;
         m[15] = scalar;
     }
-    constexpr Mat4(const float m[16]) {
+    explicit constexpr Mat4(const float m[16]) {
         for (int i = 0; i < 16; i++) {
             this->m[i] = m[i];
         }
     }
-    constexpr Mat4(const Vector4& col0, const Vector4& col1, const Vector4& col2, const Vector4& col3) {
+    constexpr Mat4(const Vector4 &col0, const Vector4 &col1, const Vector4 &col2, const Vector4 &col3) {
         const Vector4 cols[4] = {col0, col1, col2, col3};
         for (int i = 0; i < 4; i++) {
             m[i * 4 + 0] = cols[i].x;
@@ -45,19 +44,19 @@ class Mat4 {
         }
     }
 
-    inline constexpr Mat4& operator+=(const Mat4& other) {
+    constexpr Mat4 &operator+=(const Mat4 &other) {
         for (int i = 0; i < 16; i++) {
             m[i] = m[i] + other.m[i];
         }
         return *this;
     }
-    inline constexpr Mat4& operator-=(const Mat4& other) {
+    constexpr Mat4 &operator-=(const Mat4 &other) {
         for (int i = 0; i < 16; i++) {
             m[i] = m[i] - other.m[i];
         }
         return *this;
     }
-    inline constexpr Mat4& operator*=(const Mat4& other) {
+    constexpr Mat4 &operator*=(const Mat4 &other) {
         Mat4 mat(0.0f);
         for (int col = 0; col < 4; col++) {
             for (int row = 0; row < 4; row++) {
@@ -73,35 +72,39 @@ class Mat4 {
         return *this;
     }
 
-    inline constexpr Mat4& operator*=(const float scalar) {
-        for (int i = 0; i < 16; i++) {
-            m[i] = m[i] * scalar;
+    constexpr Mat4 &operator*=(const float scalar) {
+        for (float &i : m) {
+            i = i * scalar;
         }
         return *this;
     }
-    inline constexpr Mat4& operator/=(const float scalar) {
-        assert(scalar != 0);
-        for (int i = 0; i < 16; i++) {
-            m[i] = m[i] / scalar;
+    constexpr Mat4 &operator/=(const float scalar) {
+        if (scalar == 0.0f) return *this;
+
+        for (float &i : m) {
+            i = i / scalar;
         }
+
         return *this;
     }
 
-    inline constexpr Mat4 operator+(const Mat4& other) const {
+    constexpr Mat4 operator+(const Mat4 &other) const {
         Mat4 mat(0.0f);
         for (int i = 0; i < 16; i++) {
             mat.m[i] = m[i] + other.m[i];
         }
+
         return mat;
     }
-    inline constexpr Mat4 operator-(const Mat4& other) const {
+    constexpr Mat4 operator-(const Mat4 &other) const {
         Mat4 mat(0.0f);
         for (int i = 0; i < 16; i++) {
             mat.m[i] = m[i] - other.m[i];
         }
+
         return mat;
     }
-    inline constexpr Mat4 operator*(const Mat4& other) const {
+    constexpr Mat4 operator*(const Mat4 &other) const {
         Mat4 mat(0.0f);
         for (int col = 0; col < 4; col++) {
             for (int row = 0; row < 4; row++) {
@@ -113,15 +116,16 @@ class Mat4 {
         return mat;
     }
 
-    inline constexpr Mat4 operator*(const float scalar) const {
+    constexpr Mat4 operator*(const float scalar) const {
         Mat4 mat(0.0f);
         for (int i = 0; i < 16; i++) {
             mat.m[i] = m[i] * scalar;
         }
         return mat;
     }
-    inline constexpr Mat4 operator/(const float scalar) const {
-        assert(scalar != 0);
+    constexpr Mat4 operator/(const float scalar) const {
+        if (scalar == 0.0f) return *this;
+
         Mat4 mat(0.0f);
         for (int i = 0; i < 16; i++) {
             mat.m[i] = m[i] / scalar;
@@ -129,15 +133,15 @@ class Mat4 {
         return mat;
     }
 
-    inline constexpr Vector4 operator*(const Vector4& other) const {
-        return Vector4(
+    constexpr Vector4 operator*(const Vector4 &other) const {
+        return {
             other.x * m[0] + other.y * m[4] + other.z * m[8] + other.w * m[12],
             other.x * m[1] + other.y * m[5] + other.z * m[9] + other.w * m[13],
             other.x * m[2] + other.y * m[6] + other.z * m[10] + other.w * m[14],
-            other.x * m[3] + other.y * m[7] + other.z * m[11] + other.w * m[15]);
+            other.x * m[3] + other.y * m[7] + other.z * m[11] + other.w * m[15]};
     }
 
-    inline friend std::ostream& operator<<(std::ostream& os, const Mat4& mat) {
+    friend std::ostream &operator<<(std::ostream &os, const Mat4 &mat) {
         os << "(\n";
         for (int row = 0; row < 4; row++) {
             for (int col = 0; col < 4; col++) {
@@ -149,28 +153,28 @@ class Mat4 {
         return os;
     }
 
-    static constexpr Mat4 translate(const Vector3& other) {
+    static constexpr Mat4 translate(const Vector3 &other) {
         Mat4 mat(1.0f);
         mat.m[12] = other.x;
         mat.m[13] = other.y;
         mat.m[14] = other.z;
         return mat;
     }
-    static constexpr Mat4 scale(const Vector3& scalar) {
+    static constexpr Mat4 scale(const Vector3 &scalar) {
         Mat4 mat(1.0f);
         mat.m[0] = scalar.x;
         mat.m[5] = scalar.y;
         mat.m[10] = scalar.z;
         return mat;
     }
-    static constexpr Mat4 rotate(const float degrees, const Vector3& axis) {
+    static constexpr Mat4 rotate(const float degrees, const Vector3 &axis) {
         Mat4 mat(1.0f);
-        Vector3 normA = axis.normalize();
-        float angle = degrees * (std::numbers::pi / 180);
+        const Vector3 normA = axis.normalize();
+        const float angle = degrees * (std::numbers::pi / 180);
 
-        float cos = std::cos(angle);
-        float sin = std::sin(angle);
-        float t = 1.0f - cos;
+        const float cos = std::cos(angle);
+        const float sin = std::sin(angle);
+        const float t = 1.0f - cos;
 
         mat.m[0] = cos + std::pow(normA.x, 2) * t;
         mat.m[1] = normA.x * normA.y * t - normA.z * sin;
@@ -183,10 +187,11 @@ class Mat4 {
         mat.m[10] = cos + std::pow(normA.z, 2) * t;
         return mat;
     }
+
     static constexpr Mat4 projection(const float fov, const float aspect, const float near, const float far) {
-        float rad = fov * (std::numbers::pi / 180);
-        float t = near * std::tan(rad / 2);
-        float r = t * aspect;
+        const float rad = fov * (std::numbers::pi / 180);
+        const float t = near * std::tan(rad / 2);
+        const float r = t * aspect;
 
         Mat4 mat(0.0f);
         mat.m[0] = near / r;
@@ -209,16 +214,16 @@ class Mat4 {
 
         return mat;
     }
-    static constexpr Mat4 lookAt(const Vector3& eye, const Vector3& target, const Vector3& up) {
-        Vector3 forward = (target - eye).normalize();
-        Vector3 right = forward.cross(up).normalize();
-        Vector3 correctedUp = right.cross(forward).normalize();
+    static constexpr Mat4 lookAt(const Vector3 &eye, const Vector3 &target, const Vector3 &up) {
+        const Vector3 forward = (target - eye).normalize();
+        const Vector3 right = forward.cross(up).normalize();
+        const Vector3 correctedUp = right.cross(forward).normalize();
 
-        return Mat4(
+        return {
             Vector4(right.x, correctedUp.x, -forward.x, 0),
             Vector4(right.y, correctedUp.y, -forward.y, 0),
             Vector4(right.z, correctedUp.z, -forward.z, 0),
-            Vector4(-right.dot(eye), -correctedUp.dot(eye), forward.dot(eye), 1));
+            Vector4(-right.dot(eye), -correctedUp.dot(eye), forward.dot(eye), 1)};
     }
 
     static constexpr Mat4 inverse(Mat4 a) {
@@ -237,17 +242,18 @@ class Mat4 {
                 }
             }
 
-            float divisor = a.m[globCol * 4 + globCol];
-            assert(divisor != 0);
+            const float divisor = a.m[globCol * 4 + globCol];
+            if (divisor == 0.0f) continue;
+
             for (int col = 0; col < 4; col++) {
                 a.m[col * 4 + globCol] /= divisor;
                 i.m[col * 4 + globCol] /= divisor;
             }
 
             for (int row = 0; row < 4; row++) {
-                if (row == globCol)
-                    continue;
-                float base = -a.m[globCol * 4 + row];
+                if (row == globCol) continue;
+
+                const float base = -a.m[globCol * 4 + row];
 
                 for (int col = 0; col < 4; col++) {
                     a.m[col * 4 + row] += a.m[col * 4 + globCol] * base;
@@ -258,7 +264,7 @@ class Mat4 {
 
         for (int globCol = 3; globCol >= 0; globCol--) {
             for (int row = 0; row < globCol; row++) {
-                float base = -a.m[globCol * 4 + row];
+                const float base = -a.m[globCol * 4 + row];
 
                 for (int col = 0; col < 4; col++) {
                     a.m[col * 4 + row] += a.m[col * 4 + globCol] * base;

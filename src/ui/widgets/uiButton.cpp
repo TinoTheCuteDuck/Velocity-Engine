@@ -6,7 +6,7 @@
 
 // Update override
 void UiButton::update() {
-    Input& input = Engine::get().input;
+    const Input& input = Engine::get().input;
     hitDetection();
 
     // Click Detection

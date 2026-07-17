@@ -7,6 +7,7 @@
 #include "rendering/renderingTypes.hpp"
 
 #include <cfloat>
+#include <ranges>
 
 void Scene::load() {
     // unsigned int sponzaId = addEntity();
@@ -48,7 +49,7 @@ void Scene::load() {
     addMeshComponent(sponzaFloors, ASSETS_PATH "/meshes/Sponza_floors.obj");
 
     unsigned int sponzaFlowerPots = addEntity();
-    addMaterialComponent(sponzaFlowerPots, defaultVertexShader, defaultFragmentShader, ASSETS_PATH "/textures/Sponza_flower_pots.jpg");
+    addMaterialComponent(sponzaFlowerPots, defaultVertexShader, defaultFragmentShader, ASSETS_PATH "/textures/Sponza_flower_pots.jpg", ASSETS_PATH "/textures/Sponza_flower_pots_normal.jpg");
     addTransformComponent(sponzaFlowerPots, Vector3(), Vector3(0.01f));
     addMeshComponent(sponzaFlowerPots, ASSETS_PATH "/meshes/Sponza_flower_pots.obj");
 
@@ -88,7 +89,7 @@ void Scene::load() {
     addMeshComponent(sponzaLionFace, ASSETS_PATH "/meshes/Sponza_lion_face.obj");
 
     unsigned int sponzaLions = addEntity();
-    addMaterialComponent(sponzaLions, defaultVertexShader, defaultFragmentShader, ASSETS_PATH "/textures/Sponza_lions.jpg");
+    addMaterialComponent(sponzaLions, defaultVertexShader, defaultFragmentShader, ASSETS_PATH "/textures/Sponza_lions.jpg", ASSETS_PATH "/textures/Sponza_lions_normal.jpg");
     addTransformComponent(sponzaLions, Vector3(), Vector3(0.01f));
     addMeshComponent(sponzaLions, ASSETS_PATH "/meshes/Sponza_lions.obj");
 
@@ -133,7 +134,7 @@ void Scene::load() {
     addMeshComponent(sponzaTopSmallerPillars, ASSETS_PATH "/meshes/Sponza_top_smaller_pillars.obj");
 
     unsigned int sponzaWalls = addEntity();
-    addMaterialComponent(sponzaWalls, defaultVertexShader, defaultFragmentShader, ASSETS_PATH "/textures/Sponza_walls.jpg");
+    addMaterialComponent(sponzaWalls, defaultVertexShader, defaultFragmentShader, ASSETS_PATH "/textures/Sponza_walls.jpg", ASSETS_PATH "/textures/Sponza_walls_normal.jpg");
     addTransformComponent(sponzaWalls, Vector3(), Vector3(0.01f));
     addMeshComponent(sponzaWalls, ASSETS_PATH "/meshes/Sponza_walls.obj");
 
@@ -144,12 +145,12 @@ void Scene::load() {
     // addTransformComponent(blockId, Vector3(0, 4, 0), Vector3(0.01, 1, 0.01));
     // addMeshComponent(blockId, ASSETS_PATH "meshes/Plane.obj");
 
-    unsigned int directionalLight = addEntity();
+    const unsigned int directionalLight = addEntity();
     addDirectionalLightComponent(directionalLight, Vector3(-0.2f, -0.8f, 0.2f).normalize(), Vector3(1.0f, 0.92f, 0.75f), 1);
 }
 
 void Scene::update() {
-    AssetManager& assetManager = Engine::get().assetManager;
+    const AssetManager& assetManager = Engine::get().assetManager;
 
     // if (!Engine::get().uiManager.uiFocus) {
     //     pickObject(Engine::get().camera.screenPointToRay(Engine::get().input.getMousePos()));
@@ -164,8 +165,8 @@ void Scene::update() {
 
     // Collision update
     for (auto& [id, component] : meshes) {
-        if (transforms.count(id) && rigidBodys.count(id)) {
-            MeshData* meshData = assetManager.getMesh(component.filePath);
+        if (transforms.contains(id) && rigidBodys.contains(id)) {
+            const MeshData* meshData = assetManager.getMesh(component.filePath);
             if (!meshData || meshData->meshId == 0)
                 continue;
 
@@ -193,17 +194,17 @@ void Scene::update() {
                 iterationBounds.min = Vector3(min.x, min.y, min.z);
                 iterationBounds.max = Vector3(max.x, max.y, max.z);
 
-                bool minX = bounds.min.x < iterationBounds.max.x;
-                bool minY = bounds.min.y < iterationBounds.max.y;
-                bool minZ = bounds.min.z < iterationBounds.max.z;
+                const bool minX = bounds.min.x < iterationBounds.max.x;
+                const bool minY = bounds.min.y < iterationBounds.max.y;
+                const bool minZ = bounds.min.z < iterationBounds.max.z;
 
-                bool maxX = bounds.max.x > iterationBounds.min.x;
-                bool maxY = bounds.max.y > iterationBounds.min.y;
-                bool maxZ = bounds.max.z > iterationBounds.min.z;
+                const bool maxX = bounds.max.x > iterationBounds.min.x;
+                const bool maxY = bounds.max.y > iterationBounds.min.y;
+                const bool maxZ = bounds.max.z > iterationBounds.min.z;
 
                 if (minX && minY && minZ && maxX && maxY && maxZ) {
                     rigidBodys.at(id).velocity *= -0.6f;
-                    if (rigidBodys.count(iterationID)) {
+                    if (rigidBodys.contains(iterationID)) {
                         rigidBodys.at(iterationID).velocity *= -0.6f;
                     }
                 }
@@ -212,16 +213,16 @@ void Scene::update() {
     }
 }
 
-void Scene::addTransformComponent(unsigned int entity, Vector3 position, Vector3 scale, Vector3 rotation) {
+void Scene::addTransformComponent(unsigned int entity, const Vector3& position, const Vector3& scale, const Vector3& rotation) {
     Transform transform(position, scale, rotation);
-    transforms.emplace(entity, std::move(transform));
+    transforms.emplace(entity, transform);
 }
-void Scene::removeTransformComponent(unsigned int entity) {
+void Scene::removeTransformComponent(const unsigned int entity) {
     transforms.erase(entity);
 }
 
 void Scene::addMeshComponent(unsigned int entity, const std::string& filePath) {
-    unsigned int componentID = meshComponentIDAllocator.allocate();
+    const unsigned int componentID = meshComponentIDAllocator.allocate();
 
     Engine::get().assetManager.loadMesh(filePath);
     MeshInstance mesh(filePath, componentID);
@@ -235,57 +236,61 @@ void Scene::addMeshComponent(unsigned int entity, const std::string& filePath) {
         addMaterialComponent(entity);
     }
 }
-void Scene::removeMeshComponent(unsigned int entity) {
+void Scene::removeMeshComponent(const unsigned int entity) {
     meshComponentIDAllocator.free(meshes.at(entity).componentID);
     meshes.erase(entity);
 }
 
 void Scene::addRigidBodyComponent(unsigned int entity, const RigidBody&& body) {
-    rigidBodys.emplace(entity, std::move(body));
+    rigidBodys.emplace(entity, body);
 }
-void Scene::removeRigidBodyComponent(unsigned int entity) {
+void Scene::removeRigidBodyComponent(const unsigned int entity) {
     rigidBodys.erase(entity);
 }
 
-void Scene::addMaterialComponent(unsigned int entity, const std::string& vertexPath, const std::string& fragmentPath, const std::string& albedo) {
-    std::string vertexShader = vertexPath != "" ? vertexPath : defaultVertexShader;
-    std::string fragmentShader = fragmentPath != "" ? fragmentPath : defaultFragmentShader;
-    std::string albedoMap = albedo != "" ? albedo : defaultAlbedo;
+void Scene::addMaterialComponent(unsigned int entity, const std::string& vertexPath, const std::string& fragmentPath, const std::string& albedo, const std::string& normal, const std::string& metallic, const std::string& roughness, const std::string& ao) {
+    std::string vertexShader = !vertexPath.empty() ? vertexPath : defaultVertexShader;
+    std::string fragmentShader = !fragmentPath.empty() ? fragmentPath : defaultFragmentShader;
+    std::string albedoMap = !albedo.empty() ? albedo : defaultAlbedo;
+    std::string normalMap = !normal.empty() ? normal : defaultNormal;
+    std::string metallicMap = !metallic.empty() ? metallic : defaultMetallic;
+    std::string roughnessMap = !roughness.empty() ? roughness : defaultRoughness;
+    std::string aoMap = !ao.empty() ? ao : defaultAO;
 
     Engine::get().assetManager.loadTexture(albedoMap);
 
-    Material material = {vertexShader, fragmentShader, albedoMap};
-    materials.emplace(std::make_pair(entity, std::move(material)));
+    Material material = {.vertexPath = vertexShader, .fragmentPath = fragmentShader, .albedo = albedoMap, .normal = normalMap, .metallic = metallicMap, .roughness = roughnessMap, .ao = aoMap};
+    materials.emplace(entity, std::move(material));
 }
-void Scene::removeMaterialComponent(unsigned int entity) {
+void Scene::removeMaterialComponent(const unsigned int entity) {
     materials.erase(entity);
 }
 
 void Scene::addDirectionalLightComponent(unsigned int entity, const Vector3& direction, const Vector3& color, const float intensity) {
-    unsigned int componentId = directionalLightComponentIDAllocator.allocate();
+    const unsigned int componentId = directionalLightComponentIDAllocator.allocate();
 
     DirectionalLight light = {componentId, direction, color, intensity};
-    directionalLights.emplace(std::make_pair(entity, std::move(light)));
+    directionalLights.emplace(entity, std::move(light));
 }
 void Scene::removeDirectionalLightComponent(unsigned int entity) {
     directionalLights.erase(entity);
 }
 
 void Scene::addPointLightComponent(unsigned int entity, const Vector3& position, const Vector3& color, const float intensity, const float constant, const float linear, const float quadratic) {
-    unsigned int componentId = pointLightComponentIDAllocator.allocate();
+    const unsigned int componentId = pointLightComponentIDAllocator.allocate();
 
     PointLight light = {componentId, position, color, intensity, constant, linear, quadratic};
-    pointLights.emplace(std::make_pair(entity, std::move(light)));
+    pointLights.emplace(entity, std::move(light));
 }
 void Scene::removePointLightComponent(unsigned int entity) {
     pointLights.erase(entity);
 }
 
 void Scene::addSpotLightComponent(unsigned int entity, const Vector3& position, const Vector3& direction, const Vector3& color, const float intensity, const float outerAngle, const float innerAngle, const float constant, const float linear, const float quadratic) {
-    unsigned int componentId = spotLightComponentIDAllocator.allocate();
+    const unsigned int componentId = spotLightComponentIDAllocator.allocate();
 
     SpotLight light = {componentId, position, direction, color, intensity, outerAngle, innerAngle, constant, linear, quadratic};
-    spotLights.emplace(std::make_pair(entity, std::move(light)));
+    spotLights.emplace(entity, std::move(light));
 }
 void Scene::removeSpotLightComponent(unsigned int entity) {
     spotLights.erase(entity);
@@ -310,13 +315,13 @@ void Scene::removeEntity(unsigned int entity) {
 
 void Scene::submit() {
     Renderer& renderer = Engine::get().renderer;
-    AssetManager& assetManager = Engine::get().assetManager;
+    const AssetManager& assetManager = Engine::get().assetManager;
 
-    for (auto& [id, component] : directionalLights) {
+    for (auto& component : directionalLights | std::views::values) {
         renderer.lightCall = LightRenderCall{
-            component.direction.get(),
-            defaultShadowVertexShader,
-            defaultShadowFragmentShader};
+            .lightDirection = component.direction.get(),
+            .vertexPath = defaultShadowVertexShader,
+            .fragmentPath = defaultShadowFragmentShader};
     }
 
     for (auto& [id, component] : meshes) {
@@ -325,12 +330,12 @@ void Scene::submit() {
             continue;
         }
 
-        MeshData* meshData = assetManager.getMesh(component.filePath);
+        const MeshData* meshData = assetManager.getMesh(component.filePath);
         if (!meshData || meshData->meshId == 0)
             continue;
 
-        unsigned int meshId = meshData->meshId;
-        Material& material = materials.at(id);
+        const unsigned int meshId = meshData->meshId;
+        const Material& material = materials.at(id);
 
         renderer.renderQueue(RenderCall{
             meshId,
@@ -341,8 +346,8 @@ void Scene::submit() {
     }
 }
 
-void Scene::pickObject(const Ray ray) {
-    AssetManager& assetManager = Engine::get().assetManager;
+void Scene::pickObject(const Ray& ray) {
+    const AssetManager& assetManager = Engine::get().assetManager;
 
     float closestT = FLT_MAX;
     unsigned int closestEntity = 0;
@@ -350,12 +355,12 @@ void Scene::pickObject(const Ray ray) {
     for (auto& [id, component] : meshes) {
         float t0x, t1x, t0y, t1y, t0z, t1z;
 
-        MeshData* meshData = assetManager.getMesh(component.filePath);
+        const MeshData* meshData = assetManager.getMesh(component.filePath);
         if (!meshData || meshData->meshId == 0)
             continue;
 
         BoundingBox bounds = meshData->boundingBox;
-        if (!transforms.count(id)) {
+        if (!transforms.contains(id)) {
             std::cout << "Mesh does not have a transform!" << std::endl;
             continue;
         }
@@ -415,6 +420,6 @@ void Scene::setSelectedEntity(unsigned int id) {
     selectedEntity = id;
 }
 
-unsigned int Scene::getSelectedEntity() {
+unsigned int Scene::getSelectedEntity() const {
     return selectedEntity;
 }

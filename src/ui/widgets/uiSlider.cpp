@@ -5,7 +5,7 @@
 #include "ui/widgets/uiWidget.hpp"
 
 void UiSlider::update() {
-    Input& input = Engine::get().input;
+    const Input& input = Engine::get().input;
     hitDetection();
 
     // Detect dragging and fire events

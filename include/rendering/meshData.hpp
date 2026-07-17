@@ -7,7 +7,7 @@
 
 class MeshData {
   public:
-    MeshData(const std::string filePath);
+    explicit MeshData(const std::string& filePath);
     ~MeshData();
 
     MeshData(const MeshData&) = delete;
@@ -26,7 +26,8 @@ class MeshData {
     BoundingBox boundingBox;
 
   private:
-    void parseOBJ(const std::string& filePath);
+    void parseOBJ();
     void parseFace(std::vector<std::string>& parts, std::string& token);
+    void parseGLTF();
     void generateBoundingBox();
 };

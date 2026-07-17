@@ -6,13 +6,13 @@
 #include <functional>
 
 struct Transform {
-    Transform(Vector3& position, Vector3& scale, Vector3 rotation) : position(position), scale(scale), rotation(rotation) {}
+    Transform(const Vector3& position, const Vector3& scale, const Vector3& rotation) : position(position), scale(scale), rotation(rotation) {}
 
     Vector3 position;
     Vector3 scale;
     Vector3 rotation;
 
-    Mat4 getMatrice() {
+    [[nodiscard]] Mat4 getMatrice() const {
         return Mat4::translate(position) * Mat4::scale(scale);
     }
 };
@@ -23,7 +23,7 @@ class Attribute {
     using Callback = std::function<void(T newValue)>;
 
     Attribute() = default;
-    Attribute(T initialValue) : value(initialValue) {}
+    explicit Attribute(T initialValue) : value(initialValue) {}
 
     void set(T newValue) {
         if (value == newValue)
@@ -34,7 +34,7 @@ class Attribute {
             onChanged(newValue);
     }
 
-    const T& get() const { return value; }
+    [[nodiscard]] const T& get() const { return value; }
     Callback onChanged;
 
   private:
@@ -43,7 +43,7 @@ class Attribute {
 
 class DirectionalLight {
   public:
-    DirectionalLight(const unsigned int componentId, const Vector3& direction, const Vector3& color, const float intensity);
+    DirectionalLight(unsigned int componentId, const Vector3& direction, const Vector3& color, float intensity);
     DirectionalLight(DirectionalLight&& other) noexcept;
     ~DirectionalLight();
 
@@ -55,12 +55,12 @@ class DirectionalLight {
     Attribute<float> intensity;
 
   private:
-    void changeGPUData();
+    void changeGPUData() const;
 };
 
 class PointLight {
   public:
-    PointLight(const unsigned int componentId, const Vector3& position, const Vector3& color, const float intensity, const float constant, const float linear, const float quadratic);
+    PointLight(unsigned int componentId, const Vector3& position, const Vector3& color, float intensity, float constant, float linear, float quadratic);
     PointLight(PointLight&& other) noexcept;
     ~PointLight();
 
@@ -76,12 +76,12 @@ class PointLight {
     Attribute<float> quadratic;
 
   private:
-    void changeGPUData();
+    void changeGPUData() const;
 };
 
 class SpotLight {
   public:
-    SpotLight(const unsigned int componentId, const Vector3& position, const Vector3& direction, const Vector3& color, const float intensity, const float outerAngle, const float innerAngle, const float constant, const float linear, const float quadratic);
+    SpotLight(unsigned int componentId, const Vector3& position, const Vector3& direction, const Vector3& color, float intensity, float outerAngle, float innerAngle, float constant, float linear, float quadratic);
     SpotLight(SpotLight&& other) noexcept;
     ~SpotLight();
 
@@ -101,5 +101,5 @@ class SpotLight {
     Attribute<float> quadratic;
 
   private:
-    void changeGPUData();
+    void changeGPUData() const;
 };

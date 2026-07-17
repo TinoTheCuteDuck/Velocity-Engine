@@ -6,7 +6,7 @@
 
 class MeshInstance {
   public:
-    MeshInstance(const std::string& filePath, const unsigned int componentID);
+    MeshInstance(std::string  filePath, unsigned int componentID);
     MeshInstance(MeshInstance&& other) noexcept;
 
   public:
@@ -17,5 +17,5 @@ class MeshInstance {
     MeshAttribute<float> opacity{1};
 
   private:
-    void generateMeshInstanceData();
+    void generateMeshInstanceData() const;
 };

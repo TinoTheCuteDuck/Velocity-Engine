@@ -6,7 +6,7 @@
 class OpenGLTexture {
   public:
     OpenGLTexture(
-        unsigned char* data,
+        const unsigned char* data,
         unsigned int width,
         unsigned int height,
         TextureWrapMode wrapU,
@@ -21,8 +21,8 @@ class OpenGLTexture {
     OpenGLTexture(OpenGLTexture&& other) noexcept;
 
   public:
-    unsigned int texture;
+    unsigned int texture{};
 
   public:
-    void bind(unsigned int slot);
+    void bind(unsigned int slot) const;
 };
