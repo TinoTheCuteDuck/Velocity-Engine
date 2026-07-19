@@ -190,7 +190,7 @@ void main() {
         shadow = 0.0;
     }
 
-    vec3 ambient = vec3(0.01) * albedo.rgb * ambientOcclusion;
+    vec3 ambient = vec3(0.05) * albedo.rgb * ambientOcclusion;
     vec3 color = ambient + (1.0 - shadow) * outputColor;
 
     vec4 finalColor = vec4(color, albedo.a);
